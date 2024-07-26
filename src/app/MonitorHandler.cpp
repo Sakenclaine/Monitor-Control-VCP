@@ -464,6 +464,49 @@ void Monitor::get_feature(uint16_t code)
 
 void Monitor::set_feature(uint16_t code, int value)
 {
+    if (code == 0x10)
+    {
+        unsigned long ulMinBrightness;
+        unsigned long ulCurrBrightness;
+        unsigned long ulMaxBrightness;
+        
+        bool bGet = GetMonitorBrightness(monitor_.hPhysicalMonitor, &ulMinBrightness, &ulCurrBrightness, &ulMaxBrightness);
+
+        if (bGet && ulCurrBrightness != value)
+        {
+            unsigned long ulNewValue = ulMinBrightness + (ulMaxBrightness - ulMinBrightness) / (100 - 0) * (value - 0);
+
+            qDebug() << "Min: " << ulMinBrightness << " Max: " << ulMaxBrightness;
+            qDebug() << "New Value: " << ulNewValue;
+
+            if (ulNewValue <= ulMaxBrightness)
+            {
+                SetMonitorBrightness(monitor_.hPhysicalMonitor, ulNewValue);
+            }
+        }
+    }
+
+    else if (code == 0x12)
+    {
+        unsigned long ulMinContrast;
+        unsigned long ulCurrContrast;
+        unsigned long ulMaxContrast;
+
+        bool bGet = GetMonitorBrightness(monitor_.hPhysicalMonitor, &ulMinContrast, &ulCurrContrast, &ulMaxContrast);
+
+        if (bGet && ulCurrContrast != value)
+        {
+            unsigned long ulNewValue = ulCurrContrast + (ulCurrContrast - ulCurrContrast) / (100 - 0) * (value - 0);
+
+            qDebug() << "Min: " << ulCurrContrast << " Max: " << ulMaxContrast;
+            qDebug() << "New Value: " << ulNewValue;
+
+            if (ulNewValue <= ulMaxContrast)
+            {
+                SetMonitorContrast(monitor_.hPhysicalMonitor, ulNewValue);
+            }
+        }
+    }
 
 }
 
@@ -478,6 +521,7 @@ void Monitor::receive_signal(uint16_t code, int value)
             qDebug() << "\n--------------------------------------\n" << "Monitor: " << name << "\nCode: " << code << " Value : " << value;
 
             this->get_feature(code);
+            set_feature(code, value);
 
             qDebug() << "--------------------------------------\n";
         }
