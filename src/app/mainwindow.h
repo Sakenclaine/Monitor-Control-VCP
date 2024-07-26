@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "TrayIconControlled.h"
+#include "CustomSlider.h"
 #include "MonitorHandler.h"
 
 
@@ -33,7 +34,7 @@ public:
 	explicit MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
-	//bool eventFilter(QObject* obj, QEvent* event);
+	void add_slider(QColor color, QString name, uint16_t code);
 
 protected:
 	void closeEvent(QCloseEvent* event) override;
@@ -53,20 +54,17 @@ private:
 	bool autoStart = false;
 
 	std::vector<TrayIconControlled*> trayIcons;
+	std::vector<CustomSlider*> sliders;
 	std::vector<Monitor*> registered_monitors;
-	std::vector<bool> chosen_monitors;
+	//std::vector<bool> chosen_monitors;
 
 	QGroupBox* monitorGroupBox;
 	QGroupBox* posGroupBox;
 
-	QLabel* monitorLabel;
-	QLabel* hoverLabel;
 
 	QLabel* trayPos;
 	QLabel* mousePosX;
 	QLabel* mousePosY;
-
-	QComboBox* monitorComboBox;
 
 
 	QAction* minimizeAction;
@@ -76,6 +74,7 @@ private:
 
 
 	QMenu* trayIconMenu;
+	QMenu* trayMonitorMenu;
 
 	// Layouts
 	QVBoxLayout* mainLayout;

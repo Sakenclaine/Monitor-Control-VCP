@@ -320,39 +320,47 @@ void get_monitor_capabilities(PHYSICAL_MONITOR monitor, LPSTR& rawCapas, std::ve
 
 
 
+//Monitor::Monitor(PHYSICAL_MONITOR* monitor, QString name, bool status) :
+//    monitor_(monitor),
+//    name(name),
+//    status(status)
+//{
+//}
 
-Monitor::Monitor(PHYSICAL_MONITOR* monitor, QString name, bool enabled) :
+Monitor::Monitor(PHYSICAL_MONITOR monitor, QString name, bool status) :
     monitor_(monitor),
     name(name),
-    enabled(enabled)
+    status(status)
+{
+    dummy = false;
+}
+
+Monitor::Monitor(QString name, bool status) :
+    name(name),
+    status(status)
 {
 }
 
-Monitor::Monitor(QString name, bool enabled) :
-    name(name),
-    enabled(enabled)
-{}
-
 Monitor::~Monitor()
 {
-
 }
 
 void Monitor::set_enabled(bool bVal)
 {
-	enabled = bVal;
+	status = bVal;
 
 	qDebug() << "Status Monitor" << name << ": " << bVal;
+
+    emit send_status(bVal);
 }
 
 QString Monitor::get_name()
 {
 	return name;
 }
-
 bool Monitor::get_enabled()
 {
-	return enabled;
+    return status;
 }
 
 void Monitor::monitor_init()
@@ -363,13 +371,13 @@ void Monitor::monitor_init()
 	curr_g = 30;
 	curr_b = 30;
 
-    if (monitor_ != nullptr)
+    if (!dummy)
     {
         LPSTR szCapabilitiesString = NULL;
         std::vector<std::string> kwrds, vals;
         std::map<std::string, std::string> capabilities_dict;
 
-        get_monitor_capabilities(*monitor_, szCapabilitiesString, kwrds, vals, capabilities_dict);
+        get_monitor_capabilities(monitor_, szCapabilitiesString, kwrds, vals, capabilities_dict);
 
         // Free the string buffer.
         free(szCapabilitiesString);
@@ -429,19 +437,52 @@ void Monitor::monitor_init()
             }
         }
     }
+
+    get_feature(0x10);
  }
 
-void Monitor::test_feature(uint16_t code)
+void Monitor::get_feature(uint16_t code)
 {
-    DWORD current_value;
-    DWORD max_value;
+    unsigned long current_value = 0;
+    unsigned long max_value = 0;
     MC_VCP_CODE_TYPE code_type;
 
-    GetVCPFeatureAndVCPFeatureReply(monitor_->hPhysicalMonitor, code, &code_type, &current_value, &max_value);
+    uint16_t test = 0x10;
 
-    qDebug() << "\n\nCurrent Value (" << int(code) << "): " << current_value;
+    if (!dummy)
+    {   
+        GetVCPFeatureAndVCPFeatureReply(monitor_.hPhysicalMonitor, test, &code_type, &current_value, &max_value);
+        qDebug() << "Current Value (" << int(test) << "): " << current_value;
+    }
+
+    else
+    {
+        qDebug() << "Current Value (" << int(test) << "): " << "None -> Dummy Monitor";
+    }    
 }
 
+
+void Monitor::set_feature(uint16_t code, int value)
+{
+
+}
+
+void Monitor::receive_signal(uint16_t code, int value)
+{
+    if (status)
+    {
+        std::string code_str = n2hexstr(code, 2);
+
+        if (features.find(code_str) != features.end())
+        {
+            qDebug() << "\n--------------------------------------\n" << "Monitor: " << name << "\nCode: " << code << " Value : " << value;
+
+            this->get_feature(code);
+
+            qDebug() << "--------------------------------------\n";
+        }
+    }
+}
 
 int Monitor::get_brightness()
 {

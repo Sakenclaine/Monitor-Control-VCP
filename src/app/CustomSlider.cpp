@@ -9,6 +9,7 @@
 #include <QBoxLayout>
 #include <QPushButton>
 #include <QSizePolicy>
+#include <QCheckBox>
 
 #include <string>
 
@@ -87,7 +88,6 @@ CustomSlider::CustomSlider(QWidget* parent, bool trayIcon) :
 		icon->setObjectName(idIcon);
 		this->setObjectName(idSlider);
 
-
 		icon->show();
 
 	}
@@ -131,9 +131,62 @@ CustomSlider::CustomSlider(QWidget* parent, bool trayIcon, QColor color) :
 
 }
 
+CustomSlider::CustomSlider(QWidget* parent, bool trayIcon, QColor color, uint16_t code) :
+	QWidget(parent),
+	_id(++idProvider),
+	trayIcon(trayIcon),
+	code(code)
+{
+
+	lower_fill = color.name().toUtf8();
+
+	this->setup();
+
+	if (trayIcon)
+	{
+		icon = new TrayIconControlled(this, 0, color, 0, 100, 10);
+
+		connect(&Linker::getInstance(), &Linker::emit_mouse_update, icon, &TrayIconControlled::mouse_over);
+		connect(icon, &TrayIconControlled::value_changed, &Linker::getInstance(), &Linker::receive_value_update);
+
+		connect(&Linker::getInstance(), &Linker::emit_value_update, icon, &TrayIconControlled::update_value);
+
+
+		connect(this, &CustomSlider::slider_changed_value, &Linker::getInstance(), &Linker::receive_value_update);
+		connect(&Linker::getInstance(), &Linker::emit_value_update, this, &CustomSlider::set_slider_value);
+
+		QString idIcon = QString("trayIcon_%1").arg(_id);
+		QString idSlider = QString("sliderControl_%1").arg(_id);
+
+		icon->setObjectName(idIcon);
+		this->setObjectName(idSlider);
+
+
+		icon->show();
+
+	}
+
+}
+
 CustomSlider::~CustomSlider()
 {
 
+}
+
+void CustomSlider::toggle_trayIcon(bool toggle)
+{
+	if (trayIcon)
+	{
+		if (toggle == false)
+		{
+			icon->hide();
+		}
+
+		else if (toggle == true)
+		{
+			icon->show();
+		}
+	}
 }
 
 TrayIconControlled* CustomSlider::get_trayIcon()
@@ -155,12 +208,13 @@ void CustomSlider::set_contextMenu(QMenu& menu)
 
 void CustomSlider::value_changed()
 {
-	qDebug() << slider->value();
+	qDebug() << "Code: " <<  slider->value();
 }
 
 void CustomSlider::setup()
 {
-	QHBoxLayout* mainLayout = new QHBoxLayout;
+	QVBoxLayout* mainVLayout = new QVBoxLayout;
+	QHBoxLayout* mainHLayout = new QHBoxLayout;
 	QVBoxLayout* buttonLayout = new QVBoxLayout;
 	
 	
@@ -183,6 +237,7 @@ void CustomSlider::setup()
 		QString name = QString::number(100 - i * 5);
 
 		QPushButton* pButton = new QPushButton(name, this);
+		pButton->setStyleSheet(QString("padding: 2px; min-width: 2em;"));
 
 		QSize minSize = pButton->minimumSizeHint();
 
@@ -194,13 +249,23 @@ void CustomSlider::setup()
 
 	}
 
-	mainLayout->addWidget(slider);
-	mainLayout->addLayout(buttonLayout);
+	if (trayIcon)
+	{
+		QCheckBox* cbtoggleTray = new QCheckBox();
+		cbtoggleTray->setCheckState(Qt::Checked);
 
-	this->setLayout(mainLayout);
+		mainVLayout->addWidget(cbtoggleTray);
+
+		connect(cbtoggleTray, &QCheckBox::checkStateChanged, this, &CustomSlider::toggle_trayIcon);	
+	}
+
+	mainHLayout->addWidget(slider);
+	mainHLayout->addLayout(buttonLayout);
+
+	mainVLayout->addLayout(mainHLayout);
+
+	this->setLayout(mainVLayout);
 	this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
-
-
 
 }
 
@@ -232,7 +297,7 @@ void CustomSlider::set_slider_value(int& value, QObject& senderObj)
 		//qDebug() << "Sender: " << senderType << " .. " << sender_id << " Receiver: " << " .. " << _id << receiverType;
 		//qDebug() << " Sended Value: " << value << "\n";
 
-		if (sender_id == _id)
+		if (sender_id == _id && current_value != value)
 		{
 			slider->setValue(value);
 		}
@@ -242,7 +307,10 @@ void CustomSlider::set_slider_value(int& value, QObject& senderObj)
 
 void CustomSlider::slider_changed()
 {
-	int val = slider->value();
+	current_value = slider->value();
+
+	qDebug() << " Receiver: " << " .. " << _id << receiverType << " --> " << current_value;
 	
-	emit slider_changed_value(val);
+	emit slider_changed_value(current_value);
+	emit send_monitor_signal(code, current_value);
 }

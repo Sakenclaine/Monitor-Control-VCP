@@ -30,67 +30,108 @@
 
 #include "SignalLinker.h"
 
-
-
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
+// andreybutov https://gist.github.com/andreybutov/33783bca1af9db8f9f36c463c77d7a86
+QString windowsAppPath()
 {
-    autoStart = false;
+#ifdef Q_OS_WIN
+    return QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
+#else
+    return "";
+#endif
+}
 
-    QSettings bootUpSettings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
-    QString app_path = QCoreApplication::applicationFilePath();
 
-    qDebug() << app_path;
+void setAppToStartAutomatically(bool startAutomatically)
+{
+#if defined ( Q_OS_WIN )
 
-    if (autoStart == true) {
-        bootUpSettings.setValue("MonitorControl", app_path);
+    QString key = "Monitor-Control";
+
+    QSettings registrySettings(
+        "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+        QSettings::NativeFormat);
+
+    registrySettings.remove(key);
+
+    if (startAutomatically) {
+        registrySettings.setValue(key, QString("\"" + windowsAppPath() + "\""));
     }
-    else {
-        bootUpSettings.remove("MonitorControl");
-    }
-    
+
+    registrySettings.sync();
+
+#endif
+}
+
+
+
+void get_screen_geometry(int & xWO_taskbar, int& yWO_taskbar)
+{
     // size of screen (primary monitor) without taskbar or desktop toolbars
-    qDebug() << GetSystemMetrics(SM_CXFULLSCREEN) << " x " << GetSystemMetrics(SM_CYFULLSCREEN) << "\n";
+    xWO_taskbar = GetSystemMetrics(SM_CXFULLSCREEN);
+    yWO_taskbar = GetSystemMetrics(SM_CYFULLSCREEN);
+
+    //qDebug() << GetSystemMetrics(SM_CXFULLSCREEN) << " x " << GetSystemMetrics(SM_CYFULLSCREEN) << "\n";
 
     // size of screen (primary monitor) without just the taskbar
     RECT xy;
     BOOL fResult = SystemParametersInfo(SPI_GETWORKAREA, 0, &xy, 0);
-    qDebug() << xy.right - xy.left << " x " << xy.bottom - xy.top << "\n";
+    //qDebug() << xy.right - xy.left << " x " << xy.bottom - xy.top << "\n";
 
     // the full width and height of the screen (primary monitor)
-    qDebug() << GetDeviceCaps(GetDC(NULL), HORZRES) << " x " << GetDeviceCaps(GetDC(NULL), VERTRES) << "\n";
+    //qDebug() << GetDeviceCaps(GetDC(NULL), HORZRES) << " x " << GetDeviceCaps(GetDC(NULL), VERTRES) << "\n";
 
-   
+}
+
+
+
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
+{
+    setAppToStartAutomatically(false);
+
+    int xScreen, yScreen;
+    get_screen_geometry(xScreen, yScreen);
+    
+
     Linker::getInstance().sendSignal();
+
+    Controller* cntr = new Controller;
+    cntr->operate();
 
     std::vector<PHYSICAL_MONITOR> monitors;
     get_physical_monitors(monitors);
 
-    qDebug() << "Number of monitors: " << monitors.size();
+    qDebug() << "Number of physical monitors: " << monitors.size();
     
     // Register monitors
     for (auto& mons : monitors)
     {
         QString name = QString::fromWCharArray(mons.szPhysicalMonitorDescription);
 
-        Monitor* mon = new Monitor(&mons, name, true);
+        Monitor* mon = new Monitor(mons, name, true);
 
         mon->monitor_init();
 
         registered_monitors.push_back(mon);
-        chosen_monitors.push_back(false);
+        //chosen_monitors.push_back(false);
+    }
+
+    {
+        Monitor* mon2 = new Monitor("Monitor 2", true);
+
+        mon2->monitor_init();
+
+        registered_monitors.push_back(mon2);
+        //chosen_monitors.push_back(false);
     }
 
     
     QWidget* mainWidget = new QWidget(this);
-   
     setCentralWidget(mainWidget);
     
+    createActions(); // Setup globally used actions like minimize/maximize ...
     createMonitorGroupBox();
     createPositionGroupBox();
-
-    createActions();
-
-
+    
     mainLayout = new QVBoxLayout;
     sliderLayout = new QHBoxLayout;
 
@@ -98,28 +139,30 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     mainLayout->addWidget(posGroupBox);
 
     mainWidget->setLayout(mainLayout);
-
     mainLayout->addLayout(sliderLayout);
     
 
-    monitorComboBox->setCurrentIndex(1);
-    
 
     setWindowTitle(tr("Monitor Control"));
-    resize(400, 300);
+    //resize(400, 300);
+    int xSize = width();
+    int ySize = height();
 
+    qDebug() << xSize << " " << ySize;
 
-    Controller* cntr = new Controller;
-    cntr->operate();
+    move(xScreen-xSize, yScreen-2*ySize-25);
 
     connect(cntr, &Controller::updated, this, &MainWindow::updatePosLabel);
     connect(cntr, &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
 
     createTrayIcon();
 
-    this->setWindowIcon(QIcon(":/icons/monitor.ico"));
 
+    //qDebug() << "================================================";
+    //registered_monitors[0]->get_feature(0x10);
+    //qDebug() << "================================================\n\n";
 
+    //this->setWindowFlags(Qt::Popup);
 
 }
 
@@ -146,7 +189,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
         msgBox.setWindowTitle("Closing");
         msgBox.setText("The program will keep running in the "
-                    "system tray when pressing <b>Close</b>. To terminate the program, "
+                    "system tray when pressing <b>Close</b> (Enter/Space). To terminate the program, "
                     "choose <b>Quit</b> in the context menu "
                     "of the system tray entry or this message.");
 
@@ -171,7 +214,35 @@ void MainWindow::closeEvent(QCloseEvent* event)
             event->ignore();
 
         }
+    }
 
+    else
+    {
+        QMessageBox msgBox;
+
+        //QFont font;
+        //font.setPointSize(16);
+        //msgBox.setFont(font);
+
+        msgBox.setWindowTitle("Closing");
+        msgBox.setText("No Tray Icon\nProgram will quit on exit.");
+
+        QPushButton* quitButton = msgBox.addButton(tr("Quit"), QMessageBox::ActionRole);
+        //quitButton->setFont(QFont());
+        QPushButton* cancelButton = msgBox.addButton(QMessageBox::Cancel);
+
+        msgBox.setDefaultButton(quitButton);
+        msgBox.setEscapeButton(cancelButton);
+
+        msgBox.exec();
+
+        if (msgBox.clickedButton() == quitButton) {
+            qApp->quit();
+
+        }
+        else if (msgBox.clickedButton() == cancelButton) {
+            event->ignore();
+        }
     }
 }
 
@@ -190,32 +261,33 @@ void MainWindow::updatePosLabel(const struct inSignal& input)
 
 void MainWindow::createMonitorGroupBox()
 {
-    monitorGroupBox = new QGroupBox(tr("Monitor"));
+    monitorGroupBox = new QGroupBox(tr("Registered Monitors"));
     monitorGroupBox->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
-    monitorLabel = new QLabel("Icon:");
-    hoverLabel = new QLabel(tr("No"));
-
-    hoverLabel->setToolTip("Label Tooltip");
-    //hoverLabel->installEventFilter(this);
-
-
-    monitorComboBox = new QComboBox;
-    monitorComboBox->addItem(QIcon("./images/world.ico"), tr("World"));
-    monitorComboBox->addItem(QIcon("./images/star.ico"), tr("Star"));
-    monitorComboBox->addItem(QIcon("./images/house.ico"), tr("House"));
 
     QStringList tableHeaders = { "", "Monitor", "Brightness", "Contrast", "R", "G", "B"};
     QTableWidget* tableWidget = new QTableWidget(registered_monitors.size(), 7, this);
 
     tableWidget->setHorizontalHeaderLabels(tableHeaders);
     tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tableWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    //tableWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    //tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     tableWidget->verticalHeader()->setVisible(false);
 
     for (int row = 0; row < registered_monitors.size(); row++)
     {
+        QWidget* checkBoxWidget = new QWidget(); //create QWidget
+        QCheckBox* checkBox = new QCheckBox();   //create QCheckBox
+        QHBoxLayout* layoutCheckBox = new QHBoxLayout(checkBoxWidget); //create QHBoxLayout 
+        layoutCheckBox->addWidget(checkBox);     //add QCheckBox to layout
+        layoutCheckBox->setAlignment(Qt::AlignCenter); //set Alignment layout
+        layoutCheckBox->setContentsMargins(0, 0, 0, 0);
+        
+        checkBox->setChecked(registered_monitors[row]->get_enabled());
+        tableWidget->setCellWidget(row, 0, checkBoxWidget);
+
+        connect(checkBox, &QCheckBox::checkStateChanged, registered_monitors[row], &Monitor::set_enabled);
+        connect(registered_monitors[row], &Monitor::send_status, checkBox, &QCheckBox::setChecked);
+        
         for (int column = 1; column < 7; column++)
         {
             QString cell_content;
@@ -276,9 +348,6 @@ void MainWindow::createMonitorGroupBox()
     QVBoxLayout* vLayout = new QVBoxLayout;
 
     QHBoxLayout* iconLayout = new QHBoxLayout;
-    iconLayout->addWidget(monitorLabel);
-    iconLayout->addWidget(hoverLabel);
-    iconLayout->addWidget(monitorComboBox);
     iconLayout->addStretch();
 
 
@@ -333,72 +402,68 @@ void MainWindow::createTrayIcon()
     trayIconMenu->addAction(restoreAction);
     trayIconMenu->addSeparator();
 
-    QMenu* monitorMenu = trayIconMenu->addMenu("Monitor");
+    trayMonitorMenu = trayIconMenu->addMenu("Monitor");
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(quitAction);
 
-    
     for (auto elem : registered_monitors)
     {
-        auto action = new QAction(elem->get_name(), monitorMenu);
+        auto action = new QAction(elem->get_name(), trayMonitorMenu);
         action->setCheckable(true);
         action->setChecked(elem->get_enabled());
 
-        monitorMenu->addAction(action);
+        trayMonitorMenu->addAction(action);
 
         connect(action, &QAction::triggered, elem, &Monitor::set_enabled);
+        connect(elem, &Monitor::send_status, action, &QAction::setChecked);
     }
 
-    CustomSlider* cSlider = new CustomSlider(this, true, QColor(0, 255, 255));
-    CustomSlider* cSlider2 = new CustomSlider(this, true, QColor(255, 0, 255));
-    CustomSlider* cSlider3 = new CustomSlider(this, true, QColor(255, 0, 0));
-
-    sliderLayout->addWidget(cSlider);
-    sliderLayout->addWidget(cSlider2);
-    sliderLayout->addWidget(cSlider3);
-
-    TrayIconControlled* test = cSlider->get_trayIcon();
-
-    cSlider->set_contextMenu(*trayIconMenu);
-    cSlider2->set_contextMenu(*trayIconMenu);
-    cSlider3->set_contextMenu(*trayIconMenu);
-
-    trayIcons.push_back(cSlider->get_trayIcon());
-    trayIcons.push_back(cSlider2->get_trayIcon());
-    trayIcons.push_back(cSlider3->get_trayIcon());
-    
-    cSlider->get_trayIcon()->setToolTip("Adjust brightness");
-    cSlider2->get_trayIcon()->setToolTip("Adjust contrast");
-    cSlider3->get_trayIcon()->setToolTip("Adjust volume");
-
-    connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
-    connect(cSlider2->get_trayIcon(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
-    connect(cSlider3->get_trayIcon(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
-
-
-//https://stackoverflow.com/questions/11562319/cannot-get-qsystemtrayicon-to-work-correctly-with-activation-reason
+    add_slider(QColor(0, 255, 255), "Brightness", 0x10);
+    add_slider(QColor(255, 0, 255), "Contrast", 0x12);
+    add_slider(QColor(255, 0, 0), "Volume", 0x62);
 
 }
 
+void MainWindow::add_slider(QColor color, QString name, uint16_t code)
+{
+    CustomSlider* cSlider = new CustomSlider(NULL, true, color, code);
 
+    cSlider->set_contextMenu(*trayIconMenu);
+    trayIcons.push_back(cSlider->get_trayIcon());
+    sliders.push_back(cSlider);
+
+    cSlider->get_trayIcon()->setToolTip(name);
+    cSlider->setToolTip(name);
+    sliderLayout->addWidget(cSlider);
+
+    connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
+
+    for (auto& monitor : registered_monitors)
+    {
+        connect(cSlider, &CustomSlider::send_monitor_signal, monitor, &Monitor::receive_signal);
+    }
+}
+
+
+//https://stackoverflow.com/questions/11562319/cannot-get-qsystemtrayicon-to-work-correctly-with-activation-reason
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason) {
     case QSystemTrayIcon::Trigger:
-        qDebug() << "\n-------------\nTray Trigger" << reason << "\n-------------\n";
+        //qDebug() << "\n-------------\nTray Trigger" << reason << "\n-------------\n";
         restoreAction->trigger();
         break;
     case QSystemTrayIcon::DoubleClick:
-        qDebug() << "\n-------------\nTray Double Click" << reason << "\n-------------\n";
+        //qDebug() << "\n-------------\nTray Double Click" << reason << "\n-------------\n";
         break;
     case QSystemTrayIcon::MiddleClick:
-        qDebug() << "\n-------------\nTray Middle Click" << reason << "\n-------------\n";
+        //qDebug() << "\n-------------\nTray Middle Click" << reason << "\n-------------\n";
         break;
     case QSystemTrayIcon::Context:
-        qDebug() << "\n-------------\nTray Context Click" << reason << "\n-------------\n";
+        //qDebug() << "\n-------------\nTray Context Click" << reason << "\n-------------\n";
         break;
     case QSystemTrayIcon::Unknown:
-        qDebug() << "\n-------------\nTray Unknown" << reason << "\n-------------\n";
+        //qDebug() << "\n-------------\nTray Unknown" << reason << "\n-------------\n";
         break;
     default:
         ;

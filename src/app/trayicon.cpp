@@ -11,7 +11,7 @@
 #include <QSpinBox>
 #include <QTextEdit>
 #include <QVBoxLayout>
-#include <QMessageBox>#
+#include <QMessageBox>
 
 #include "trayicon.h"
 

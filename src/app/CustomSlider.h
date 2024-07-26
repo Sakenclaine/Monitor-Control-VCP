@@ -31,6 +31,8 @@ public:
 	CustomSlider(QWidget* parent, std::string handle_color, std::string lower_fill, std::string upper_fill, bool trayIcon);
 	CustomSlider(QWidget* parent, bool trayIcon);
 	CustomSlider(QWidget* parent, bool trayIcon, QColor color);
+	CustomSlider(QWidget* parent, bool trayIcon, QColor color, uint16_t code);
+	
 
 	~CustomSlider();
 
@@ -46,6 +48,8 @@ private:
 	static int idProvider;
 
 	bool trayIcon = false;
+	int current_value;
+	uint16_t code = 0x00;
 
 	QSlider* slider;
 
@@ -68,10 +72,12 @@ private slots:
 
 public slots:
 	void set_slider_value(int &, QObject&);
+	void toggle_trayIcon(bool toggle);
 	void slider_changed();
 
 signals:
-	void slider_changed_value(int & value);
+	void slider_changed_value(int& value);
+	void send_monitor_signal(uint16_t& code, int& value);
 };
 
 

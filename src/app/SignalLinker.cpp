@@ -40,6 +40,6 @@ void Linker::receive_value_update(int& value)
 {
     QObject* senderObj = sender();
     
-    qDebug() << "Linker: Updated value from " << sender() << " "<< sender()->objectName() << " --> " << value;
+    //qDebug() << "Linker: Updated value from " << sender() << " "<< sender()->objectName() << " --> " << value;
     emit emit_value_update(value, *senderObj);
 }

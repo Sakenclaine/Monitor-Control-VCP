@@ -67,7 +67,9 @@ class Monitor : public QObject
 private:
 	QString name = tr("None");
 	//PHYSICAL_MONITOR monitor ;
-	LPPHYSICAL_MONITOR monitor_ = nullptr;
+	//LPPHYSICAL_MONITOR monitor_ = nullptr;
+	PHYSICAL_MONITOR monitor_;
+	bool dummy = true;
 
 	int curr_brightness = 0;
 	int curr_contrast = 0;
@@ -75,19 +77,21 @@ private:
 	int curr_g = 0;
 	int curr_b = 0;
 
-	bool enabled;
+	bool status = false;
 
 	//VCP_COMMANDS features;
 	std::map<std::string, monitor_vcp> features;
 
 public:
 	//Monitor(PHYSICAL_MONITOR& monitor, QString name, bool enabled);
-	Monitor(PHYSICAL_MONITOR* monitor, QString name, bool enabled);
-	Monitor(QString name, bool enabled);
+	//Monitor(PHYSICAL_MONITOR* monitor, QString name, bool status);
+	Monitor(PHYSICAL_MONITOR monitor, QString name, bool status);
+	Monitor(QString name, bool status);
 	~Monitor();
 
 	void monitor_init();
-	void test_feature(uint16_t code);
+	void get_feature(uint16_t code);
+	void set_feature(uint16_t code, int value);
 
 	QString get_name();
 	bool get_enabled();
@@ -100,7 +104,11 @@ public:
 
 
 public slots:
-	void set_enabled(bool bVal);
+	void set_enabled(bool status);
+	void receive_signal(uint16_t code, int value);
+
+signals:
+	void send_status(const bool&);
 	
 };
 
