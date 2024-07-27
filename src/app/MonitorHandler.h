@@ -27,17 +27,11 @@ struct VCP_COMM
 	QString description;
 
 	uint16_t vcp_code;
-	bool read_only, write_only; // , enable;
+	bool read_only = false, write_only = false;
+	bool all_range = false; 
 
 	std::vector<uint16_t> possible_values;
 	std::vector<std::string> possible_values_desc;
-	//std::vector<bool> possible_values_status;
-};
-
-struct monitor_vcp
-{
-	std::vector<uint16_t> possible_values;
-	bool enabled = false;
 };
 
 
@@ -45,8 +39,11 @@ struct monitor_vcp
 class VCP_COMMANDS
 {
 private:
+	void add_command(QString name, QString desc, uint16_t code);
 	void add_command(QString name, QString desc, uint16_t code, bool read, bool write);
 	void add_command(QString name, uint16_t code, bool read, bool write);
+	void add_command(QString name, uint16_t code, bool read, bool write, bool range);
+
 	void add_allowed_values(uint16_t code, std::vector<uint16_t> vals, std::vector<std::string> desc);
 	void add_allowed_values(uint16_t code, std::initializer_list<uint16_t> codeList, std::initializer_list<std::string> descList);
 
@@ -60,41 +57,39 @@ public:
 extern VCP_COMMANDS VCP_FEATURES;
 
 
+struct monitor_vcp
+{
+	std::vector<uint16_t> possible_values;
+	bool enabled = false;
+};
+
+
 class Monitor : public QObject
 {
 	Q_OBJECT
 
 private:
 	QString name = tr("None");
-	//PHYSICAL_MONITOR monitor ;
-	//LPPHYSICAL_MONITOR monitor_ = nullptr;
 	PHYSICAL_MONITOR monitor_;
+
 	bool dummy = true;
-
-	int curr_brightness = 0;
-	int curr_contrast = 0;
-	int curr_r = 0;
-	int curr_g = 0;
-	int curr_b = 0;
-
 	bool status = false;
 
-	//VCP_COMMANDS features;
 	std::map<std::string, monitor_vcp> features;
 
+
 public:
-	//Monitor(PHYSICAL_MONITOR& monitor, QString name, bool enabled);
-	//Monitor(PHYSICAL_MONITOR* monitor, QString name, bool status);
-	Monitor(PHYSICAL_MONITOR monitor, QString name, bool status);
-	Monitor(QString name, bool status);
+	Monitor(PHYSICAL_MONITOR monitor, QString name);
+	Monitor(QString name);
 	~Monitor();
 
 	void monitor_init();
-	void get_feature(uint16_t code);
-	void set_feature(uint16_t code, int value);
+	void get_feature_WIN(uint16_t code);
+	void set_feature_WIN(uint16_t code, int value);
 
 	QString get_name();
 	bool get_enabled();
+
 
 	int get_brightness();
 	int get_contrast();
@@ -104,7 +99,7 @@ public:
 
 
 public slots:
-	void set_enabled(bool status);
+	void set_enabled(bool bval);
 	void receive_signal(uint16_t code, int value);
 	void receive_value_request(uint16_t code);
 
@@ -134,12 +129,13 @@ struct MonitorRects
 	}
 };
 
+void get_monitor_capabilities_WIN(PHYSICAL_MONITOR& monitor, std::vector<std::string>& kwrds, std::vector<std::string>& vals, std::map<std::string, std::string>& capabilities_dict);
 
-void get_physical_monitors(std::vector<PHYSICAL_MONITOR>& monitors);
+void get_monitor_features_WIN(std::map<std::string, monitor_vcp>& features, PHYSICAL_MONITOR& monitor);
 
+void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors);
 
 void DumpDevice(const DISPLAY_DEVICE& dd, size_t nSpaceCount);
-
 
 void list_devices();
 

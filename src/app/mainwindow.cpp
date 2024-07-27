@@ -94,13 +94,19 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     get_screen_geometry(xScreen, yScreen);
     
 
-    Linker::getInstance().sendSignal();
+    //Linker::getInstance().sendSignal();
 
-    Controller* cntr = new Controller;
-    cntr->operate();
+    //Controller* cntr = new Controller;
+    //cntr->operate();
 
+    #ifdef Q_OS_WIN
     std::vector<PHYSICAL_MONITOR> monitors;
-    get_physical_monitors(monitors);
+    get_physical_monitors_WIN(monitors);
+
+    #elif Q_OS_UNIX
+    qDebug() << "Not implemented for UNIX yet."
+
+    #endif
 
     qDebug() << "Number of physical monitors: " << monitors.size();
     
@@ -109,22 +115,16 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     {
         QString name = QString::fromWCharArray(mons.szPhysicalMonitorDescription);
 
-        Monitor* mon = new Monitor(mons, name, true);
+        Monitor* mon = new Monitor(mons, name);
 
         mon->monitor_init();
-
         registered_monitors.push_back(mon);
-        //chosen_monitors.push_back(false);
     }
 
-    {
-        Monitor* mon2 = new Monitor("Monitor 2", true);
+    Monitor* mon2 = new Monitor("Monitor 2");
 
-        mon2->monitor_init();
-
-        registered_monitors.push_back(mon2);
-        //chosen_monitors.push_back(false);
-    }
+    mon2->monitor_init();
+    registered_monitors.push_back(mon2);
 
     
     QWidget* mainWidget = new QWidget(this);
@@ -132,36 +132,36 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     monitorSettings = new QTabWidget();
 
-    
-    createActions(); // Setup globally used actions like minimize/maximize ...
-    createMonitorGroupBox();
-    createPositionGroupBox();
-    
-    mainLayout = new QVBoxLayout;
-    sliderLayout = new QHBoxLayout;
+    //
+    //createActions(); // Setup globally used actions like minimize/maximize ...
+    //createMonitorGroupBox();
+    //createPositionGroupBox();
+    //
+    //mainLayout = new QVBoxLayout;
+    //sliderLayout = new QHBoxLayout;
 
-    mainLayout->addWidget(monitorGroupBox);
-    mainLayout->addWidget(posGroupBox);
-    mainLayout->addWidget(monitorSettings);
+    //mainLayout->addWidget(monitorGroupBox);
+    //mainLayout->addWidget(posGroupBox);
+    //mainLayout->addWidget(monitorSettings);
 
-    mainWidget->setLayout(mainLayout);
-    mainLayout->addLayout(sliderLayout);
-    
+    //mainWidget->setLayout(mainLayout);
+    //mainLayout->addLayout(sliderLayout);
+    //
 
 
-    setWindowTitle(tr("Monitor Control"));
-    //resize(400, 300);
-    int xSize = width();
-    int ySize = height();
+    //setWindowTitle(tr("Monitor Control"));
+    ////resize(400, 300);
+    //int xSize = width();
+    //int ySize = height();
 
-    qDebug() << xSize << " " << ySize;
+    //qDebug() << xSize << " " << ySize;
 
-    move(xScreen-xSize, yScreen-2*ySize-25);
+    //move(xScreen-xSize, yScreen-2*ySize-25);
 
-    connect(cntr, &Controller::updated, this, &MainWindow::updatePosLabel);
-    connect(cntr, &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
+    //connect(cntr, &Controller::updated, this, &MainWindow::updatePosLabel);
+    //connect(cntr, &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
 
-    createTrayIcon();
+    //createTrayIcon();
 
 
     //qDebug() << "================================================";

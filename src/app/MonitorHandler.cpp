@@ -8,25 +8,25 @@ VCP_COMMANDS VCP_FEATURES; // VCP_COMMANDS object, extern object in header file
 // Add all commands, which should be supported to the VCP_COMMANDS object
 VCP_COMMANDS::VCP_COMMANDS() 
 {
-    add_command("Degauss", "Degauss monitor", 0x01, false, true); // , false);
+    add_command("Degauss", "Degauss monitor", 0x01, false, true); 
 
-    add_command("New Control Value", "Indicates change of register value", 0x02, false, false); // , false);
+    add_command("New Control Value", "Indicates change of register value", 0x02, false, false); 
     add_allowed_values(0x02, { 0x01 }, { "Force Reset" });
 
-    add_command("Soft Control", "Controls Monitor Buttons", 0x03, true, false); // , false);
+    add_command("Soft Control", "Controls Monitor Buttons", 0x03, true, false); 
     add_allowed_values(0x03, { 0x10, 0x11 }, { "Power", "Brightness UP"});
 
-    add_command("Restore Factory Defaults", "Restore all factory presets", 0x04, false, true); // , false);
-    add_command("Restore Factory Luminance/ Contrast Defaults", "Restores factory defaults for luminance and contrast adjustments.", 0x05, false, true); // , false);
+    add_command("Restore Factory Defaults", "Restore all factory presets", 0x04, false, true); 
+    add_command("Restore Factory Luminance/ Contrast Defaults", "Restores factory defaults for luminance and contrast adjustments.", 0x05, false, true); 
 
-    add_command("Restore Factory Color Defaults", "Restore factory defaults for color settings", 0x08, false, true); // , false);
+    add_command("Restore Factory Color Defaults", "Restore factory defaults for color settings", 0x08, false, true); 
 
-    add_command("User Color Temperature", "", 0x0C, false, false); //, false);
+    add_command("User Color Temperature", "", 0x0C, false, false); 
 
-    add_command("Luminance", "Increasing/Decreasing the Luminance", 0x10, false, false); //, false);
-    add_command("Contrast", "Change Contrast", 0x12, false, false); //, false);
+    add_command("Luminance", "Increasing/Decreasing the Luminance", 0x10, false, false); 
+    add_command("Contrast", "Change Contrast", 0x12, false, false); 
 
-    add_command("Select Color Preset", "", 0x14, false, false); //, false);
+    add_command("Select Color Preset", "", 0x14, false, false); 
     add_allowed_values(0x14, { 0x01, 0x02, 0x03, 0x04, 0x05, 0x05, 0x006, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D }, 
         { "sRGB", "Native", "4000K", "5000K", "6500K", "7500K", "8200K", "9300K", "10000K", "11500K", "User 1", "User 2", "User 3"});
 
@@ -49,7 +49,7 @@ VCP_COMMANDS::VCP_COMMANDS()
     add_command("Input Select", "", 0x60, false, false);
     add_allowed_values(0x60, { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12 }, {"Analog Video 1", "Analog Video 2", "DVI 1", "DVI 2", "Composite Video 1", "Composite Video 2", "S-Video 1", "S-Video 2", "Tuner 1", "Tuner 2", "Tuner 3", "Component Video 1", "Component Video 2", "Component Video 3", "Display Port 1", "Display Port 2", "HDMI 1", "HDMI 2"});
 
-    add_command("Speaker Volume", 0x62, false, false);
+    add_command("Speaker Volume", 0x62, false, false, true);
     add_allowed_values(0x60, { 0x00, 0xFF, 0x01 }, { "Fixed (Default) level", "Mute", "01->FE Range" });
 
     add_command("Display Scaling", 0x86, false, false);
@@ -65,6 +65,18 @@ VCP_COMMANDS::VCP_COMMANDS()
     add_allowed_values(0xB6, { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 }, { "CRT (shadow mask)", "CRT (aperture grill)", "LCD", "LCoS", "Plasma", "OLED", "EL", "Dynamic MEM", "Static MEM" });
 
 
+}
+
+void VCP_COMMANDS::add_command(QString name, QString desc, uint16_t code)
+{
+    VCP_COMM comm;
+    comm.name = name;
+    comm.description = desc;
+    comm.vcp_code = code;
+
+    std::string str_code = n2hexstr(code, 2);
+
+    commands[str_code] = comm;
 }
 
 void VCP_COMMANDS::add_command(QString name, QString desc, uint16_t code, bool read, bool write)
@@ -89,6 +101,21 @@ void VCP_COMMANDS::add_command(QString name, uint16_t code, bool read, bool writ
     comm.vcp_code = code;
     comm.read_only = read;
     comm.write_only = write;
+
+    std::string str_code = n2hexstr(code, 2);
+
+    commands[str_code] = comm;
+}
+
+void VCP_COMMANDS::add_command(QString name, uint16_t code, bool read, bool write, bool range)
+{
+    VCP_COMM comm;
+    comm.name = name;
+    comm.description = " ";
+    comm.vcp_code = code;
+    comm.read_only = read;
+    comm.write_only = write;
+    comm.all_range = range;
 
     std::string str_code = n2hexstr(code, 2);
 
@@ -163,7 +190,7 @@ void DumpDevice(const DISPLAY_DEVICE& dd, size_t nSpaceCount)
 
 
 
-void get_physical_monitors(std::vector<PHYSICAL_MONITOR>& monitors)
+void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors)
 {
     MonitorRects monitorStruct;
 
@@ -198,17 +225,6 @@ void get_physical_monitors(std::vector<PHYSICAL_MONITOR>& monitors)
 
                         HANDLE temp_handle = pPhysicalMonitors[i].hPhysicalMonitor;
          
-
-                        //qDebug() << "Monitor Name: ";
-                        //qDebug() << name;
-
-                        //qDebug() << "Number of Physical Monitors: ";
-                        //qDebug() << countPhysicalMonitors << "\n";
-
-                        //qDebug() << "Handle: ";
-                        //qDebug() << pPhysicalMonitors[0].hPhysicalMonitor << "\n\n";
-                        
-
                         if (std::find(unique_handles.begin(), unique_handles.end(), temp_handle) == unique_handles.end())
                         {
                             monitors.push_back(pPhysicalMonitors[i]);
@@ -223,17 +239,11 @@ void get_physical_monitors(std::vector<PHYSICAL_MONITOR>& monitors)
     }
 }
 
-
 void parse_capability_string(std::string s, std::vector<std::string>& keywords, std::vector<std::string>& parsed_string, std::map<std::string, std::string>& vcp_dict)
 {
-    //qDebug() << "\n\n===========================";
-    //qDebug() << s;
-
     std::vector<int> inds; // vector containing the inices of paired brackets
     std::string vcps_with_options = "";
     bracket_pair_finder(s, inds);
-
-
 
     // Iterate through index positions of open brackets
     for (size_t i = 0; i < inds.size() - 2; i += 2)
@@ -250,7 +260,6 @@ void parse_capability_string(std::string s, std::vector<std::string>& keywords, 
         for (size_t k = inds[i] - 1; k >= 0; k--)
         {
             if (s[k] == ')' || s[k] == '(' || s[k] == ' ') { break; }
-
             temp_string += s[k];
         }
         
@@ -284,20 +293,14 @@ void parse_capability_string(std::string s, std::vector<std::string>& keywords, 
 
     vcp_dict["vcp_only"] = vcps;
     vcp_dict["vcps_with_options"] = vcps_with_options;
-
-    //qDebug() << "\n===========================\n";
-
 }
 
-void get_monitor_capabilities(PHYSICAL_MONITOR monitor, LPSTR& rawCapas, std::vector<std::string>& kwrds, std::vector<std::string>& vals, std::map<std::string, std::string>& capabilities_dict)
+void get_monitor_capabilities_WIN(PHYSICAL_MONITOR& monitor, std::vector<std::string>& kwrds, std::vector<std::string>& vals, std::map<std::string, std::string>& capabilities_dict)
 {
     // Get physical monitor handle.
     HANDLE hPhysicalMonitor = monitor.hPhysicalMonitor;
 
     DWORD capLength = 0;
-    LPSTR szCapabilitiesString = NULL;
-
-
     bool bSuccess = GetCapabilitiesStringLength(hPhysicalMonitor, &capLength);
 
     if (bSuccess)
@@ -310,34 +313,71 @@ void get_monitor_capabilities(PHYSICAL_MONITOR monitor, LPSTR& rawCapas, std::ve
             bSuccess = CapabilitiesRequestAndCapabilitiesReply(
                 hPhysicalMonitor,
                 szCapabilitiesString,
-                capLength
-            );
+                capLength);
 
             parse_capability_string(szCapabilitiesString, kwrds, vals, capabilities_dict);
         }
+
+        // Free the string buffer.
+        free(szCapabilitiesString);
     }
 }
 
 
+void get_monitor_features_WIN(std::map<std::string, monitor_vcp>& features, PHYSICAL_MONITOR& monitor)
+{
+    std::vector<std::string> kwrds, vals;
+    std::map<std::string, std::string> capabilities_dict;
 
-//Monitor::Monitor(PHYSICAL_MONITOR* monitor, QString name, bool status) :
-//    monitor_(monitor),
-//    name(name),
-//    status(status)
-//{
-//}
+    get_monitor_capabilities_WIN(monitor, kwrds, vals, capabilities_dict);
 
-Monitor::Monitor(PHYSICAL_MONITOR monitor, QString name, bool status) :
+    std::map<std::string, std::string>::iterator it = capabilities_dict.begin();
+
+    std::vector<std::string> vcp_split = split(capabilities_dict["vcp_only"], " ");
+    std::vector<std::string> vcp_with_options = split(capabilities_dict["vcps_with_options"], " ");
+
+    for (auto& elem : vcp_split)
+    {
+        if (VCP_FEATURES.commands.find(elem) != VCP_FEATURES.commands.end())
+        {
+            struct monitor_vcp mon_feature;
+            mon_feature.enabled = true;
+
+            if (std::find(vcp_with_options.begin(), vcp_with_options.end(), elem) != vcp_with_options.end())
+            {
+                for (auto& el : split(capabilities_dict[elem], " "))
+                {
+                    if (!(el == " " || el == "")) {
+                        uint16_t ul = std::stoul("0x" + el, nullptr, 0);
+
+                        if (!(VCP_FEATURES.commands[elem].possible_values.empty()))
+                        {
+                            std::vector<uint16_t>::iterator it;
+                            std::vector<uint16_t> tVec = VCP_FEATURES.commands[elem].possible_values;
+
+                            if (std::find(tVec.begin(), tVec.end(), ul) != tVec.end())
+                            {
+                                mon_feature.possible_values.push_back(ul);
+                            }
+                        }
+                    }
+                }
+            }
+
+            features[elem] = mon_feature;
+        }
+    }
+}
+
+Monitor::Monitor(PHYSICAL_MONITOR monitor, QString name) :
     monitor_(monitor),
-    name(name),
-    status(status)
+    name(name)
 {
     dummy = false;
 }
 
-Monitor::Monitor(QString name, bool status) :
-    name(name),
-    status(status)
+Monitor::Monitor(QString name) :
+    name(name)
 {
 }
 
@@ -345,103 +385,33 @@ Monitor::~Monitor()
 {
 }
 
-void Monitor::set_enabled(bool bVal)
+
+void Monitor::monitor_init()
 {
-	status = bVal;
+    if (!dummy)
+    {
+        #ifdef Q_OS_WIN
+            get_monitor_features_WIN(features, monitor_);
 
-	qDebug() << "Status Monitor" << name << ": " << bVal;
+        #elif Q_OS_UNIX
+            qDebug() << "No UNIX Handling yet.";
 
-    emit send_status(bVal);
+        #endif
+       
+    }
 }
 
 QString Monitor::get_name()
 {
-	return name;
+    return name;
 }
+
 bool Monitor::get_enabled()
 {
     return status;
 }
 
-void Monitor::monitor_init()
-{
-	curr_contrast = 10;
-	curr_brightness = 50;
-	curr_r = 30;
-	curr_g = 30;
-	curr_b = 30;
-
-    if (!dummy)
-    {
-        LPSTR szCapabilitiesString = NULL;
-        std::vector<std::string> kwrds, vals;
-        std::map<std::string, std::string> capabilities_dict;
-
-        get_monitor_capabilities(monitor_, szCapabilitiesString, kwrds, vals, capabilities_dict);
-
-        // Free the string buffer.
-        free(szCapabilitiesString);
-
-        qDebug("\n------------------------------");
-        //for (size_t j = 0; j < kwrds.size(); j++)
-        //{
-        //    qDebug() << kwrds[j] << ": " << vals[j];
-        //}
-        std::map<std::string, std::string>::iterator it = capabilities_dict.begin();
-
-        while (it != capabilities_dict.end()) {
-            qDebug() << it->first << "\t-> " << it->second;
-            ++it;
-        }
-        qDebug("------------------------------\n");
-
-        std::vector<std::string> vcp_split = split(capabilities_dict["vcp_only"], " ");
-        std::vector<std::string> vcp_with_options = split(capabilities_dict["vcps_with_options"], " ");
-
-        for (auto& elem : vcp_split)
-        {
-            if (VCP_FEATURES.commands.find(elem) != VCP_FEATURES.commands.end())
-            {
-                struct monitor_vcp mon_feature;
-                mon_feature.enabled = true;
-
-                qDebug() << "Feature: " << elem;
-
-                if (std::find(vcp_with_options.begin(), vcp_with_options.end(), elem) != vcp_with_options.end())
-                {
-                    qDebug() << "\tFeature " << elem << " has options:";
-                    for (auto& el : split(capabilities_dict[elem], " "))
-                    {
-                        if (!(el == " " || el == "")) { 
-                            qDebug() << "\t  " << el;
-
-                            uint16_t ul = std::stoul("0x" + el, nullptr, 0);
-
-                            if (!(VCP_FEATURES.commands[elem].possible_values.empty()))
-                            {
-                                std::vector<uint16_t>::iterator it;
-                                std::vector<uint16_t> tVec = VCP_FEATURES.commands[elem].possible_values;
-
-                                qDebug() << tVec.front() << " " << tVec.back();
-
-                                if (std::find(tVec.begin(), tVec.end(), ul) != tVec.end())
-                                {
-                                    mon_feature.possible_values.push_back(ul);
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                features[elem] = mon_feature;
-            }
-        }
-    }
-
-    get_feature(0x10);
- }
-
-void Monitor::get_feature(uint16_t code)
+void Monitor::get_feature_WIN(uint16_t code)
 {
     unsigned long current_value = 0;
     unsigned long max_value = 0;
@@ -462,7 +432,7 @@ void Monitor::get_feature(uint16_t code)
 }
 
 
-void Monitor::set_feature(uint16_t code, int value)
+void Monitor::set_feature_WIN(uint16_t code, int value)
 {
     if (code == 0x10)
     {
@@ -510,6 +480,44 @@ void Monitor::set_feature(uint16_t code, int value)
 
 }
 
+
+
+int Monitor::get_brightness()
+{
+    return 0;
+}
+
+int Monitor::get_contrast()
+{
+    return 0;
+}
+
+int Monitor::get_R()
+{
+	return 0;
+}
+
+int Monitor::get_G()
+{
+	return 0;
+}
+
+int Monitor::get_B()
+{
+	return 0;
+}
+
+
+void Monitor::set_enabled(bool bVal)
+{
+    status = bVal;
+
+    qDebug() << "Status Monitor" << name << ": " << bVal;
+
+    emit send_status(bVal);
+}
+
+
 void Monitor::receive_signal(uint16_t code, int value)
 {
     if (status)
@@ -520,8 +528,8 @@ void Monitor::receive_signal(uint16_t code, int value)
         {
             qDebug() << "\n--------------------------------------\n" << "Monitor: " << name << "\nCode: " << code << " Value : " << value;
 
-            this->get_feature(code);
-            set_feature(code, value);
+            get_feature_WIN(code);
+            set_feature_WIN(code, value);
 
             qDebug() << "--------------------------------------\n";
         }
@@ -533,35 +541,6 @@ void Monitor::receive_value_request(uint16_t code)
 {
 
 }
-
-int Monitor::get_brightness()
-{
-	return curr_brightness;
-}
-
-int Monitor::get_contrast()
-{
-	return curr_contrast;
-}
-
-int Monitor::get_R()
-{
-	return curr_r;
-}
-
-int Monitor::get_G()
-{
-	return curr_g;
-}
-
-int Monitor::get_B()
-{
-	return curr_b;
-}
-
-
-
-
 
 
 

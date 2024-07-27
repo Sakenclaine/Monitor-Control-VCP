@@ -62,9 +62,7 @@ private:
 	std::vector<TrayIconControlled*> trayIcons;
 	std::vector<CustomSlider*> sliders;
 	std::vector<Monitor*> registered_monitors;
-	//std::vector<bool> chosen_monitors;
 
-	
 	
 	QGroupBox* monitorGroupBox;
 	QGroupBox* posGroupBox;
