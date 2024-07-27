@@ -28,6 +28,9 @@
 #include "MonitorHandler.h"
 #include "CustomSlider.h"
 
+#include "SettingsWidget.h"
+#include "MonitorSettingsWidget.h"
+
 #include "SignalLinker.h"
 
 // andreybutov https://gist.github.com/andreybutov/33783bca1af9db8f9f36c463c77d7a86
@@ -86,30 +89,60 @@ void get_screen_geometry(int & xWO_taskbar, int& yWO_taskbar)
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 {
+    config_path = qApp->applicationDirPath() + "/config.ini";
     readSettings();
     
-    //setAppToStartAutomatically(false);
+    #ifdef Q_OS_WIN
+    init_monitors_WIN();
 
-    int xScreen, yScreen;
-    get_screen_geometry(xScreen, yScreen);
+    #elif Q_OS_UNIX
+    init_monitors_UNIX();
+
+    #endif
+    
+    setup();
+
+    for (auto& monitor : registered_monitors)
+    {
+        add_monitor_control_widget(monitor);
+    }
+ }
+
+
+MainWindow::~MainWindow()
+{
+};
+
+
+void MainWindow::setup()
+{
+    // Create main widget and layout set as content for the main window
+    QWidget* mainWidget = new QWidget(this);
+    setCentralWidget(mainWidget);
+    mainLayout = new QVBoxLayout;
+    mainWidget->setLayout(mainLayout);
+
+    createMonitorGroupBox();
+
+    monitorSettings = new QTabWidget();
+
+    mainLayout->addWidget(monitorGroupBox);
+    mainLayout->addWidget(monitorSettings);
+
+    wSettings = new SettingsWidget();
+
     
 
-    //Linker::getInstance().sendSignal();
+}
 
-    //Controller* cntr = new Controller;
-    //cntr->operate();
+void MainWindow::init_monitors_WIN()
+{
 
-    #ifdef Q_OS_WIN
     std::vector<PHYSICAL_MONITOR> monitors;
     get_physical_monitors_WIN(monitors);
 
-    #elif Q_OS_UNIX
-    qDebug() << "Not implemented for UNIX yet."
-
-    #endif
-
     qDebug() << "Number of physical monitors: " << monitors.size();
-    
+
     // Register monitors
     for (auto& mons : monitors)
     {
@@ -125,58 +158,19 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     mon2->monitor_init();
     registered_monitors.push_back(mon2);
-
-    
-    QWidget* mainWidget = new QWidget(this);
-    setCentralWidget(mainWidget);
-
-    monitorSettings = new QTabWidget();
-
-    //
-    //createActions(); // Setup globally used actions like minimize/maximize ...
-    //createMonitorGroupBox();
-    //createPositionGroupBox();
-    //
-    //mainLayout = new QVBoxLayout;
-    //sliderLayout = new QHBoxLayout;
-
-    //mainLayout->addWidget(monitorGroupBox);
-    //mainLayout->addWidget(posGroupBox);
-    //mainLayout->addWidget(monitorSettings);
-
-    //mainWidget->setLayout(mainLayout);
-    //mainLayout->addLayout(sliderLayout);
-    //
-
-
-    //setWindowTitle(tr("Monitor Control"));
-    ////resize(400, 300);
-    //int xSize = width();
-    //int ySize = height();
-
-    //qDebug() << xSize << " " << ySize;
-
-    //move(xScreen-xSize, yScreen-2*ySize-25);
-
-    //connect(cntr, &Controller::updated, this, &MainWindow::updatePosLabel);
-    //connect(cntr, &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
-
-    //createTrayIcon();
-
-
-    //qDebug() << "================================================";
-    //registered_monitors[0]->get_feature(0x10);
-    //qDebug() << "================================================\n\n";
-
-    //this->setWindowFlags(Qt::Popup);
-
 }
 
-
-MainWindow::~MainWindow()
+void MainWindow::init_monitors_UNIX()
 {
-};
+    qDebug() << "Not Implemented";
+}
 
+void MainWindow::add_monitor_control_widget(Monitor* monitor)
+{
+    MonitorWidget* wMonSet = new MonitorWidget(monitor);
+
+    monitorSettings->addTab(wMonSet, monitor->get_name());
+}
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
@@ -214,7 +208,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
         }
         else if (msgBox.clickedButton() == quitButton) {
             writeSettings();
-            event->accept();
             qApp->quit();
             
         }
@@ -246,7 +239,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
         if (msgBox.clickedButton() == quitButton) {
             writeSettings();
-            event->accept();
             qApp->quit();
 
         }
@@ -258,11 +250,10 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::writeSettings()
 {
-    QString path = qApp->applicationDirPath();
-    QSettings settings(path+"/conf.ini", QSettings::IniFormat);
+    QSettings settings(config_path, QSettings::IniFormat);
 
     qDebug() << "\n===========================================";
-    qDebug() << "Write Settings to " << path + "/conf.ini";
+    qDebug() << "Write Settings to " << config_path;
 
     settings.beginGroup("MainWindow");
     settings.setValue("test", 100);
@@ -272,8 +263,7 @@ void MainWindow::writeSettings()
 
 void MainWindow::readSettings()
 {
-    QString path = qApp->applicationDirPath();
-    QSettings settings(path + "/conf.ini", QSettings::IniFormat);
+    QSettings settings(config_path, QSettings::IniFormat);
 
     settings.beginGroup("MainWindow");
     const auto geometry = settings.value("test").value<int>();
@@ -292,31 +282,26 @@ void MainWindow::readSettings()
 }
 
 
-void MainWindow::updatePosLabel(const struct inSignal& input)
-{
-    //qDebug() << tray_rect.contains(input.mouse.xCoo, input.mouse.yCoo);
-    
-    QString positions = QString("x: %1, y: %2").arg(input.mouse.xCoo).arg(input.mouse.yCoo);
-    
-    mousePosX->setText(positions);
-
-
-}
-
-
 void MainWindow::createMonitorGroupBox()
 {
     monitorGroupBox = new QGroupBox(tr("Registered Monitors"));
     monitorGroupBox->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-    QStringList tableHeaders = { "", "Monitor", "Brightness", "Contrast", "R", "G", "B"};
-    QTableWidget* tableWidget = new QTableWidget(registered_monitors.size(), 7, this);
+    QVBoxLayout* vLayout = new QVBoxLayout;
+    monitorGroupBox->setLayout(vLayout);
+
+    QStringList tableHeaders = { "", "Monitor" }; // , "Brightness", "Contrast", "R", "G", "B"};
+    QTableWidget* tableWidget = new QTableWidget(registered_monitors.size(), tableHeaders.size(), this);
 
     tableWidget->setHorizontalHeaderLabels(tableHeaders);
     tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tableWidget->verticalHeader()->setVisible(false);
+    tableWidget->setMinimumSize(20, 20);
+
     //tableWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     //tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    tableWidget->verticalHeader()->setVisible(false);
+    //tableWidget->horizontalHeader()->setStretchLastSection(true);
+    
 
     for (int row = 0; row < registered_monitors.size(); row++)
     {
@@ -326,17 +311,17 @@ void MainWindow::createMonitorGroupBox()
         layoutCheckBox->addWidget(checkBox);     //add QCheckBox to layout
         layoutCheckBox->setAlignment(Qt::AlignCenter); //set Alignment layout
         layoutCheckBox->setContentsMargins(0, 0, 0, 0);
-        
+
         checkBox->setChecked(registered_monitors[row]->get_enabled());
         tableWidget->setCellWidget(row, 0, checkBoxWidget);
 
-        connect(checkBox, &QCheckBox::checkStateChanged, registered_monitors[row], &Monitor::set_enabled);
+        connect(checkBox, &QCheckBox::checkStateChanged, registered_monitors[row], &Monitor::set_status);
         connect(registered_monitors[row], &Monitor::send_status, checkBox, &QCheckBox::setChecked);
-        
+
         for (int column = 1; column < 7; column++)
         {
             QString cell_content;
-            
+
             if (column == 1)
             {
                 cell_content = registered_monitors[row]->get_name();
@@ -367,7 +352,7 @@ void MainWindow::createMonitorGroupBox()
                 cell_content = QString::number(registered_monitors[row]->get_B());
             }
 
-            
+
             QTableWidgetItem* newItem = new QTableWidgetItem(cell_content);
             newItem->setTextAlignment(Qt::AlignCenter);
 
@@ -375,33 +360,34 @@ void MainWindow::createMonitorGroupBox()
         }
     }
 
-    //tableWidget->resizeColumnsToContents();
+    // https://forum.qt.io/topic/78350/qtableview-give-columnwidth-a-percentage-and-keep-percentage-when-table-gets-wider/3
+    tableWidget->resizeColumnsToContents();
 
-    int widgetWidth = tableWidget->viewport()->size().width();
-    int tableWidth = 0;
+    //for (int i = 0; i < tableHeaders.size(); i++)
+    //{
+    //    QSize colSize = tableWidget->takeItem(0, i)->sizeHint();
+    //    qDebug() << "Width: " << colSize.width() << " Height: " << colSize.height();
+    //}
 
-    for (int i = 0; i < tableWidget->columnCount(); ++i)
-        tableWidth += tableWidget->horizontalHeader()->sectionSize(i); //sections already resized to fit all data
-
-    double scale = (double)widgetWidth / tableWidth;
-
-    qDebug() << "Scale: " << scale;
-
-    for (int i = 0; i < tableWidget->columnCount(); ++i)
-        tableWidget->setColumnWidth(i, (tableWidget->horizontalHeader()->sectionSize(i)) * scale);
-
-    QVBoxLayout* vLayout = new QVBoxLayout;
-
-    QHBoxLayout* iconLayout = new QHBoxLayout;
-    iconLayout->addStretch();
-
-
-
-    //vLayout->addLayout(iconLayout);
     vLayout->addWidget(tableWidget);
-
-    monitorGroupBox->setLayout(vLayout);
+   
 }
+
+
+
+void MainWindow::updatePosLabel(const struct inSignal& input)
+{
+    //qDebug() << tray_rect.contains(input.mouse.xCoo, input.mouse.yCoo);
+    
+    QString positions = QString("x: %1, y: %2").arg(input.mouse.xCoo).arg(input.mouse.yCoo);
+    
+    mousePosX->setText(positions);
+
+
+}
+
+
+
 
 
 void MainWindow::createPositionGroupBox()
@@ -459,7 +445,7 @@ void MainWindow::createTrayIcon()
 
         trayMonitorMenu->addAction(action);
 
-        connect(action, &QAction::triggered, elem, &Monitor::set_enabled);
+        connect(action, &QAction::triggered, elem, &Monitor::set_status);
         connect(elem, &Monitor::send_status, action, &QAction::setChecked);
     }
 
@@ -518,9 +504,50 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 
 
 
+//Linker::getInstance().sendSignal();
+
+//Controller* cntr = new Controller;
+//cntr->operate();
 
 
 
+//
+   //createActions(); // Setup globally used actions like minimize/maximize ...
+   //createMonitorGroupBox();
+   //createPositionGroupBox();
+   //
+
+   //sliderLayout = new QHBoxLayout;
+
+   //mainLayout->addWidget(monitorGroupBox);
+   //mainLayout->addWidget(posGroupBox);
+   //mainLayout->addWidget(monitorSettings);
+
+   //mainWidget->setLayout(mainLayout);
+   //mainLayout->addLayout(sliderLayout);
+   //
+
+
+   //setWindowTitle(tr("Monitor Control"));
+   ////resize(400, 300);
+   //int xSize = width();
+   //int ySize = height();
+
+   //qDebug() << xSize << " " << ySize;
+
+   //move(xScreen-xSize, yScreen-2*ySize-25);
+
+   //connect(cntr, &Controller::updated, this, &MainWindow::updatePosLabel);
+   //connect(cntr, &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
+
+   //createTrayIcon();
+
+
+   //qDebug() << "================================================";
+   //registered_monitors[0]->get_feature(0x10);
+   //qDebug() << "================================================\n\n";
+
+   //this->setWindowFlags(Qt::Popup);
 
 
 

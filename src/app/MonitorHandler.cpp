@@ -508,7 +508,7 @@ int Monitor::get_B()
 }
 
 
-void Monitor::set_enabled(bool bVal)
+void Monitor::set_status(bool bVal)
 {
     status = bVal;
 

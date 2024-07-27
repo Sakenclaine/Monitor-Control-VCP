@@ -9,6 +9,7 @@
 #include "TrayIconControlled.h"
 #include "CustomSlider.h"
 #include "MonitorHandler.h"
+#include "SettingsWidget.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -24,6 +25,7 @@ class QSpinBox;
 class QTextEdit;
 class QHBoxLayout;
 class QVBoxLayout;
+class QSettings;
 QT_END_NAMESPACE
 
 
@@ -44,12 +46,20 @@ private slots:
 	void iconActivated(QSystemTrayIcon::ActivationReason reason);
 
 private:
-	//void add_monitor_control_widget(Monitor monitor);
+	void setup();
+	void init_monitors_WIN();
+	void init_monitors_UNIX();
+
+
+	void add_monitor_control_widget(Monitor* monitor);
 
 	void writeSettings();
 	void readSettings();
 
-    void createTrayIcon();
+
+	
+
+	void createTrayIcon();
 	void createActions();
 
 	void createMonitorGroupBox();
@@ -57,11 +67,18 @@ private:
 
 	void updatePosLabel(const struct inSignal& input);
 
+
+private:
 	bool autoStart = false;
 
 	std::vector<TrayIconControlled*> trayIcons;
 	std::vector<CustomSlider*> sliders;
 	std::vector<Monitor*> registered_monitors;
+
+
+	SettingsWidget* wSettings;
+
+	QString config_path;
 
 	
 	QGroupBox* monitorGroupBox;

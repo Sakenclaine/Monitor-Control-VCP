@@ -99,7 +99,7 @@ public:
 
 
 public slots:
-	void set_enabled(bool bval);
+	void set_status(bool bval);
 	void receive_signal(uint16_t code, int value);
 	void receive_value_request(uint16_t code);
 
