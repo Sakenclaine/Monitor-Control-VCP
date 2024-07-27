@@ -106,6 +106,7 @@ public:
 public slots:
 	void set_enabled(bool status);
 	void receive_signal(uint16_t code, int value);
+	void receive_value_request(uint16_t code);
 
 signals:
 	void send_status(const bool&);

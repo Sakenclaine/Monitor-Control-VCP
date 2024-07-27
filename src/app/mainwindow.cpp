@@ -86,7 +86,9 @@ void get_screen_geometry(int & xWO_taskbar, int& yWO_taskbar)
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 {
-    setAppToStartAutomatically(false);
+    readSettings();
+    
+    //setAppToStartAutomatically(false);
 
     int xScreen, yScreen;
     get_screen_geometry(xScreen, yScreen);
@@ -207,6 +209,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
             event->ignore();
         }
         else if (msgBox.clickedButton() == quitButton) {
+            writeSettings();
+            event->accept();
             qApp->quit();
             
         }
@@ -237,6 +241,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
         msgBox.exec();
 
         if (msgBox.clickedButton() == quitButton) {
+            writeSettings();
+            event->accept();
             qApp->quit();
 
         }
@@ -244,6 +250,41 @@ void MainWindow::closeEvent(QCloseEvent* event)
             event->ignore();
         }
     }
+}
+
+void MainWindow::writeSettings()
+{
+    QString path = qApp->applicationDirPath();
+    QSettings settings(path+"/conf.ini", QSettings::IniFormat);
+
+    qDebug() << "\n===========================================";
+    qDebug() << "Write Settings to " << path + "/conf.ini";
+
+    settings.beginGroup("MainWindow");
+    settings.setValue("test", 100);
+    settings.endGroup();
+
+}
+
+void MainWindow::readSettings()
+{
+    QString path = qApp->applicationDirPath();
+    QSettings settings(path + "/conf.ini", QSettings::IniFormat);
+
+    settings.beginGroup("MainWindow");
+    const auto geometry = settings.value("test").value<int>();
+
+    if (geometry == NULL)
+    {
+        qDebug() << "No saved value";
+    }
+
+    else
+    {
+        qDebug() << "Saved value: " << geometry;
+    }
+    
+    settings.endGroup();
 }
 
 

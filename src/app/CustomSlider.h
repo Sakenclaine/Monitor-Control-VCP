@@ -37,6 +37,7 @@ public:
 	~CustomSlider();
 
 	void set_contextMenu(QMenu&);
+	void refresh_value();
 
 	TrayIconControlled* get_trayIcon();
 	QSlider* get_slider();
@@ -75,7 +76,9 @@ public slots:
 	void toggle_trayIcon(bool toggle);
 	void slider_changed();
 
+
 signals:
+	void request_value(uint16_t code);
 	void slider_changed_value(int& value);
 	void send_monitor_signal(uint16_t& code, int& value);
 };

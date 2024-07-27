@@ -314,3 +314,8 @@ void CustomSlider::slider_changed()
 	emit slider_changed_value(current_value);
 	emit send_monitor_signal(code, current_value);
 }
+
+void CustomSlider::refresh_value()
+{
+	emit request_value(code);
+}

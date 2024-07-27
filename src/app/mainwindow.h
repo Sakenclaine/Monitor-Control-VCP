@@ -43,6 +43,9 @@ private slots:
 	void iconActivated(QSystemTrayIcon::ActivationReason reason);
 
 private:
+	void writeSettings();
+	void readSettings();
+
     void createTrayIcon();
 	void createActions();
 

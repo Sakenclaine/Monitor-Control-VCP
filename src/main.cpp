@@ -1,12 +1,45 @@
 #include <QApplication>
 #include <QMainwindow>
 #include <QMessageBox>
+#include <QString>
+#include <QSettings>
 
 #include "mainwindow.h"
 #include "MonitorHandler.h"
 
-#include <QString>
+
 #include <Windows.h>
+
+
+
+int main(int argc, char* argv[])
+{
+    //qInstallMessageHandler(myMessageOutput);
+
+	QApplication a(argc, argv);
+	
+    if (!QSystemTrayIcon::isSystemTrayAvailable()) {
+        auto choice = QMessageBox::critical(nullptr, QObject::tr("Systray"),
+            QObject::tr("I couldn't detect any system tray on this system."),
+            QMessageBox::Close | QMessageBox::Ignore);
+        if (choice == QMessageBox::Close)
+            return 1;
+        // Otherwise "lurk": if a system tray is started later, the icon will appear.
+    }
+
+    QApplication::setQuitOnLastWindowClosed(false);
+
+    // On settings and Qt https://stackoverflow.com/questions/14365653/how-to-load-settings-in-qt-app-with-qsettings
+    QCoreApplication::setOrganizationName("MonCont");
+    QCoreApplication::setApplicationName("Monitor-Control");
+
+
+	MainWindow w;
+	w.show();
+
+
+	return a.exec();
+}
 
 
 
@@ -40,29 +73,3 @@
 //        break;
 //    }
 //}
-
-
-int main(int argc, char* argv[])
-{
-    //qInstallMessageHandler(myMessageOutput);
-
-	QApplication a(argc, argv);
-	
-    if (!QSystemTrayIcon::isSystemTrayAvailable()) {
-        auto choice = QMessageBox::critical(nullptr, QObject::tr("Systray"),
-            QObject::tr("I couldn't detect any system tray on this system."),
-            QMessageBox::Close | QMessageBox::Ignore);
-        if (choice == QMessageBox::Close)
-            return 1;
-        // Otherwise "lurk": if a system tray is started later, the icon will appear.
-    }
-
-    QApplication::setQuitOnLastWindowClosed(false);
-
-
-	MainWindow w;
-	w.show();
-
-
-	return a.exec();
-}

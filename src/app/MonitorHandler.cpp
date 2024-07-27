@@ -528,6 +528,12 @@ void Monitor::receive_signal(uint16_t code, int value)
     }
 }
 
+
+void Monitor::receive_value_request(uint16_t code)
+{
+
+}
+
 int Monitor::get_brightness()
 {
 	return curr_brightness;
