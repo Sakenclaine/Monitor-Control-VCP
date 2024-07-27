@@ -129,6 +129,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     
     QWidget* mainWidget = new QWidget(this);
     setCentralWidget(mainWidget);
+
+    monitorSettings = new QTabWidget();
+
     
     createActions(); // Setup globally used actions like minimize/maximize ...
     createMonitorGroupBox();
@@ -139,6 +142,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     mainLayout->addWidget(monitorGroupBox);
     mainLayout->addWidget(posGroupBox);
+    mainLayout->addWidget(monitorSettings);
 
     mainWidget->setLayout(mainLayout);
     mainLayout->addLayout(sliderLayout);
@@ -464,6 +468,7 @@ void MainWindow::createTrayIcon()
     add_slider(QColor(255, 0, 0), "Volume", 0x62);
 
 }
+
 
 void MainWindow::add_slider(QColor color, QString name, uint16_t code)
 {

@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QMainwindow>
 #include <QSystemTrayIcon>
+#include <QTabWidget>
 
 #include <vector>
 
@@ -43,6 +44,8 @@ private slots:
 	void iconActivated(QSystemTrayIcon::ActivationReason reason);
 
 private:
+	//void add_monitor_control_widget(Monitor monitor);
+
 	void writeSettings();
 	void readSettings();
 
@@ -61,9 +64,11 @@ private:
 	std::vector<Monitor*> registered_monitors;
 	//std::vector<bool> chosen_monitors;
 
+	
+	
 	QGroupBox* monitorGroupBox;
 	QGroupBox* posGroupBox;
-
+	QTabWidget* monitorSettings;
 
 	QLabel* trayPos;
 	QLabel* mousePosX;
