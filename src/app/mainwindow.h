@@ -56,9 +56,6 @@ private:
 	void writeSettings();
 	void readSettings();
 
-
-	
-
 	void createTrayIcon();
 	void createActions();
 
@@ -83,13 +80,14 @@ private:
 	
 	QGroupBox* monitorGroupBox;
 	QGroupBox* posGroupBox;
-	QTabWidget* monitorSettings;
+	QTabWidget* qTabMonitorSettings;
 
 	QLabel* trayPos;
 	QLabel* mousePosX;
 	QLabel* mousePosY;
 
 
+	// Actions
 	QAction* minimizeAction;
 	QAction* maximizeAction;
 	QAction* restoreAction;

@@ -122,17 +122,33 @@ void MainWindow::setup()
     mainLayout = new QVBoxLayout;
     mainWidget->setLayout(mainLayout);
 
+    createActions();
     createMonitorGroupBox();
 
-    monitorSettings = new QTabWidget();
+    qTabMonitorSettings = new QTabWidget();
 
     mainLayout->addWidget(monitorGroupBox);
-    mainLayout->addWidget(monitorSettings);
+    mainLayout->addWidget(qTabMonitorSettings);
 
     wSettings = new SettingsWidget();
 
     
 
+}
+
+void MainWindow::createActions()
+{
+    minimizeAction = new QAction(tr("Mi&nimize"), this);
+    connect(minimizeAction, &QAction::triggered, this, &QWidget::hide);
+
+    maximizeAction = new QAction(tr("Ma&ximize"), this);
+    connect(maximizeAction, &QAction::triggered, this, &QWidget::showMaximized);
+
+    restoreAction = new QAction(tr("&Restore"), this);
+    connect(restoreAction, &QAction::triggered, this, &QWidget::showNormal);
+
+    quitAction = new QAction(tr("&Quit"), this);
+    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 }
 
 void MainWindow::init_monitors_WIN()
@@ -169,8 +185,10 @@ void MainWindow::add_monitor_control_widget(Monitor* monitor)
 {
     MonitorWidget* wMonSet = new MonitorWidget(monitor);
 
-    monitorSettings->addTab(wMonSet, monitor->get_name());
+    qTabMonitorSettings->addTab(wMonSet, monitor->get_name());
 }
+
+
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
@@ -281,16 +299,15 @@ void MainWindow::readSettings()
     settings.endGroup();
 }
 
-
 void MainWindow::createMonitorGroupBox()
 {
     monitorGroupBox = new QGroupBox(tr("Registered Monitors"));
-    monitorGroupBox->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    //monitorGroupBox->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
     QVBoxLayout* vLayout = new QVBoxLayout;
     monitorGroupBox->setLayout(vLayout);
 
-    QStringList tableHeaders = { "", "Monitor" }; // , "Brightness", "Contrast", "R", "G", "B"};
+    QStringList tableHeaders = { "", "Monitor" }; // , "Brightness", "Contrast", "R", "G", "B"
     QTableWidget* tableWidget = new QTableWidget(registered_monitors.size(), tableHeaders.size(), this);
 
     tableWidget->setHorizontalHeaderLabels(tableHeaders);
@@ -298,10 +315,10 @@ void MainWindow::createMonitorGroupBox()
     tableWidget->verticalHeader()->setVisible(false);
     tableWidget->setMinimumSize(20, 20);
 
-    //tableWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    //tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    //tableWidget->horizontalHeader()->setStretchLastSection(true);
+    tableWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     
+    QSize qCheckBoxSize;
 
     for (int row = 0; row < registered_monitors.size(); row++)
     {
@@ -312,24 +329,30 @@ void MainWindow::createMonitorGroupBox()
         layoutCheckBox->setAlignment(Qt::AlignCenter); //set Alignment layout
         layoutCheckBox->setContentsMargins(0, 0, 0, 0);
 
+        qCheckBoxSize = checkBoxWidget->sizeHint();
+
         checkBox->setChecked(registered_monitors[row]->get_enabled());
         tableWidget->setCellWidget(row, 0, checkBoxWidget);
 
         connect(checkBox, &QCheckBox::checkStateChanged, registered_monitors[row], &Monitor::set_status);
         connect(registered_monitors[row], &Monitor::send_status, checkBox, &QCheckBox::setChecked);
 
-        for (int column = 1; column < 7; column++)
+        for (int column = 1; column < tableHeaders.size(); column++)
         {
             QString cell_content;
 
             if (column == 1)
             {
                 cell_content = registered_monitors[row]->get_name();
+
+                tableWidget->horizontalHeader()->setSectionResizeMode(column, QHeaderView::Stretch);
             }
 
             else if (column == 2)
             {
                 cell_content = QString::number(registered_monitors[row]->get_brightness());
+
+                tableWidget->horizontalHeader()->setSectionResizeMode(column, QHeaderView::Fixed);
             }
 
             else if (column == 3)
@@ -357,20 +380,18 @@ void MainWindow::createMonitorGroupBox()
             newItem->setTextAlignment(Qt::AlignCenter);
 
             tableWidget->setItem(row, column, newItem);
+
+            
         }
     }
 
     // https://forum.qt.io/topic/78350/qtableview-give-columnwidth-a-percentage-and-keep-percentage-when-table-gets-wider/3
+    tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
+    tableWidget->setColumnWidth(0, qCheckBoxSize.width());
+
     tableWidget->resizeColumnsToContents();
 
-    //for (int i = 0; i < tableHeaders.size(); i++)
-    //{
-    //    QSize colSize = tableWidget->takeItem(0, i)->sizeHint();
-    //    qDebug() << "Width: " << colSize.width() << " Height: " << colSize.height();
-    //}
-
-    vLayout->addWidget(tableWidget);
-   
+    vLayout->addWidget(tableWidget); 
 }
 
 
@@ -385,9 +406,6 @@ void MainWindow::updatePosLabel(const struct inSignal& input)
 
 
 }
-
-
-
 
 
 void MainWindow::createPositionGroupBox()
@@ -406,22 +424,6 @@ void MainWindow::createPositionGroupBox()
 
 
     posGroupBox->setLayout(posLayout);
-}
-
-
-void MainWindow::createActions()
-{
-    minimizeAction = new QAction(tr("Mi&nimize"), this);
-    connect(minimizeAction, &QAction::triggered, this, &QWidget::hide);
-
-    maximizeAction = new QAction(tr("Ma&ximize"), this);
-    connect(maximizeAction, &QAction::triggered, this, &QWidget::showMaximized);
-
-    restoreAction = new QAction(tr("&Restore"), this);
-    connect(restoreAction, &QAction::triggered, this, &QWidget::showNormal);
-
-    quitAction = new QAction(tr("&Quit"), this);
-    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 }
 
 

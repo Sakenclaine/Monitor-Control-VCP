@@ -3,6 +3,7 @@
 #include <QGroupBox>
 
 #include "MonitorHandler.h"
+#include "CustomSlider.h"
 
 
 class MonitorWidget : public QWidget
@@ -19,5 +20,9 @@ public:
 private:
 	QGroupBox* settings_discrete;
 	QGroupBox* settings_continous;
+
+
+private:
+	void add_slider(QMenu* contextMenu);
 
 };
