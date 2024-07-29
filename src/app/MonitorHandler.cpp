@@ -1,5 +1,6 @@
 #include "MonitorHandler.h"
 #include "helpers.h"
+#include "errors.h"
 
 ///////////////////////////////////// VCP FEATURE SETUP /////////////////////////////////////////////////////
 
@@ -142,8 +143,6 @@ void VCP_COMMANDS::add_allowed_values(uint16_t code, std::initializer_list<uint1
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-
 ///////////////////////////////////// ENUM DISPLAY DEVICES /////////////////////////////////////////////////////
 //
 // List (display) devices by going through the adapters of the GPU and the devices connected to it.
@@ -189,6 +188,63 @@ void DumpDevice(const DISPLAY_DEVICE& dd, size_t nSpaceCount)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+// BEGIN --------------------------------------------------------------
+// Functions for getting physical monitors and reading as well as parsing their capability string
+void parse_capability_string(std::string s, std::vector<std::string>& keywords, std::vector<std::string>& parsed_string, std::map<std::string, std::string>& vcp_dict)
+{
+    std::vector<int> inds; // vector containing the inices of paired brackets
+    std::string vcps_with_options = "";
+    bracket_pair_finder(s, inds);
+
+    // Iterate through index positions of open brackets
+    for (size_t i = 0; i < inds.size() - 2; i += 2)
+    {
+        // Get substrings of capability string corresponding to the content inbetween a pair of brackets
+        std::string temp_value = s.substr(inds[i] + 1, (inds[i + 1] - inds[i]) - 1);
+        parsed_string.push_back(temp_value);
+
+        // Get term before the brackets
+        std::string temp_string("");
+
+        // Iterate from current index inds[i] - 1 (one position before an open bracket in the string) backwards through the string
+        // until another bracket or a space appears in the string
+        for (size_t k = inds[i] - 1; k >= 0; k--)
+        {
+            if (s[k] == ')' || s[k] == '(' || s[k] == ' ') { break; }
+            temp_string += s[k];
+        }
+
+        std::reverse(temp_string.begin(), temp_string.end());
+        keywords.push_back(temp_string);
+
+        vcp_dict[temp_string] = temp_value;
+
+
+        if (std::all_of(temp_string.begin(), temp_string.end(), ::isxdigit)) {
+            //qDebug() << temp_string << " contains only hexadecimal digits";
+            vcps_with_options += temp_string + " ";
+        }
+    }
+
+    // Get only vcp codes
+    std::string vcps = vcp_dict["vcp"];
+    std::vector<int> inds_2;
+    bool found_brackets = bracket_pair_finder(vcps, inds_2);
+    int stop = 0;
+
+    while (found_brackets)
+    {
+        vcps = vcps.erase(inds_2[0], (inds_2[1] - inds_2[0]) + 1);
+        found_brackets = bracket_pair_finder(vcps, inds_2);
+
+        stop++;
+
+        if (stop > 1000) { break; }
+    }
+
+    vcp_dict["vcp_only"] = vcps;
+    vcp_dict["vcps_with_options"] = vcps_with_options;
+}
 
 void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors)
 {
@@ -239,62 +295,6 @@ void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors)
     }
 }
 
-void parse_capability_string(std::string s, std::vector<std::string>& keywords, std::vector<std::string>& parsed_string, std::map<std::string, std::string>& vcp_dict)
-{
-    std::vector<int> inds; // vector containing the inices of paired brackets
-    std::string vcps_with_options = "";
-    bracket_pair_finder(s, inds);
-
-    // Iterate through index positions of open brackets
-    for (size_t i = 0; i < inds.size() - 2; i += 2)
-    {
-        // Get substrings of capability string corresponding to the content inbetween a pair of brackets
-        std::string temp_value = s.substr(inds[i] + 1, (inds[i + 1] - inds[i]) - 1);
-        parsed_string.push_back(temp_value);
-
-        // Get term before the brackets
-        std::string temp_string("");
-
-        // Iterate from current index inds[i] - 1 (one position before an open bracket in the string) backwards through the string
-        // until another bracket or a space appears in the string
-        for (size_t k = inds[i] - 1; k >= 0; k--)
-        {
-            if (s[k] == ')' || s[k] == '(' || s[k] == ' ') { break; }
-            temp_string += s[k];
-        }
-        
-        std::reverse(temp_string.begin(), temp_string.end());
-        keywords.push_back(temp_string);
-
-        vcp_dict[temp_string] = temp_value;
-
-
-        if (std::all_of(temp_string.begin(), temp_string.end(), ::isxdigit)) {
-            //qDebug() << temp_string << " contains only hexadecimal digits";
-            vcps_with_options += temp_string + " ";
-        }
-    }
-
-    // Get only vcp codes
-    std::string vcps = vcp_dict["vcp"];
-    std::vector<int> inds_2;
-    bool found_brackets = bracket_pair_finder(vcps, inds_2);
-    int stop = 0;
-
-    while (found_brackets)
-    {
-        vcps = vcps.erase(inds_2[0], (inds_2[1] - inds_2[0]) + 1);
-        found_brackets = bracket_pair_finder(vcps, inds_2);
-
-        stop++;
-
-        if (stop > 1000) { break; }
-    }
-
-    vcp_dict["vcp_only"] = vcps;
-    vcp_dict["vcps_with_options"] = vcps_with_options;
-}
-
 void get_monitor_capabilities_WIN(PHYSICAL_MONITOR& monitor, std::vector<std::string>& kwrds, std::vector<std::string>& vals, std::map<std::string, std::string>& capabilities_dict)
 {
     // Get physical monitor handle.
@@ -322,7 +322,6 @@ void get_monitor_capabilities_WIN(PHYSICAL_MONITOR& monitor, std::vector<std::st
         free(szCapabilitiesString);
     }
 }
-
 
 void get_monitor_features_WIN(std::map<std::string, monitor_vcp>& features, PHYSICAL_MONITOR& monitor)
 {
@@ -369,6 +368,11 @@ void get_monitor_features_WIN(std::map<std::string, monitor_vcp>& features, PHYS
     }
 }
 
+// END ----------------------------------------------------------------
+
+
+// BEGIN --------------------------------------------------------------
+// Constructors and Desctructor for Monitor class
 Monitor::Monitor(PHYSICAL_MONITOR monitor, QString name) :
     monitor_(monitor),
     name(name)
@@ -384,6 +388,8 @@ Monitor::Monitor(QString name) :
 Monitor::~Monitor()
 {
 }
+
+// END ----------------------------------------------------------------
 
 
 void Monitor::monitor_init()
@@ -401,15 +407,9 @@ void Monitor::monitor_init()
     }
 }
 
-QString Monitor::get_name()
-{
-    return name;
-}
 
-bool Monitor::get_enabled()
-{
-    return status;
-}
+// BEGIN --------------------------------------------------------------
+// Definitions for getting and setting features
 
 void Monitor::get_feature_WIN(uint16_t code)
 {
@@ -430,7 +430,6 @@ void Monitor::get_feature_WIN(uint16_t code)
         qDebug() << "Current Value (" << int(test) << "): " << "None -> Dummy Monitor";
     }    
 }
-
 
 void Monitor::set_feature_WIN(uint16_t code, int value)
 {
@@ -480,43 +479,63 @@ void Monitor::set_feature_WIN(uint16_t code, int value)
 
 }
 
-
-
-int Monitor::get_brightness()
+void Monitor::get_feature_UNIX(uint16_t code)
 {
-    return 0;
+    qDebug() << "Not implemented";
+    throw std::exception(NotImplemented());
 }
 
-int Monitor::get_contrast()
+void Monitor::set_feature_UNIX(uint16_t code, int value)
 {
-    return 0;
+    qDebug() << "Not implemented";
+    throw std::exception(NotImplemented());
 }
 
-int Monitor::get_R()
+void Monitor::get_feature(uint16_t code)
 {
-	return 0;
+#ifdef Q_OS_WIN
+    get_feature_WIN(code);
+#elif Q_OS_UNIX
+    get_feature_UNIX(code);
+#endif
 }
 
-int Monitor::get_G()
+void Monitor::set_feature(uint16_t code, int value)
 {
-	return 0;
+#ifdef Q_OS_WIN
+    set_feature_WIN(code, value);
+#elif Q_OS_UNIX
+    set_feature_UNIX(code, value);
+#endif
 }
 
-int Monitor::get_B()
+// END ----------------------------------------------------------------
+
+
+// BEGIN --------------------------------------------------------------
+// Get functions for variable values
+QString Monitor::get_name()
 {
-	return 0;
+    return name;
 }
 
+bool Monitor::get_status()
+{
+    return status;
+}
 
+// END ----------------------------------------------------------------
+
+
+// BEGIN --------------------------------------------------------------
+// Slots
 void Monitor::set_status(bool bVal)
 {
     status = bVal;
-
     qDebug() << "Status Monitor" << name << ": " << bVal;
 
     emit send_status(bVal);
 }
-
 
 void Monitor::receive_signal(uint16_t code, int value)
 {
@@ -536,57 +555,13 @@ void Monitor::receive_signal(uint16_t code, int value)
     }
 }
 
-
 void Monitor::receive_value_request(uint16_t code)
 {
 
 }
 
+// END ----------------------------------------------------------------
 
 
 
 
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-//void Monitor::old_load()
-//{
-//    for (auto& elem : vcp_split)
-//    {
-//
-//        //qDebug() << "Feature request: " << elem;
-//
-//        if (features.commands.find(elem) != features.commands.end())
-//        {
-//            //qDebug() << "Feature was found -> " << features.commands[elem].name;
-//            features.commands[elem].enable = true;
-//
-//            if (std::find(vcp_with_options.begin(), vcp_with_options.end(), elem) != vcp_with_options.end())
-//            {
-//                qDebug() << "Feature " << elem << " has options.";
-//
-//            }
-//
-//        }
-//
-//        else { qDebug() << "Feature " << elem << " not existent."; }
-//    }
-//
-//    DWORD current_value;
-//    DWORD max_value;
-//    MC_VCP_CODE_TYPE code_type;
-//
-//    unsigned char test = 0x14;
-//    GetVCPFeatureAndVCPFeatureReply(monitor_->hPhysicalMonitor, test, &code_type, &current_value, &max_value);
-//
-//    qDebug() << "Current Value (" << int(test) << "): " << current_value;
-//}

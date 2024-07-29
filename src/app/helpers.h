@@ -48,3 +48,5 @@ template <typename I> std::string n2hexstr(I w, size_t hex_len = sizeof(I) << 1)
 
     return str_;
 }
+
+void get_screen_geometry(int& xWO_taskbar, int& yWO_taskbar);

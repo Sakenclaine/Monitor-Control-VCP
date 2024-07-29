@@ -11,7 +11,7 @@ set(RELEASE_SERVICE_VERSION_MICRO "0")
 set(RELEASE_SERVICE_VERSION "${RELEASE_SERVICE_VERSION_MAJOR}.${RELEASE_SERVICE_VERSION_MINOR}.${RELEASE_SERVICE_VERSION_MICRO}")
 
 # Name Project
-project(MonitorControl_2 VERSION ${RELEASE_SERVICE_VERSION})
+project(MonitorControl VERSION ${RELEASE_SERVICE_VERSION})
 
 # Set C++ Standard
 set(CMAKE_CXX_STANDARD 20)
@@ -27,15 +27,12 @@ find_package (Qt6 REQUIRED COMPONENTS
 # Standard Qt project setup setting CMake variables
 qt_standard_project_setup()
 
+# https://stackoverflow.com/questions/68517552/how-to-add-icon-to-a-qt-application-on-windows-using-a-rc-file-on-a-cmake-proje
 set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/monitorcontrol.rc")
 
-qt_add_resources(helloworld imageresources
-    PREFIX "/icons"
-    FILES monitor.ico
-)
 
-add_subdirectory( src/app ) 
-add_subdirectory( icons )
+add_subdirectory( src/app )
+add_subdirectory( images )
 
 
 

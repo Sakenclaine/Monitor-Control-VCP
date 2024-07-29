@@ -8,6 +8,7 @@
 
 
 #include <vector>
+#include <Windows.h>
 
 
 QIcon createIconFromText(const QString& content, int iw, int ih, QColor color)
@@ -131,4 +132,24 @@ std::string uIntToString(uint16_t u)
 	std::string str_ = std::format("{:#02}", u);
 	return str_;
 }
+
+
+void get_screen_geometry(int& xWO_taskbar, int& yWO_taskbar)
+{
+	// size of screen (primary monitor) without taskbar or desktop toolbars
+	xWO_taskbar = GetSystemMetrics(SM_CXFULLSCREEN);
+	yWO_taskbar = GetSystemMetrics(SM_CYFULLSCREEN);
+
+	//qDebug() << GetSystemMetrics(SM_CXFULLSCREEN) << " x " << GetSystemMetrics(SM_CYFULLSCREEN) << "\n";
+
+	// size of screen (primary monitor) without just the taskbar
+	RECT xy;
+	BOOL fResult = SystemParametersInfo(SPI_GETWORKAREA, 0, &xy, 0);
+	//qDebug() << xy.right - xy.left << " x " << xy.bottom - xy.top << "\n";
+
+	// the full width and height of the screen (primary monitor)
+	//qDebug() << GetDeviceCaps(GetDC(NULL), HORZRES) << " x " << GetDeviceCaps(GetDC(NULL), VERTRES) << "\n";
+
+}
+
 

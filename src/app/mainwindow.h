@@ -10,6 +10,7 @@
 #include "CustomSlider.h"
 #include "MonitorHandler.h"
 #include "SettingsWidget.h"
+#include "MonitorSettingsWidget.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -37,55 +38,43 @@ public:
 	explicit MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
-	void add_slider(QColor color, QString name, uint16_t code);
+public:
+	//void add_slider(QColor color, QString name, uint16_t code);
 
 protected:
 	void closeEvent(QCloseEvent* event) override;
-
-private slots:
-	void iconActivated(QSystemTrayIcon::ActivationReason reason);
 
 private:
 	void setup();
 	void init_monitors_WIN();
 	void init_monitors_UNIX();
 
-
-	void add_monitor_control_widget(Monitor* monitor);
-
 	void writeSettings();
 	void readSettings();
 
-	void createTrayIcon();
 	void createActions();
-
 	void createMonitorGroupBox();
-	void createPositionGroupBox();
 
-	void updatePosLabel(const struct inSignal& input);
+	void add_monitor_control_widget();
 
 
 private:
 	bool autoStart = false;
+	QString config_path;
 
-	std::vector<TrayIconControlled*> trayIcons;
+	//std::vector<TrayIconControlled*> trayIcons;
+	std::vector<QSystemTrayIcon*> trayIcons;
 	std::vector<CustomSlider*> sliders;
 	std::vector<Monitor*> registered_monitors;
 
-
+	// Widgets
+	QWidget* mainWidget;
+	PlaceholderWidget* dialogueWidget;
 	SettingsWidget* wSettings;
 
-	QString config_path;
-
-	
-	QGroupBox* monitorGroupBox;
-	QGroupBox* posGroupBox;
-	QTabWidget* qTabMonitorSettings;
-
-	QLabel* trayPos;
-	QLabel* mousePosX;
-	QLabel* mousePosY;
-
+	// Layouts
+	QVBoxLayout* mainLayout;
+	QHBoxLayout* sliderLayout;
 
 	// Actions
 	QAction* minimizeAction;
@@ -94,10 +83,12 @@ private:
 	QAction* quitAction;
 
 
+	QGroupBox* monitorGroupBox;
+
 	QMenu* trayIconMenu;
 	QMenu* trayMonitorMenu;
 
-	// Layouts
-	QVBoxLayout* mainLayout;
-	QHBoxLayout* sliderLayout;
+
+private slots:
+	void iconActivated(QSystemTrayIcon::ActivationReason reason);
 };

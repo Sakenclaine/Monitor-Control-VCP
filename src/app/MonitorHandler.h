@@ -34,7 +34,6 @@ struct VCP_COMM
 	std::vector<std::string> possible_values_desc;
 };
 
-
 //https://milek7.pl/ddcbacklight/mccs.pdf
 class VCP_COMMANDS
 {
@@ -61,6 +60,7 @@ struct monitor_vcp
 {
 	std::vector<uint16_t> possible_values;
 	bool enabled = false;
+	uint16_t current_value = 0;
 };
 
 
@@ -69,7 +69,7 @@ class Monitor : public QObject
 	Q_OBJECT
 
 private:
-	QString name = tr("None");
+	QString name = "None";
 	PHYSICAL_MONITOR monitor_;
 
 	bool dummy = true;
@@ -77,25 +77,28 @@ private:
 
 	std::map<std::string, monitor_vcp> features;
 
+private:
+	void get_feature_WIN(uint16_t code);
+	void set_feature_WIN(uint16_t code, int value);
+
+	void get_feature_UNIX(uint16_t code);
+	void set_feature_UNIX(uint16_t code, int value);
 
 public:
 	Monitor(PHYSICAL_MONITOR monitor, QString name);
 	Monitor(QString name);
 	~Monitor();
 
+public:
 	void monitor_init();
-	void get_feature_WIN(uint16_t code);
-	void set_feature_WIN(uint16_t code, int value);
+
+	void get_feature(uint16_t code);
+	void set_feature(uint16_t code, int value);
+
+
+	bool get_status();
 
 	QString get_name();
-	bool get_enabled();
-
-
-	int get_brightness();
-	int get_contrast();
-	int get_R();
-	int get_G();
-	int get_B();
 
 
 public slots:
@@ -107,6 +110,7 @@ signals:
 	void send_status(const bool&);
 	
 };
+
 
 
 struct MonitorRects
@@ -128,6 +132,7 @@ struct MonitorRects
 		EnumDisplayMonitors(0, 0, MonitorEnum, (LPARAM)this);
 	}
 };
+
 
 void get_monitor_capabilities_WIN(PHYSICAL_MONITOR& monitor, std::vector<std::string>& kwrds, std::vector<std::string>& vals, std::map<std::string, std::string>& capabilities_dict);
 

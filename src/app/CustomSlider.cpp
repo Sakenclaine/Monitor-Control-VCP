@@ -2,6 +2,7 @@
 #include "SignalLinker.h"
 #include "workers.h"
 #include "TrayIconControlled.h"
+#include "helpers.h"
 
 #include <QSlider>
 #include <QVBoxLayout>
@@ -16,212 +17,77 @@
 
 int CustomSlider::idProvider = 0;
 
-CustomSlider::CustomSlider(
-	QWidget* parent = nullptr, 
-	std::string handle_color="#1795f6",
-	std::string lower_fill="pink",
-	std::string upper_fill="gray") :
 
+CustomSlider::CustomSlider(QWidget* parent, uint16_t code) :
 	QWidget(parent),
 	_id(++idProvider),
-	handle(handle_color),
-	lower_fill(lower_fill),
-	upper_fill(upper_fill)
+	code(code)
 {
-
-	this->setup();
-
-}
-
-CustomSlider::CustomSlider(
-	QWidget* parent = nullptr,
-	std::string handle_color = "#1795f6",
-	std::string lower_fill = "pink",
-	std::string upper_fill = "gray",
-	bool trayIcon=false) :
-
-	QWidget(parent),
-	_id(++idProvider),
-	handle(handle_color),
-	lower_fill(lower_fill),
-	upper_fill(upper_fill)
-{
-
-	this->setup();
+	setup();
 
 }
 
 
-CustomSlider::CustomSlider(QWidget* parent) :
-	QWidget(parent),
-	_id(++idProvider)
-{
-	
-	this->setup();
 
-}
-
-CustomSlider::CustomSlider(QWidget* parent, bool trayIcon) :
+CustomSlider::CustomSlider(QWidget* parent, QColor color, uint16_t code) :
 	QWidget(parent),
 	_id(++idProvider),
-	trayIcon(trayIcon)
-{
-
-	this->setup();
-
-	if (trayIcon)
-	{
-		icon = new TrayIconControlled(this, 0, QColor(255, 255, 255), 0, 100, 10);
-
-		connect(&Linker::getInstance(), &Linker::emit_mouse_update, icon, &TrayIconControlled::mouse_over);
-		connect(icon, &TrayIconControlled::value_changed, &Linker::getInstance(), &Linker::receive_value_update);
-
-		connect(&Linker::getInstance(), &Linker::emit_value_update, icon, &TrayIconControlled::update_value);
-
-		
-		connect(this, &CustomSlider::slider_changed_value, &Linker::getInstance(), &Linker::receive_value_update);
-		connect(&Linker::getInstance(), &Linker::emit_value_update, this, &CustomSlider::set_slider_value);
-
-		QString idIcon = QString("trayIcon_%1").arg(_id);
-		QString idSlider = QString("sliderControl_%1").arg(_id);
-
-		icon->setObjectName(idIcon);
-		this->setObjectName(idSlider);
-
-		icon->show();
-
-	}
-
-}
-
-
-CustomSlider::CustomSlider(QWidget* parent, bool trayIcon, QColor color) :
-	QWidget(parent),
-	_id(++idProvider),
-	trayIcon(trayIcon)
-{
-
-	lower_fill = color.name().toUtf8();
-	
-	this->setup();
-
-	if (trayIcon)
-	{
-		icon = new TrayIconControlled(this, 0, color, 0, 100, 10);
-
-		connect(&Linker::getInstance(), &Linker::emit_mouse_update, icon, &TrayIconControlled::mouse_over);
-		connect(icon, &TrayIconControlled::value_changed, &Linker::getInstance(), &Linker::receive_value_update);
-
-		connect(&Linker::getInstance(), &Linker::emit_value_update, icon, &TrayIconControlled::update_value);
-
-
-		connect(this, &CustomSlider::slider_changed_value, &Linker::getInstance(), &Linker::receive_value_update);
-		connect(&Linker::getInstance(), &Linker::emit_value_update, this, &CustomSlider::set_slider_value);
-
-		QString idIcon = QString("trayIcon_%1").arg(_id);
-		QString idSlider = QString("sliderControl_%1").arg(_id);
-
-		icon->setObjectName(idIcon);
-		this->setObjectName(idSlider);
-
-
-		icon->show();
-
-	}
-
-}
-
-CustomSlider::CustomSlider(QWidget* parent, bool trayIcon, QColor color, uint16_t code) :
-	QWidget(parent),
-	_id(++idProvider),
-	trayIcon(trayIcon),
+	color(color),
 	code(code)
 {
 
-	lower_fill = color.name().toUtf8();
-
-	this->setup();
-
-	if (trayIcon)
-	{
-		icon = new TrayIconControlled(this, 0, color, 0, 100, 10);
-
-		connect(&Linker::getInstance(), &Linker::emit_mouse_update, icon, &TrayIconControlled::mouse_over);
-		connect(icon, &TrayIconControlled::value_changed, &Linker::getInstance(), &Linker::receive_value_update);
-
-		connect(&Linker::getInstance(), &Linker::emit_value_update, icon, &TrayIconControlled::update_value);
+	setup();
 
 
-		connect(this, &CustomSlider::slider_changed_value, &Linker::getInstance(), &Linker::receive_value_update);
-		connect(&Linker::getInstance(), &Linker::emit_value_update, this, &CustomSlider::set_slider_value);
+	//if (trayIcon)
+	//{
+	//	icon = new TrayIconControlled(this, 0, QColor(255, 255, 255), 0, 100, 10);
 
-		QString idIcon = QString("trayIcon_%1").arg(_id);
-		QString idSlider = QString("sliderControl_%1").arg(_id);
+	//	connect(&Linker::getInstance(), &Linker::emit_mouse_update, icon, &TrayIconControlled::mouse_over);
+	//	connect(icon, &TrayIconControlled::value_changed, &Linker::getInstance(), &Linker::receive_value_update);
 
-		icon->setObjectName(idIcon);
-		this->setObjectName(idSlider);
+	//	connect(&Linker::getInstance(), &Linker::emit_value_update, icon, &TrayIconControlled::update_value);
 
+	//	
+	//	connect(this, &CustomSlider::slider_changed_value, &Linker::getInstance(), &Linker::receive_value_update);
+	//	connect(&Linker::getInstance(), &Linker::emit_value_update, this, &CustomSlider::set_slider_value);
 
-		icon->show();
+	//	QString idIcon = QString("trayIcon_%1").arg(_id);
+	//	QString idSlider = QString("sliderControl_%1").arg(_id);
 
-	}
+	//	icon->setObjectName(idIcon);
+	//	this->setObjectName(idSlider);
+
+	//	icon->show();
+
+	//}
 
 }
+
+
 
 CustomSlider::~CustomSlider()
 {
 
 }
 
-void CustomSlider::toggle_trayIcon(bool toggle)
-{
-	if (trayIcon)
-	{
-		if (toggle == false)
-		{
-			icon->hide();
-		}
-
-		else if (toggle == true)
-		{
-			icon->show();
-		}
-	}
-}
-
-TrayIconControlled* CustomSlider::get_trayIcon()
-{
-	if (trayIcon) { return icon; }
-	else { return nullptr; }
-}
-
-
-QSlider* CustomSlider::get_slider()
-{
-	return slider;
-}
-
-void CustomSlider::set_contextMenu(QMenu& menu)
-{
-	icon->setContextMenu(&menu);
-}
-
-void CustomSlider::value_changed()
-{
-	qDebug() << "Code: " <<  slider->value();
-}
-
 void CustomSlider::setup()
 {
-	QVBoxLayout* mainVLayout = new QVBoxLayout;
-	QHBoxLayout* mainHLayout = new QHBoxLayout;
-	QVBoxLayout* buttonLayout = new QVBoxLayout;
-	
-	
+	mainVLayout = new QVBoxLayout();
+	mainHLayout = new QHBoxLayout();
+	buttonLayout = new QVBoxLayout();
+
+
 	slider = new QSlider();
 	slider->setMinimum(0);
 	slider->setMaximum(100);
 
+	if (VCP_FEATURES.commands.find(n2hexstr(code, 2)) != VCP_FEATURES.commands.end())
+	{
+		slider->setToolTip(VCP_FEATURES.commands[n2hexstr(code, 2)].name);
+	}
+
+	lower_fill = color.name().toStdString();
 
 	std::string style = std::format("QSlider::groove:vertical {{background: red; position: absolute; left: {}px; right: {}px; }} QSlider::handle:vertical {{ height: 10px; background: {}; margin: 0 0px; }} QSlider::add-page:vertical {{ background: {}; }} QSlider::sub-page:vertical {{  background: {}; }}", width, width, handle, lower_fill, upper_fill);
 
@@ -229,7 +95,6 @@ void CustomSlider::setup()
 	slider->setStyleSheet(QString::fromStdString(style));
 
 	connect(slider, &QSlider::valueChanged, this, &CustomSlider::slider_changed);
-	//connect(this, &CustomSlider::slider_changed_value, &Linker::get_instance(), &Linker::receive_signal);
 
 
 	for (int i = 0; i < 21; i++)
@@ -249,16 +114,6 @@ void CustomSlider::setup()
 
 	}
 
-	if (trayIcon)
-	{
-		QCheckBox* cbtoggleTray = new QCheckBox();
-		cbtoggleTray->setCheckState(Qt::Checked);
-
-		mainVLayout->addWidget(cbtoggleTray);
-
-		connect(cbtoggleTray, &QCheckBox::checkStateChanged, this, &CustomSlider::toggle_trayIcon);	
-	}
-
 	mainHLayout->addWidget(slider);
 	mainHLayout->addLayout(buttonLayout);
 
@@ -268,6 +123,95 @@ void CustomSlider::setup()
 	this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
 
 }
+
+void CustomSlider::set_colors(QColor col_handle, QColor col_fill, QColor col_background)
+{
+	handle = col_handle.name().toStdString();
+	lower_fill = col_fill.name().toStdString();
+	upper_fill = col_background.name().toStdString();
+
+	std::string style = std::format("QSlider::groove:vertical {{background: red; position: absolute; left: {}px; right: {}px; }} QSlider::handle:vertical {{ height: 10px; background: {}; margin: 0 0px; }} QSlider::add-page:vertical {{ background: {}; }} QSlider::sub-page:vertical {{  background: {}; }}", width, width, handle, lower_fill, upper_fill);
+
+	slider->setStyleSheet(QString::fromStdString(style));
+}
+
+void CustomSlider::set_tooltip(QString tooltip)
+{
+	slider->setToolTip(tooltip);
+}
+
+
+void CustomSlider::add_trayIcon()
+{
+	trayIcon = true;
+	icon = new TrayIconControlled(this, 0, color, 0, 100, 10);
+
+	//connect(&Linker::getInstance(), &Linker::emit_mouse_update, icon, &TrayIconControlled::mouse_over);
+	//connect(icon, &TrayIconControlled::value_changed, &Linker::getInstance(), &Linker::receive_value_update);
+
+	//connect(&Linker::getInstance(), &Linker::emit_value_update, icon, &TrayIconControlled::update_value);
+
+	//
+	//connect(this, &CustomSlider::slider_changed_value, &Linker::getInstance(), &Linker::receive_value_update);
+	//connect(&Linker::getInstance(), &Linker::emit_value_update, this, &CustomSlider::set_slider_value);
+
+	QString idIcon = QString("trayIcon_%1").arg(_id);
+	QString idSlider = QString("sliderControl_%1").arg(_id);
+
+	icon->setObjectName(idIcon);
+	this->setObjectName(idSlider);
+
+	icon->show();
+
+
+	QCheckBox* cbtoggleTray = new QCheckBox();
+	cbtoggleTray->setCheckState(Qt::Checked);
+	mainVLayout->addWidget(cbtoggleTray);
+
+	connect(cbtoggleTray, &QCheckBox::checkStateChanged, this, &CustomSlider::toggle_trayIcon);
+
+}
+
+
+void CustomSlider::toggle_trayIcon(bool toggle)
+{
+	if (trayIcon)
+	{
+		if (toggle == false)
+		{
+			icon->hide();
+		}
+
+		else if (toggle == true)
+		{
+			icon->show();
+		}
+	}
+}
+
+//TrayIconControlled* CustomSlider::get_trayIcon()
+//{
+//	//if (trayIcon) { return icon; }
+//	//else { return nullptr; }
+//}
+
+
+QSlider* CustomSlider::get_slider()
+{
+	return slider;
+}
+
+void CustomSlider::set_contextMenu(QMenu& menu)
+{
+	icon->setContextMenu(&menu);
+}
+
+void CustomSlider::value_changed()
+{
+	qDebug() << "Code: " <<  slider->value();
+}
+
+
 
 void CustomSlider::buttonClick()
 {	
@@ -292,10 +236,6 @@ void CustomSlider::set_slider_value(int& value, QObject& senderObj)
 		QStringList id_components = senderName.split("_");
 		QString senderType = id_components.value(id_components.length() - 2);
 		int sender_id = (id_components.value(id_components.length()-1)).toInt();
-
-		//qDebug() << "Slider " << this->objectName() << " Updated from: " << senderName;
-		//qDebug() << "Sender: " << senderType << " .. " << sender_id << " Receiver: " << " .. " << _id << receiverType;
-		//qDebug() << " Sended Value: " << value << "\n";
 
 		if (sender_id == _id && current_value != value)
 		{

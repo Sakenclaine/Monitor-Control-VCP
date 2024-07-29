@@ -20,43 +20,48 @@ class QVBoxLayout;
 QT_END_NAMESPACE
 
 #include "TrayIconControlled.h"
+#include "MonitorHandler.h"
 
 class CustomSlider : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CustomSlider(QWidget *parent = nullptr);
-	CustomSlider(QWidget* parent, std::string handle_color, std::string lower_fill, std::string upper_fill);
-	CustomSlider(QWidget* parent, std::string handle_color, std::string lower_fill, std::string upper_fill, bool trayIcon);
-	CustomSlider(QWidget* parent, bool trayIcon);
-	CustomSlider(QWidget* parent, bool trayIcon, QColor color);
-	CustomSlider(QWidget* parent, bool trayIcon, QColor color, uint16_t code);
+	CustomSlider(QWidget *parent, uint16_t code);
+	CustomSlider(QWidget* parent, QColor color, uint16_t code);
 	
-
 	~CustomSlider();
+
+public:
+	void set_colors(QColor col_handle, QColor col_fill, QColor col_background);
+	void set_tooltip(QString tooltip);
+
+	void add_trayIcon();
 
 	void set_contextMenu(QMenu&);
 	void refresh_value();
 
-	TrayIconControlled* get_trayIcon();
+	//TrayIconControlled* get_trayIcon();
 	QSlider* get_slider();
 
 
 private:
 	int _id;
-	QString receiverType = tr("sliderControl");
 	static int idProvider;
+	QString receiverType = "sliderControl";
 
 	bool trayIcon = false;
-	int current_value;
+
+	QColor color = QColor("pink");
 	uint16_t code = 0x00;
 
-	QSlider* slider;
-
 	QHBoxLayout* mainLayout;
+	QVBoxLayout* mainVLayout;
+	QHBoxLayout* mainHLayout;
 	QVBoxLayout* buttonLayout;
 
+
+	QSlider* slider;
 	TrayIconControlled* icon;
 
 
@@ -65,6 +70,11 @@ private:
 	std::string lower_fill = "pink";
 	std::string upper_fill = "gray";
 
+
+	int current_value;
+
+
+private:
 	void setup();
 
 private slots:
@@ -75,7 +85,6 @@ public slots:
 	void set_slider_value(int &, QObject&);
 	void toggle_trayIcon(bool toggle);
 	void slider_changed();
-
 
 signals:
 	void request_value(uint16_t code);
