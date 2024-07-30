@@ -55,13 +55,21 @@ void MonitorWidget::add_slider(uint16_t code, bool btrayIcon)
 
     hSliderLayout->addWidget(cSlider);
 
+    //connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, parent, &MainWindow::iconActivated);
+}
+
+void MonitorWidget::add_slider(uint16_t code, QColor color, bool btrayIcon)
+{
+    CustomSlider* cSlider = new CustomSlider(NULL, color, code);
+
+    QString name = QString::fromStdString(n2hexstr(code));
+    customSliders[name] = cSlider;
+
+    if (btrayIcon) cSlider->add_trayIcon();
+
+    hSliderLayout->addWidget(cSlider);
 
     //connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, parent, &MainWindow::iconActivated);
-
-    //for (auto& monitor : registered_monitors)
-    //{
-    //    connect(cSlider, &CustomSlider::send_monitor_signal, monitor, &Monitor::receive_signal);
-    //}
 }
 
 void MonitorWidget::add_contextMenu(QMenu* menu)

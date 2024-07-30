@@ -89,7 +89,7 @@ public slots:
 signals:
 	void request_value(uint16_t code);
 	void slider_changed_value(int& value);
-	void send_monitor_signal(uint16_t& code, int& value);
+	void send_monitor_value(uint16_t& code, int& value);
 };
 
 

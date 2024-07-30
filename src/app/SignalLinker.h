@@ -28,11 +28,14 @@ public slots:
     // Slot to receive value update from slider/tray icon
     void receive_value_update(int&);
 
-signals:
-    void mySignal();
+    // Receive value update for a specific code
+    void receive_monitor_value(uint16_t& code, int& value);
 
+signals:
     void emit_mouse_update(const struct inSignal& output);
     void emit_value_update(int& value, QObject&);
+
+    void emit_monitor_value_update(uint16_t& code, int& value);
 };
 
 

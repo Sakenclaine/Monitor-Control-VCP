@@ -24,7 +24,6 @@ CustomSlider::CustomSlider(QWidget* parent, uint16_t code) :
 	code(code)
 {
 	setup();
-
 }
 
 
@@ -35,33 +34,7 @@ CustomSlider::CustomSlider(QWidget* parent, QColor color, uint16_t code) :
 	color(color),
 	code(code)
 {
-
 	setup();
-
-
-	//if (trayIcon)
-	//{
-	//	icon = new TrayIconControlled(this, 0, QColor(255, 255, 255), 0, 100, 10);
-
-	//	connect(&Linker::getInstance(), &Linker::emit_mouse_update, icon, &TrayIconControlled::mouse_over);
-	//	connect(icon, &TrayIconControlled::value_changed, &Linker::getInstance(), &Linker::receive_value_update);
-
-	//	connect(&Linker::getInstance(), &Linker::emit_value_update, icon, &TrayIconControlled::update_value);
-
-	//	
-	//	connect(this, &CustomSlider::slider_changed_value, &Linker::getInstance(), &Linker::receive_value_update);
-	//	connect(&Linker::getInstance(), &Linker::emit_value_update, this, &CustomSlider::set_slider_value);
-
-	//	QString idIcon = QString("trayIcon_%1").arg(_id);
-	//	QString idSlider = QString("sliderControl_%1").arg(_id);
-
-	//	icon->setObjectName(idIcon);
-	//	this->setObjectName(idSlider);
-
-	//	icon->show();
-
-	//}
-
 }
 
 
@@ -73,6 +46,8 @@ CustomSlider::~CustomSlider()
 
 void CustomSlider::setup()
 {
+	connect(this, &CustomSlider::send_monitor_value, &Linker::getInstance(), &Linker::receive_monitor_value);
+
 	mainVLayout = new QVBoxLayout();
 	mainHLayout = new QHBoxLayout();
 	buttonLayout = new QVBoxLayout();
@@ -142,7 +117,6 @@ void CustomSlider::set_tooltip(QString tooltip)
 	if (trayIcon) icon->setToolTip(tooltip);
 }
 
-
 void CustomSlider::add_trayIcon()
 {
 	trayIcon = true;
@@ -179,7 +153,6 @@ void CustomSlider::add_trayIcon()
 
 }
 
-
 void CustomSlider::toggle_trayIcon(bool toggle)
 {
 	if (trayIcon)
@@ -202,7 +175,6 @@ TrayIconControlled* CustomSlider::get_trayIcon()
 	else { return nullptr; }
 }
 
-
 QSlider* CustomSlider::get_slider()
 {
 	return slider;
@@ -217,7 +189,6 @@ void CustomSlider::value_changed()
 {
 	qDebug() << "Code: " <<  slider->value();
 }
-
 
 
 void CustomSlider::buttonClick()
@@ -256,10 +227,10 @@ void CustomSlider::slider_changed()
 {
 	current_value = slider->value();
 
-	qDebug() << " Receiver: " << " .. " << _id << receiverType << " --> " << current_value;
+	//qDebug() << " Receiver: " << " .. " << _id << receiverType << " --> " << current_value;
 	
 	emit slider_changed_value(current_value);
-	emit send_monitor_signal(code, current_value);
+	emit send_monitor_value(code, current_value);
 }
 
 void CustomSlider::refresh_value()

@@ -193,6 +193,7 @@ void MainWindow::add_monitor_control_widget()
 {
     MonitorWidget* wMonSet = new MonitorWidget();
     wMonSet->add_slider(0x10, true);
+    wMonSet->add_slider(0x12, QColor(256, 256, 0), true);
 
     mainLayout->addWidget(wMonSet);
 

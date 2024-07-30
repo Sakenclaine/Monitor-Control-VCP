@@ -36,3 +36,10 @@ void Linker::receive_value_update(int& value)
     //qDebug() << "Linker: Updated value from " << sender() << " "<< sender()->objectName() << " --> " << value;
     emit emit_value_update(value, *senderObj);
 }
+
+void Linker::receive_monitor_value(uint16_t& code, int& value)
+{
+    qDebug() << "Code: " << code << " -- Value: " << value;
+
+    emit emit_monitor_value_update(code, value);
+}
