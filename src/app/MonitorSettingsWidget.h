@@ -13,7 +13,7 @@ class MonitorWidget : public QWidget
 
 private:
 	Monitor* monitor = nullptr;
-	QList<CustomSlider*> customSliders;
+	QMap<QString, CustomSlider*> customSliders;
 
 public:
 	MonitorWidget(Monitor* monitor);
@@ -28,7 +28,7 @@ private:
 
 
 public:
-	void add_slider(bool btrayIcon);
+	void add_slider(uint16_t code, bool btrayIcon);
 	void add_contextMenu(QMenu* menu);
 
 };

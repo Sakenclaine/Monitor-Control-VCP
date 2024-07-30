@@ -138,6 +138,8 @@ void CustomSlider::set_colors(QColor col_handle, QColor col_fill, QColor col_bac
 void CustomSlider::set_tooltip(QString tooltip)
 {
 	slider->setToolTip(tooltip);
+	
+	if (trayIcon) icon->setToolTip(tooltip);
 }
 
 
@@ -145,6 +147,11 @@ void CustomSlider::add_trayIcon()
 {
 	trayIcon = true;
 	icon = new TrayIconControlled(this, 0, color, 0, 100, 10);
+
+	if (VCP_FEATURES.commands.find(n2hexstr(code, 2)) != VCP_FEATURES.commands.end())
+	{
+		icon->setToolTip(VCP_FEATURES.commands[n2hexstr(code, 2)].name);
+	}
 
 	connect(&Linker::getInstance(), &Linker::emit_mouse_update, icon, &TrayIconControlled::mouse_over);
 	connect(icon, &TrayIconControlled::value_changed, &Linker::getInstance(), &Linker::receive_value_update);

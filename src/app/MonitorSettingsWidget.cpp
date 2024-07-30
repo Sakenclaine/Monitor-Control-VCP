@@ -44,23 +44,19 @@ MonitorWidget::MonitorWidget()
 }
 
 
-void MonitorWidget::add_slider(bool btrayIcon)
+void MonitorWidget::add_slider(uint16_t code, bool btrayIcon)
 {
-    CustomSlider* cSlider = new CustomSlider(NULL, 0x10);
-    customSliders.append(cSlider);
+    CustomSlider* cSlider = new CustomSlider(NULL, code);
+
+    QString name = QString::fromStdString(n2hexstr(code));
+    customSliders[name] = cSlider;
 
     if (btrayIcon) cSlider->add_trayIcon();
 
     hSliderLayout->addWidget(cSlider);
 
 
-    //cSlider->set_contextMenu(*trayIconMenu);
-
-    //cSlider->get_trayIcon()->setToolTip(name);
-    //cSlider->setToolTip(name);
-    //sliderLayout->addWidget(cSlider);
-
-    //connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
+    //connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, parent, &MainWindow::iconActivated);
 
     //for (auto& monitor : registered_monitors)
     //{

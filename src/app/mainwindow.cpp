@@ -192,7 +192,7 @@ void MainWindow::init_monitors_UNIX()
 void MainWindow::add_monitor_control_widget()
 {
     MonitorWidget* wMonSet = new MonitorWidget();
-    wMonSet->add_slider(true);
+    wMonSet->add_slider(0x10, true);
 
     mainLayout->addWidget(wMonSet);
 
