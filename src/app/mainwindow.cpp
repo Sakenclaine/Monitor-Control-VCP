@@ -85,8 +85,12 @@ MainWindow::MainWindow(QWidget* parent) :
 
     #endif
 
-    Controller* cntr = new Controller;
-    cntr->operate();
+    //Controller* cntr = new Controller;
+    //cntr->operate();
+
+    Controller::getInstance().operate();
+
+    connect(&Controller::getInstance(), &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
     
     setup();
 
@@ -116,6 +120,28 @@ void MainWindow::setup()
     dialogueWidget = new PlaceholderWidget();
 
     mainLayout->addWidget(monitorGroupBox);
+
+    trayIconMenu = new QMenu(this);
+    trayIconMenu->addAction(minimizeAction);
+    trayIconMenu->addAction(maximizeAction);
+    trayIconMenu->addAction(restoreAction);
+    trayIconMenu->addSeparator();
+
+    trayMonitorMenu = trayIconMenu->addMenu("Monitor");
+    trayIconMenu->addSeparator();
+    trayIconMenu->addAction(quitAction);
+
+    for (auto elem : registered_monitors)
+    {
+        auto action = new QAction(elem->get_name(), trayMonitorMenu);
+        action->setCheckable(true);
+        action->setChecked(elem->get_status());
+
+        trayMonitorMenu->addAction(action);
+
+        connect(action, &QAction::triggered, elem, &Monitor::set_status);
+        connect(elem, &Monitor::send_status, action, &QAction::setChecked);
+    }
 
 }
 
@@ -166,19 +192,11 @@ void MainWindow::init_monitors_UNIX()
 void MainWindow::add_monitor_control_widget()
 {
     MonitorWidget* wMonSet = new MonitorWidget();
-    wMonSet->add_slider();
+    wMonSet->add_slider(true);
 
     mainLayout->addWidget(wMonSet);
 
-    trayIconMenu = new QMenu(this);
-    trayIconMenu->addAction(minimizeAction);
-    trayIconMenu->addAction(maximizeAction);
-    trayIconMenu->addAction(restoreAction);
-    trayIconMenu->addSeparator();
-
-    trayMonitorMenu = trayIconMenu->addMenu("Monitor");
-    trayIconMenu->addSeparator();
-    trayIconMenu->addAction(quitAction);
+    wMonSet->add_contextMenu(trayIconMenu);
 
     QSystemTrayIcon* trayIcon = new QSystemTrayIcon();
 

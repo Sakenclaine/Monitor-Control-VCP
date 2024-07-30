@@ -16,10 +16,7 @@ private:
 
 public:
     ~Linker();
-
     static Linker& getInstance();
-
-    void sendSignal();
 
 
 public slots:

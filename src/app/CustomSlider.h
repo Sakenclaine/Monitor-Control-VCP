@@ -41,7 +41,7 @@ public:
 	void set_contextMenu(QMenu&);
 	void refresh_value();
 
-	//TrayIconControlled* get_trayIcon();
+	TrayIconControlled* get_trayIcon();
 	QSlider* get_slider();
 
 

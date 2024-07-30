@@ -44,11 +44,12 @@ MonitorWidget::MonitorWidget()
 }
 
 
-void MonitorWidget::add_slider()
+void MonitorWidget::add_slider(bool btrayIcon)
 {
     CustomSlider* cSlider = new CustomSlider(NULL, 0x10);
+    customSliders.append(cSlider);
 
-    cSlider->add_trayIcon();
+    if (btrayIcon) cSlider->add_trayIcon();
 
     hSliderLayout->addWidget(cSlider);
 
@@ -65,6 +66,13 @@ void MonitorWidget::add_slider()
     //{
     //    connect(cSlider, &CustomSlider::send_monitor_signal, monitor, &Monitor::receive_signal);
     //}
+}
+
+void MonitorWidget::add_contextMenu(QMenu* menu)
+{
+    foreach(CustomSlider * elem, customSliders)
+        elem->get_trayIcon()->setContextMenu(menu);
+
 }
 
 

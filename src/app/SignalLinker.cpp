@@ -9,18 +9,12 @@ Linker::~Linker()
 {
 }
 
-
 Linker& Linker::getInstance()
 {
     static Linker cntr;
     return cntr;
 }
 
-void Linker::sendSignal()
-{
-    //qDebug("Signal sended from Linker...");
-    emit mySignal();
-}
 
 void Linker::receive_signal()
 {
@@ -29,7 +23,6 @@ void Linker::receive_signal()
     //qDebug() << sender();
     
 }
-
 
 void Linker::receive_mouse_update(const struct inSignal& input)
 {

@@ -23,7 +23,6 @@ private:
 public slots:
     void process();
     void stop();
-    struct inSignal get_mouse_data();
 
 signals:
     void finished();
@@ -36,19 +35,25 @@ class Controller : public QObject
     Q_OBJECT
 
 private:
-    QThread thread;
+    QThread* thread;
+
+    int i = 0;
+
+private:
+    explicit Controller(QObject* parent = nullptr);
 
 public:
-    explicit Controller();
     ~Controller();
+    static Controller& getInstance();
+
+    void stop_worker();
 
 public slots:
-    void handleResults();
     void receive_update(const struct inSignal&);
 
 signals:
     void operate();
     void stop();
-    void get_data();
+
     void updated(const struct inSignal& input);
 };

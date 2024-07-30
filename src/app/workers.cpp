@@ -10,14 +10,9 @@ Worker::Worker()
 
 Worker::~Worker()
 {
+	qDebug() << "Worker Destructor";
 }
 
-struct inSignal Worker::get_mouse_data()
-{
-	//qDebug() << "Mouse Position " << input.mouse.xCoo << input.mouse.yCoo;
-	
-	return input;
-}
 
 void Worker::process()
 {
@@ -56,7 +51,7 @@ void Worker::process()
 		emit update_mouse_pos(input);
 
 		// Sleep a bit to retain reactivity
-		Sleep(100);
+		Sleep(150);
 
 		// Reset mouse data in case WM_INPUT isn't called:
 		input.mouse.x = 0;
@@ -66,7 +61,9 @@ void Worker::process()
 
 	HID_UnregisterDevice(HID_MOUSE);
 
-    emit finished();
+	qDebug() << "Process Event Loop Finished.";
+	
+	emit finished();
 }
 
 void Worker::stop()
@@ -75,41 +72,51 @@ void Worker::stop()
 }
 
 
-Controller::Controller()
+
+Controller::Controller(QObject* parent) :
+	QObject(parent)
 {
     qDebug("\nInit Controller");
-    
-    Worker* worker = new Worker();
-    worker->moveToThread(&thread);
+	thread = new QThread();
 
-    connect(&thread, &QThread::finished, worker, &QObject::deleteLater);
-    connect(this, &Controller::operate, worker, &Worker::process);
-	connect(this, &Controller::get_data, worker, &Worker::get_mouse_data);
+    Worker* worker = new Worker();
+    worker->moveToThread(thread);
+
+	connect(this, &Controller::operate, worker, &Worker::process);
 	connect(this, &Controller::stop, worker, &Worker::stop);
 
-	
 	connect(worker, &Worker::update_mouse_pos, this, &Controller::receive_update);
-	
 
-    thread.start();
+    connect(worker, &Worker::finished, thread, &QThread::quit);
+	connect(worker, &Worker::finished, worker, &QObject::deleteLater);
+	connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+
+	
+    thread->start();
+}
+
+Controller& Controller::getInstance()
+{
+	static Controller cntr;
+	return cntr;
 }
 
 Controller::~Controller()
 {
-    qDebug("Controller Obliterated.\n");
-
-    thread.quit();
-    thread.wait();
+    qDebug("Controller Destructor.\n");
 }
 
-
-void Controller::handleResults()
+void Controller::stop_worker()
 {
+	qDebug() << "Stopping Worker";
+	emit stop();
 
+	thread->wait();
 }
+
 
 void Controller::receive_update(const struct inSignal& input)
-{
+{	
 	//qDebug() << "Mouse Position " << input.mouse.xCoo << input.mouse.yCoo;
 
 	emit updated(input);

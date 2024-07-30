@@ -146,14 +146,14 @@ void CustomSlider::add_trayIcon()
 	trayIcon = true;
 	icon = new TrayIconControlled(this, 0, color, 0, 100, 10);
 
-	//connect(&Linker::getInstance(), &Linker::emit_mouse_update, icon, &TrayIconControlled::mouse_over);
-	//connect(icon, &TrayIconControlled::value_changed, &Linker::getInstance(), &Linker::receive_value_update);
+	connect(&Linker::getInstance(), &Linker::emit_mouse_update, icon, &TrayIconControlled::mouse_over);
+	connect(icon, &TrayIconControlled::value_changed, &Linker::getInstance(), &Linker::receive_value_update);
 
-	//connect(&Linker::getInstance(), &Linker::emit_value_update, icon, &TrayIconControlled::update_value);
+	connect(&Linker::getInstance(), &Linker::emit_value_update, icon, &TrayIconControlled::update_value);
 
-	//
-	//connect(this, &CustomSlider::slider_changed_value, &Linker::getInstance(), &Linker::receive_value_update);
-	//connect(&Linker::getInstance(), &Linker::emit_value_update, this, &CustomSlider::set_slider_value);
+	
+	connect(this, &CustomSlider::slider_changed_value, &Linker::getInstance(), &Linker::receive_value_update);
+	connect(&Linker::getInstance(), &Linker::emit_value_update, this, &CustomSlider::set_slider_value);
 
 	QString idIcon = QString("trayIcon_%1").arg(_id);
 	QString idSlider = QString("sliderControl_%1").arg(_id);
@@ -189,11 +189,11 @@ void CustomSlider::toggle_trayIcon(bool toggle)
 	}
 }
 
-//TrayIconControlled* CustomSlider::get_trayIcon()
-//{
-//	//if (trayIcon) { return icon; }
-//	//else { return nullptr; }
-//}
+TrayIconControlled* CustomSlider::get_trayIcon()
+{
+	if (trayIcon) { return icon; }
+	else { return nullptr; }
+}
 
 
 QSlider* CustomSlider::get_slider()
