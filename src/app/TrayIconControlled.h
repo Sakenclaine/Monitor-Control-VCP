@@ -8,24 +8,26 @@
 class TrayIconControlled : public QSystemTrayIcon
 {
 	Q_OBJECT
+
 public:
-	TrayIconControlled(const QIcon& icon, QObject* parent, int initial_value, QColor color, int min_val, int max_val, int step);
 	TrayIconControlled(QObject* parent, int initial_value, QColor color, int min_val, int max_val, int step);
 	
-	virtual ~TrayIconControlled();
+	~TrayIconControlled();
 
+public:
 	int get_value();
-
+	void set_step(int new_step);
 
 private:
 	int receiver_id;
-	QString receiverType = tr("trayIcon");
+	QString receiverType = "trayIcon";
+
+	QColor font_color;
 
 	int value;
 	int min_val, max_val, step;
 
-	QColor font_color;
-
+private:
 	void update_icon();
 
 public slots:

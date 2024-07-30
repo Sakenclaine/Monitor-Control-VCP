@@ -54,7 +54,6 @@ QIcon createIconFromText(const QString& content, QColor color, QRect frame)
 {
 	int iwidth = 16, iheight = 16;
 
-
 	QPixmap pixmap(iwidth, iheight);
 	pixmap.fill(Qt::transparent);
 

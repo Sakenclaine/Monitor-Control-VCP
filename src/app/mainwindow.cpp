@@ -84,16 +84,15 @@ MainWindow::MainWindow(QWidget* parent) :
     init_monitors_UNIX();
 
     #endif
+
+    Controller* cntr = new Controller;
+    cntr->operate();
     
     setup();
 
 
     add_monitor_control_widget();
 
-
-
-
-   
  }
 
 
@@ -418,8 +417,7 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 
 //Linker::getInstance().sendSignal();
 
-//Controller* cntr = new Controller;
-//cntr->operate();
+
 
 
 

@@ -53,8 +53,6 @@ void Worker::process()
 			DispatchMessage(&event);
 		}
 
-
-
 		emit update_mouse_pos(input);
 
 		// Sleep a bit to retain reactivity
@@ -67,7 +65,6 @@ void Worker::process()
 	}
 
 	HID_UnregisterDevice(HID_MOUSE);
-
 
     emit finished();
 }

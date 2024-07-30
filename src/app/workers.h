@@ -35,10 +35,11 @@ class Controller : public QObject
 {
     Q_OBJECT
 
+private:
     QThread thread;
 
 public:
-    Controller();
+    explicit Controller();
     ~Controller();
 
 public slots:
