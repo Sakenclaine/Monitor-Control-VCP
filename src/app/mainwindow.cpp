@@ -85,9 +85,6 @@ MainWindow::MainWindow(QWidget* parent) :
 
     #endif
 
-    //Controller* cntr = new Controller;
-    //cntr->operate();
-
     Controller::getInstance().operate();
 
     connect(&Controller::getInstance(), &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
@@ -182,6 +179,13 @@ void MainWindow::init_monitors_WIN()
 
     mon2->monitor_init();
     registered_monitors.push_back(mon2);
+
+
+    for (auto& elem : registered_monitors)
+    {
+        connect(&Linker::getInstance(), &Linker::emit_monitor_value_update, elem, &Monitor::receive_signal);
+    }
+
 }
 
 void MainWindow::init_monitors_UNIX()
@@ -193,7 +197,8 @@ void MainWindow::add_monitor_control_widget()
 {
     MonitorWidget* wMonSet = new MonitorWidget();
     wMonSet->add_slider(0x10, true);
-    wMonSet->add_slider(0x12, QColor(256, 256, 0), true);
+    wMonSet->add_slider(0x12, QColor(255, 0, 255), true);
+    wMonSet->add_slider(0x62, QColor(0, 0, 255), true);
 
     mainLayout->addWidget(wMonSet);
 
@@ -381,160 +386,3 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 
 
 
-//void MainWindow::createTrayIcon()
-//{
-//    trayIconMenu = new QMenu(this);
-//    trayIconMenu->addAction(minimizeAction);
-//    trayIconMenu->addAction(maximizeAction);
-//    trayIconMenu->addAction(restoreAction);
-//    trayIconMenu->addSeparator();
-//
-//    trayMonitorMenu = trayIconMenu->addMenu("Monitor");
-//    trayIconMenu->addSeparator();
-//    trayIconMenu->addAction(quitAction);
-//
-//    for (auto elem : registered_monitors)
-//    {
-//        auto action = new QAction(elem->get_name(), trayMonitorMenu);
-//        action->setCheckable(true);
-//        action->setChecked(elem->get_status());
-//
-//        trayMonitorMenu->addAction(action);
-//
-//        connect(action, &QAction::triggered, elem, &Monitor::set_status);
-//        connect(elem, &Monitor::send_status, action, &QAction::setChecked);
-//    }
-//
-//    add_slider(QColor(0, 255, 255), "Brightness", 0x10);
-//    add_slider(QColor(255, 0, 255), "Contrast", 0x12);
-//    add_slider(QColor(255, 0, 0), "Volume", 0x62);
-//
-//}
-//
-//
-//void MainWindow::add_slider(QColor color, QString name, uint16_t code)
-//{
-//    CustomSlider* cSlider = new CustomSlider(NULL, true, color, code);
-//
-//    cSlider->set_contextMenu(*trayIconMenu);
-//    trayIcons.push_back(cSlider->get_trayIcon());
-//    sliders.push_back(cSlider);
-//
-//    cSlider->get_trayIcon()->setToolTip(name);
-//    cSlider->setToolTip(name);
-//    sliderLayout->addWidget(cSlider);
-//
-//    connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
-//
-//    for (auto& monitor : registered_monitors)
-//    {
-//        connect(cSlider, &CustomSlider::send_monitor_signal, monitor, &Monitor::receive_signal);
-//    }
-//}
-
-
-
-//Linker::getInstance().sendSignal();
-
-
-
-
-
-//
-   //createActions(); // Setup globally used actions like minimize/maximize ...
-   //createMonitorGroupBox();
-   //createPositionGroupBox();
-   //
-
-   //sliderLayout = new QHBoxLayout;
-
-   //mainLayout->addWidget(monitorGroupBox);
-   //mainLayout->addWidget(posGroupBox);
-   //mainLayout->addWidget(monitorSettings);
-
-   //mainWidget->setLayout(mainLayout);
-   //mainLayout->addLayout(sliderLayout);
-   //
-
-
-   //setWindowTitle(tr("Monitor Control"));
-   ////resize(400, 300);
-   //int xSize = width();
-   //int ySize = height();
-
-   //qDebug() << xSize << " " << ySize;
-
-   //move(xScreen-xSize, yScreen-2*ySize-25);
-
-   //connect(cntr, &Controller::updated, this, &MainWindow::updatePosLabel);
-   //connect(cntr, &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
-
-   //createTrayIcon();
-
-
-   //qDebug() << "================================================";
-   //registered_monitors[0]->get_feature(0x10);
-   //qDebug() << "================================================\n\n";
-
-   //this->setWindowFlags(Qt::Popup);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//https://stackoverflow.com/questions/9261175/how-to-emit-a-signal-from-a-qpushbutton-when-the-mouse-hovers-over-it
-
-//bool MainWindow::eventFilter(QObject* obj, QEvent* event)
-//{
-//    // This function repeatedly call for those QObjects
-//    // which have installed eventFilter (Step 2)
-//
-//    if (event->type() == QEvent::Enter)
-//    {
-//        // Whatever you want to do when mouse goes over targetPushButton
-//        //qDebug() << "\n-------------\nhandling an event" << event << " <-- " << obj->metaObject()->className() << "\n-------------\n";
-//
-//        hoverLabel->setText("Yes");
-//    }
-//
-//    else if (event->type() == QEvent::Leave)
-//    {
-//        //qDebug() << "\n-------------\nhandling an event" << event << " <-- " << obj->metaObject()->className() << "\n-------------\n";
-//        hoverLabel->setText("No");
-//    }
-//
-//    else {
-//
-//        return QWidget::eventFilter(obj, event);
-//    }
-//
-//}
-
-
-
-
-/// Gives human-readable event type information.
-//QDebug operator<<(QDebug str, const QEvent* ev) {
-//    static int eventEnumIndex = QEvent::staticMetaObject
-//        .indexOfEnumerator("Type");
-//    str << "QEvent";
-//    if (ev) {
-//        QString name = QEvent::staticMetaObject
-//            .enumerator(eventEnumIndex).valueToKey(ev->type());
-//        if (!name.isEmpty()) str << name; else str << ev->type();
-//    }
-//    else {
-//        str << (void*)ev;
-//    }
-//    return str.maybeSpace();
-//}

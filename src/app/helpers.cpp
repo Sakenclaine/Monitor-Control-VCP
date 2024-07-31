@@ -29,7 +29,6 @@ QIcon createIconFromText(const QString& content, int iw, int ih, QColor color)
 	return QIcon(pixmap);
 }
 
-
 QIcon createIconFromText(const QString& content, QColor color)
 {
 	int iwidth = 64, iheight = 64;
