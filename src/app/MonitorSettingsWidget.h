@@ -5,19 +5,70 @@
 #include <QScrollArea>
 #include <QFrame>
 
+#include <QLabel>
+#include <QPixmap>
+#include <QPainter>
+#include <QImage>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QSizePolicy>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QList>
+#include <QFont>
 
 #include "MonitorHandler.h"
 #include "CustomSlider.h"
 
 
 
+class CustomFrame2 : public QWidget
+{
+	Q_OBJECT
+
+private:
+	QFrame* frame;
+	QHBoxLayout* mainLayout;
+
+	QScrollArea* scrollArea;
 
 
+private:
+	enum { rimX = 0, rimY = 20 };
+
+public:
+	CustomFrame2(QWidget* parent = nullptr) : QWidget(parent)
+	{
+		mainLayout = new QHBoxLayout();
+		mainLayout->setContentsMargins(0, 0, 0, 0);
+		setLayout(mainLayout);
+		
+		frame = new QFrame();
+		frame->setFrameStyle(QFrame::Panel);
+
+
+		QImage image(":/images/placeholder.png");
+		QLabel* imageLabel = new QLabel;
+		imageLabel->setBackgroundRole(QPalette::Base);
+		//imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+		imageLabel->setScaledContents(true);
+		imageLabel->setPixmap(QPixmap::fromImage(image));
+		imageLabel->resize(0.5 * imageLabel->pixmap(Qt::ReturnByValue).size());
+
+
+	
+		scrollArea = new QScrollArea();
+		scrollArea->setBackgroundRole(QPalette::Dark);
+		//scrollArea->setWidgetResizable(true);
+		//scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+		//scrollArea->verticalScrollBar()->setEnabled(false);
+		scrollArea->setWidget(imageLabel);
+
+
+		mainLayout->addWidget(scrollArea);
+	}
+
+};
 
 
 
@@ -26,101 +77,79 @@ class CustomFrame : public QFrame
 	Q_OBJECT
 
 private:
-	QFrame* innerFrame;
-
+	QWidget* innerContent;
 	QScrollArea* scrollArea;
-	QPushButton* add_button;
-
-	QHBoxLayout* mainLayout;
+	QPushButton* addButton;
 
 private:
-	enum { rimX = 0, rimY = 10 };
+	enum { rimX = 0, rimY = 11 };
 
 public:
 	CustomFrame(QWidget* parent = nullptr) : QFrame(parent) 
 	{
 		//setFrameStyle(QFrame::Panel);
-		//setFocusPolicy(Qt::StrongFocus);
-		//setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-		
-		scrollArea = new QScrollArea();
+
+		innerContent = new QWidget(this);
+
+		scrollArea = new QScrollArea(this);
 		scrollArea->setBackgroundRole(QPalette::Dark);
 		scrollArea->setWidgetResizable(true);
 		scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 		scrollArea->verticalScrollBar()->setEnabled(false);
+		scrollArea->setWidget(innerContent);
 
-		add_button = new QPushButton("Add", this);
-		add_button->show();
+		scrollArea->resize(QSize(width(), height() - rimY));
+		scrollArea->move(0, rimY);
 
-		innerFrame = new QFrame(this);
-		innerFrame->setFrameShape(QFrame::Panel);
-		
-		mainLayout = new QHBoxLayout();
-		mainLayout->setContentsMargins(0, 10, 0, 0);
+		QFont btnFont = QFont("Arial", 17);
+		btnFont.setBold(true);
 
-		innerFrame->setLayout(mainLayout);
+		addButton = new QPushButton("+", this);
+		addButton->setFont(btnFont);
+		addButton->setStyleSheet(QString("QPushButton{background-color: rgb(150, 150, 150); padding: 0px; min-width: 1.5em; min-height: 1em; border-radius: 0.65em;} QPushButton::hover{background-color: rgb(128, 128, 128); padding: 0px; min-width: 1.5em; min-height: 1em; border-radius: 0.65em;}"));
+		addButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+		addButton->move(15, 0);
 
-		mainLayout->addWidget(scrollArea);
-
-		int x, y, xW, yW;
-		QRect outer_frame = frameRect();
-		outer_frame.getRect(&x, &y, &xW, &yW);
-
-		int newX = xW - 2 * rimX;
-		int newY = yW - 2 * rimY;
-
-		if (newX < 0) newX = 0;
-		if (newY < 0) newY = 0;
-
-		innerFrame->setMinimumSize(newX, newY);
-		innerFrame->setMaximumSize(newX, newY);
-		innerFrame->move(x + rimX, y + rimY);
-
-		int x_, y_, xW_, yW_;
-		QRect inner_frame = innerFrame->frameRect();
-		inner_frame.getRect(&x_, &y_, &xW_, &yW_);
-
-		innerFrame->show();
+		addButton->show();	
 	}
 
 	void resizeEvent(QResizeEvent* evnt)
-	{
-		QSize outerSize = evnt->size();
+	{	
+		scrollArea->resize(QSize(evnt->size().width(), evnt->size().height() - rimY));
 
-		int newX = outerSize.width() - 2 * rimX;
-		int newY = outerSize.height() - 1 * rimY;
-
-		if (newX <= rimX) 
-		{ 
-			setMinimumWidth(2 * rimX + 5);
-			newX = 5;
-		}
-
-		if (newY <= rimY)
-		{
-			setMinimumHeight(2 * rimY + 5);
-			newY = 5;
-		}
+		updateGeometry();
+		innerContent->updateGeometry();
+		scrollArea->updateGeometry();
 		
-		innerFrame->setMinimumSize(newX, newY);
-		innerFrame->setMaximumSize(newX, newY);
+		//QList<QWidget*> widgets = this->findChildren<QWidget*>();
+		//foreach (QWidget* elem, widgets) updateGeometry();
 	}
-
 
 
 public:
 	void setLayout(QLayout* layout)
 	{
-		scrollArea->setLayout(layout);
-
-		//layout->setSpacing(0);
-		//layout->setContentsMargins(0, 0, 0, 0);
+		layout->setContentsMargins(0, 11, 0, 0);
+		innerContent->setLayout(layout);
 	}
 
-	//QSize sizeHint() const
-	//{
-	//	return QSize(innerFrame->width(), innerFrame->height());
-	//}
+	QSize sizeHint() const override
+	{
+		return innerContent->sizeHint();
+	}
+
+	QSize minimumSizeHint() const override
+	{
+		return QSize(innerContent->minimumSizeHint().width(), innerContent->minimumSizeHint().height() + 20);
+	}
+	
+
+public:
+	QPushButton* get_button()
+	{
+		return addButton;
+	}
+
 
 };
 
@@ -145,6 +174,7 @@ private:
 	CustomFrame* settingsFrame;
 
 	QHBoxLayout* hSliderLayout;
+	QHBoxLayout* settings_continous_layout;
 
 
 public:

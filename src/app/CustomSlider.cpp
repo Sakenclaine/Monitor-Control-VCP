@@ -83,7 +83,6 @@ void CustomSlider::setup()
 
 		connect(pButton, &QPushButton::clicked, this, &CustomSlider::buttonClick);
 
-
 		pButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
 		buttonLayout->addWidget(pButton);
 
@@ -143,7 +142,6 @@ void CustomSlider::add_trayIcon()
 	this->setObjectName(idSlider);
 
 	icon->show();
-
 
 	QCheckBox* cbtoggleTray = new QCheckBox();
 	cbtoggleTray->setCheckState(Qt::Checked);

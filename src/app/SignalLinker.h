@@ -2,6 +2,8 @@
 #include <QObject>
 #include <QtCore>
 
+#include <QSystemTrayIcon>
+
 //Singleton Class: https://stackoverflow.com/questions/45059490/how-to-connect-signals-to-the-slots-of-all-instances-of-a-class (not working)
 
 //https://isocpp.org/wiki/faq/ctors#static-init-order
@@ -31,11 +33,21 @@ public slots:
     // Receive value update for a specific code
     void receive_monitor_value(uint16_t& code, int& value);
 
+    // Receive Tray Icon Clicked
+    void receive_icon_click(QSystemTrayIcon::ActivationReason reason);
+
+    // Add Slider
+    void receive_slider_add_request();
+
 signals:
     void emit_mouse_update(const struct inSignal& output);
     void emit_value_update(int& value, QObject&);
 
     void emit_monitor_value_update(uint16_t& code, int& value);
+
+    void emit_icon_click(QSystemTrayIcon::ActivationReason reason);
+
+    void emit_slider_add_request();
 };
 
 

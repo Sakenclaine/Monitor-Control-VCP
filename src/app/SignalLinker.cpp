@@ -43,3 +43,15 @@ void Linker::receive_monitor_value(uint16_t& code, int& value)
 
     emit emit_monitor_value_update(code, value);
 }
+
+void Linker::receive_icon_click(QSystemTrayIcon::ActivationReason reason)
+{
+    emit emit_icon_click(reason);
+}
+
+void Linker::receive_slider_add_request()
+{
+    qDebug() << "Add Slider Requested";
+
+    emit emit_slider_add_request();
+}

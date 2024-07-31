@@ -140,6 +140,8 @@ void MainWindow::setup()
         connect(elem, &Monitor::send_status, action, &QAction::setChecked);
     }
 
+    connect(&Linker::getInstance(), &Linker::emit_icon_click, this, &MainWindow::iconActivated);
+
 }
 
 void MainWindow::createActions()
@@ -160,20 +162,26 @@ void MainWindow::createActions()
 void MainWindow::init_monitors_WIN()
 {
     std::vector<PHYSICAL_MONITOR> monitors;
-    get_physical_monitors_WIN(monitors);
+    //get_physical_monitors_WIN(monitors);
 
     qDebug() << "Number of physical monitors: " << monitors.size();
 
     // Register monitors
-    for (auto& mons : monitors)
-    {
-        QString name = QString::fromWCharArray(mons.szPhysicalMonitorDescription);
+    //for (auto& mons : monitors)
+    //{
+    //    QString name = QString::fromWCharArray(mons.szPhysicalMonitorDescription);
 
-        Monitor* mon = new Monitor(mons, name);
+    //    Monitor* mon = new Monitor(mons, name);
 
-        mon->monitor_init();
-        registered_monitors.push_back(mon);
-    }
+    //    mon->monitor_init();
+    //    registered_monitors.push_back(mon);
+    //}
+
+    Monitor* mon1 = new Monitor("Monitor 1");
+
+    mon1->monitor_init();
+    registered_monitors.push_back(mon1);
+
 
     Monitor* mon2 = new Monitor("Monitor 2");
 

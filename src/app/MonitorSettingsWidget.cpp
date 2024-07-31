@@ -1,4 +1,5 @@
 #include "MonitorSettingsWidget.h"
+#include "SignalLinker.h"
 #include "helpers.h"
 
 #include <QGroupBox>
@@ -20,7 +21,7 @@
 MonitorWidget::MonitorWidget()
 {
 	QHBoxLayout* layout = new QHBoxLayout(this);
-    QHBoxLayout* settings_continous_layout = new QHBoxLayout();
+    settings_continous_layout = new QHBoxLayout();
 
     hSliderLayout = new QHBoxLayout();
     hSliderLayout->setSpacing(0);
@@ -28,23 +29,10 @@ MonitorWidget::MonitorWidget()
 	settings_discrete = new QGroupBox();
 	settings_continous = new QGroupBox("Controls");
 
-    CustomFrame* settingsFrame = new CustomFrame();
-    settingsFrame->setLayout(hSliderLayout);
-
-
-    //settings_continous->setLayout(settings_continous_layout);
-    //settings->setLayout(settings_continous_layout);
-
-    //scrollArea = new QScrollArea();
-    //scrollArea->setLayout(hSliderLayout);
-
-    //scrollArea->setBackgroundRole(QPalette::Dark);
-    //scrollArea->setWidgetResizable(true);
-    //scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    //scrollArea->verticalScrollBar()->setEnabled(false);
-   
-
-    //settings_continous_layout->addWidget(scrollArea);
+    CustomFrame* settingsFrame = new CustomFrame(this);
+    settingsFrame->setLayout(settings_continous_layout);
+    
+    connect(settingsFrame->get_button(), &QPushButton::clicked, &Linker::getInstance(), &Linker::receive_slider_add_request);
 
 	layout->addWidget(settings_discrete);
 	layout->addWidget(settingsFrame);
@@ -60,13 +48,9 @@ void MonitorWidget::add_slider(uint16_t code, bool btrayIcon)
 
     if (btrayIcon) cSlider->add_trayIcon();
 
-    hSliderLayout->addWidget(cSlider);
+    settings_continous_layout->addWidget(cSlider);
 
-
-    //scrollArea->setMinimumWidth(3 * cSlider->sizeHint().width() + 10);
-    //scrollArea->setMinimumHeight(cSlider->sizeHint().height() + 5);
-
-    //connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, parent, &MainWindow::iconActivated);
+    connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
 }
 
 void MonitorWidget::add_slider(uint16_t code, QColor color, bool btrayIcon)
@@ -78,11 +62,9 @@ void MonitorWidget::add_slider(uint16_t code, QColor color, bool btrayIcon)
 
     if (btrayIcon) cSlider->add_trayIcon();
 
-    hSliderLayout->addWidget(cSlider);
+    settings_continous_layout->addWidget(cSlider);
 
-    //scrollArea->setMinimumWidth(3 * cSlider->sizeHint().width() + 10);
-    //scrollArea->setMinimumHeight(cSlider->sizeHint().height() + 5);
-    
+    connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
     //connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, parent, &MainWindow::iconActivated);
 }
 
