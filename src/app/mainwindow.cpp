@@ -94,6 +94,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
     add_monitor_control_widget();
 
+    connect(&Linker::getInstance(), &Linker::emit_slider_add_request, this, &MainWindow::add_slider);
+
  }
 
 
@@ -109,6 +111,8 @@ void MainWindow::setup()
     setCentralWidget(mainWidget);
     mainLayout = new QVBoxLayout;
     mainWidget->setLayout(mainLayout);
+
+    dAddSlider = new Dialog_AddSlider();
 
     createActions();
     createMonitorGroupBox();
@@ -166,27 +170,28 @@ void MainWindow::init_monitors_WIN()
 
     qDebug() << "Number of physical monitors: " << monitors.size();
 
-    // Register monitors
-    //for (auto& mons : monitors)
-    //{
-    //    QString name = QString::fromWCharArray(mons.szPhysicalMonitorDescription);
+    #ifndef QT_DEBUG 
+    //Register monitors
+    for (auto& mons : monitors)
+    {
+        QString name = QString::fromWCharArray(mons.szPhysicalMonitorDescription);
 
-    //    Monitor* mon = new Monitor(mons, name);
+        Monitor* mon = new Monitor(mons, name);
 
-    //    mon->monitor_init();
-    //    registered_monitors.push_back(mon);
-    //}
-
+        mon->monitor_init();
+        registered_monitors.push_back(mon);
+    }
+    #endif
+    
+    #ifdef QT_DEBUG
     Monitor* mon1 = new Monitor("Monitor 1");
-
     mon1->monitor_init();
     registered_monitors.push_back(mon1);
 
-
     Monitor* mon2 = new Monitor("Monitor 2");
-
     mon2->monitor_init();
     registered_monitors.push_back(mon2);
+    #endif
 
 
     for (auto& elem : registered_monitors)
@@ -228,6 +233,10 @@ void MainWindow::add_monitor_control_widget()
 }
 
 
+void MainWindow::add_slider()
+{
+    dAddSlider->exec();
+}
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {

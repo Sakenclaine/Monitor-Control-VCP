@@ -11,6 +11,7 @@
 #include "MonitorHandler.h"
 #include "SettingsWidget.h"
 #include "MonitorSettingsWidget.h"
+#include "Dialogs.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -72,6 +73,8 @@ private:
 	PlaceholderWidget* dialogueWidget;
 	SettingsWidget* wSettings;
 
+	Dialog_AddSlider* dAddSlider;
+
 	// Layouts
 	QVBoxLayout* mainLayout;
 	QHBoxLayout* sliderLayout;
@@ -91,4 +94,5 @@ private:
 
 private slots:
 	void iconActivated(QSystemTrayIcon::ActivationReason reason);
+	void add_slider();
 };
