@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <Windows.h>
+#include <type_traits>
 
 
 QIcon createIconFromText(const QString& content, int iw, int ih, QColor color)
@@ -108,6 +109,7 @@ std::vector<std::string> split(std::string s, std::string delimiter) {
 		pos_start = pos_end + delim_len;
 		res.push_back(token);
 	}
+
 
 	res.push_back(s.substr(pos_start));
 	return res;

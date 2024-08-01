@@ -1,5 +1,6 @@
 #pragma once
 #include <QWidget>
+#include <QString>
 
 #include <map>
 #include <string>
@@ -18,6 +19,7 @@ bool bracket_pair_finder(std::string s, std::vector<int>& indices);
 
 std::vector<std::string> split(std::string s, std::string delimiter);
 
+
 std::string charToString(unsigned char uChar);
 
 std::string uIntToString(uint16_t u);
@@ -34,7 +36,7 @@ std::vector<TK> extract_keys(std::map<TK, TV> const& input_map) {
 
 // Credit to AndreyS Scherbakov
 // https://stackoverflow.com/questions/5100718/integer-to-hex-string-in-c
-template <typename I> std::string n2hexstr(I w, size_t hex_len = sizeof(I) << 1)
+template <typename I> QString n2hexstr(I w, size_t hex_len = sizeof(I) << 1)
 {
     static const char* digits = "0123456789ABCDEF";
     std::string str_(hex_len, '0');
@@ -46,7 +48,7 @@ template <typename I> std::string n2hexstr(I w, size_t hex_len = sizeof(I) << 1)
 
     //qDebug() << "n2hexstr(): " << str_;
 
-    return str_;
+    return QString::fromStdString(str_);
 }
 
 void get_screen_geometry(int& xWO_taskbar, int& yWO_taskbar);

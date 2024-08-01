@@ -23,37 +23,52 @@
 
 struct VCP_COMM
 {
-	QString name;
-	QString description;
+	QString name = "None";
+	QString description = "None";
 
-	uint16_t vcp_code;
+	uint16_t vcp_code = 0x00;
 	bool read_only = false, write_only = false;
+	bool continous = false;
 	bool all_range = false; 
 
-	std::vector<uint16_t> possible_values;
-	std::vector<std::string> possible_values_desc;
+	std::vector<uint16_t> possible_values{0};
+	std::vector<QString> possible_values_desc{ "" };
 };
+
+
 
 //https://milek7.pl/ddcbacklight/mccs.pdf
 class VCP_COMMANDS
 {
 private:
-	void add_command(QString name, QString desc, uint16_t code);
-	void add_command(QString name, QString desc, uint16_t code, bool read, bool write);
-	void add_command(QString name, uint16_t code, bool read, bool write);
-	void add_command(QString name, uint16_t code, bool read, bool write, bool range);
-
-	void add_allowed_values(uint16_t code, std::vector<uint16_t> vals, std::vector<std::string> desc);
-	void add_allowed_values(uint16_t code, std::initializer_list<uint16_t> codeList, std::initializer_list<std::string> descList);
+	VCP_COMM comm;
 
 public:
-	std::map<std::string, VCP_COMM> commands;
+	VCP_COMMANDS& new_command(uint16_t code);
+	VCP_COMMANDS& set_name(QString name);
+	VCP_COMMANDS& set_desc(QString desc);
+	VCP_COMMANDS& write_only();
+	VCP_COMMANDS& read_only();
+	VCP_COMMANDS& continous();
+	VCP_COMMANDS& all_range();
+
+	VCP_COMMANDS& possible_values(std::vector<uint16_t> vals);
+	VCP_COMMANDS& possible_values_desc(std::vector<QString> valDesc);
+	void add_command();
+
+	void add_allowed_values(uint16_t code, std::vector<uint16_t> vals, std::vector<QString> desc);
+	void add_allowed_values(uint16_t code, std::initializer_list<uint16_t> codeList, std::initializer_list<QString> descList);
+
+public:
+	std::map<QString, VCP_COMM> commands;
 
 public:	
 	VCP_COMMANDS();
 };
 
 extern VCP_COMMANDS VCP_FEATURES;
+
+
 
 
 struct monitor_vcp
@@ -75,7 +90,7 @@ private:
 	bool dummy = true;
 	bool status = false;
 
-	std::map<std::string, monitor_vcp> features;
+	std::map<QString, monitor_vcp> features;
 
 private:
 	void get_feature_WIN(uint16_t code);
@@ -136,7 +151,7 @@ struct MonitorRects
 
 void get_monitor_capabilities_WIN(PHYSICAL_MONITOR& monitor, std::vector<std::string>& kwrds, std::vector<std::string>& vals, std::map<std::string, std::string>& capabilities_dict);
 
-void get_monitor_features_WIN(std::map<std::string, monitor_vcp>& features, PHYSICAL_MONITOR& monitor);
+void get_monitor_features_WIN(std::map<QString, monitor_vcp>& features, PHYSICAL_MONITOR& monitor);
 
 void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors);
 

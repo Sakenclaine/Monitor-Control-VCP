@@ -43,7 +43,7 @@ void MonitorWidget::add_slider(uint16_t code, bool btrayIcon)
 {
     CustomSlider* cSlider = new CustomSlider(NULL, code);
 
-    QString name = QString::fromStdString(n2hexstr(code));
+    QString name = n2hexstr(code);
     customSliders[name] = cSlider;
 
     if (btrayIcon) cSlider->add_trayIcon();
@@ -57,7 +57,7 @@ void MonitorWidget::add_slider(uint16_t code, QColor color, bool btrayIcon)
 {
     CustomSlider* cSlider = new CustomSlider(NULL, color, code);
 
-    QString name = QString::fromStdString(n2hexstr(code));
+    QString name = n2hexstr(code);
     customSliders[name] = cSlider;
 
     if (btrayIcon) cSlider->add_trayIcon();

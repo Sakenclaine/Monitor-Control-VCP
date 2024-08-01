@@ -22,56 +22,6 @@
 
 
 
-class CustomFrame2 : public QWidget
-{
-	Q_OBJECT
-
-private:
-	QFrame* frame;
-	QHBoxLayout* mainLayout;
-
-	QScrollArea* scrollArea;
-
-
-private:
-	enum { rimX = 0, rimY = 20 };
-
-public:
-	CustomFrame2(QWidget* parent = nullptr) : QWidget(parent)
-	{
-		mainLayout = new QHBoxLayout();
-		mainLayout->setContentsMargins(0, 0, 0, 0);
-		setLayout(mainLayout);
-		
-		frame = new QFrame();
-		frame->setFrameStyle(QFrame::Panel);
-
-
-		QImage image(":/images/placeholder.png");
-		QLabel* imageLabel = new QLabel;
-		imageLabel->setBackgroundRole(QPalette::Base);
-		//imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-		imageLabel->setScaledContents(true);
-		imageLabel->setPixmap(QPixmap::fromImage(image));
-		imageLabel->resize(0.5 * imageLabel->pixmap(Qt::ReturnByValue).size());
-
-
-	
-		scrollArea = new QScrollArea();
-		scrollArea->setBackgroundRole(QPalette::Dark);
-		//scrollArea->setWidgetResizable(true);
-		//scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-		//scrollArea->verticalScrollBar()->setEnabled(false);
-		scrollArea->setWidget(imageLabel);
-
-
-		mainLayout->addWidget(scrollArea);
-	}
-
-};
-
-
-
 class CustomFrame : public QFrame
 {
 	Q_OBJECT
@@ -82,7 +32,7 @@ private:
 	QPushButton* addButton;
 
 private:
-	enum { rimX = 0, rimY = 11 };
+	enum { rimX = 8, rimY = 11 };
 
 public:
 	CustomFrame(QWidget* parent = nullptr) : QFrame(parent) 
@@ -98,24 +48,24 @@ public:
 		scrollArea->verticalScrollBar()->setEnabled(false);
 		scrollArea->setWidget(innerContent);
 
-		scrollArea->resize(QSize(width(), height() - rimY));
-		scrollArea->move(0, rimY);
+		scrollArea->resize(QSize(width() - rimX, height() - rimY));
+		scrollArea->move(rimX, rimY);
 
-		QFont btnFont = QFont("Arial", 17);
+		QFont btnFont = QFont("Arial", 15);
 		btnFont.setBold(true);
 
 		addButton = new QPushButton("+", this);
 		addButton->setFont(btnFont);
-		addButton->setStyleSheet(QString("QPushButton{background-color: rgb(150, 150, 150); padding: 0px; min-width: 1.5em; min-height: 1em; border-radius: 0.65em;} QPushButton::hover{background-color: rgb(128, 128, 128); padding: 0px; min-width: 1.5em; min-height: 1em; border-radius: 0.65em;}"));
+		addButton->setStyleSheet(QString("QPushButton{background-color: rgb(150, 150, 150); padding: 0px; min-width: 1.25em; min-height: 0.5em; border-radius: 0.4em;} QPushButton::hover{background-color: rgb(128, 128, 128); padding: 0px; min-width: 1.5em; min-height: 1em; border-radius: 0.65em;}"));
 		addButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
-		addButton->move(15, 0);
+		addButton->move(0, 0);
 
 		addButton->show();	
 	}
 
 	void resizeEvent(QResizeEvent* evnt)
 	{	
-		scrollArea->resize(QSize(evnt->size().width(), evnt->size().height() - rimY));
+		scrollArea->resize(QSize(evnt->size().width() - rimX, evnt->size().height() - rimY));
 
 		updateGeometry();
 		innerContent->updateGeometry();
@@ -129,7 +79,7 @@ public:
 public:
 	void setLayout(QLayout* layout)
 	{
-		layout->setContentsMargins(0, 11, 0, 0);
+		layout->setContentsMargins(0, 4, 10, 0);
 		innerContent->setLayout(layout);
 	}
 
