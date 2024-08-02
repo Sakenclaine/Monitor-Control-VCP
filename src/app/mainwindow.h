@@ -95,4 +95,7 @@ private:
 private slots:
 	void iconActivated(QSystemTrayIcon::ActivationReason reason);
 	void add_slider();
+
+signals:
+	void emit_add_slider(uint16_t&, QColor&, bool&);
 };

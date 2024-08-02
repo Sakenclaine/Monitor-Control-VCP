@@ -26,6 +26,7 @@
 #include "mainwindow.h"
 #include "helpers.h"
 #include "workers.h"
+#include "errors.h"
 #include "TrayIconControlled.h"
 #include "MonitorHandler.h"
 #include "CustomSlider.h"
@@ -145,6 +146,7 @@ void MainWindow::setup()
     }
 
     connect(&Linker::getInstance(), &Linker::emit_icon_click, this, &MainWindow::iconActivated);
+    connect(this, &MainWindow::emit_add_slider, &Linker::getInstance(), &Linker::receive_add_slider);
 
 }
 
@@ -188,9 +190,13 @@ void MainWindow::init_monitors_WIN()
     mon1->monitor_init();
     registered_monitors.push_back(mon1);
 
+    Linker::getInstance().register_monitor(mon1);
+
     Monitor* mon2 = new Monitor("Monitor 2");
     mon2->monitor_init();
     registered_monitors.push_back(mon2);
+
+    Linker::getInstance().register_monitor(mon2);
     #endif
 
 
@@ -235,7 +241,55 @@ void MainWindow::add_monitor_control_widget()
 
 void MainWindow::add_slider()
 {
-    dAddSlider->exec();
+    bool ok;
+    QList<QVariant> list = Dialog_AddSlider::get_input(this, &ok);
+    if (ok) {
+        qDebug() << "Results:";
+        qDebug() << "Color: " << list[1].value<QColor>();
+        qDebug() << "Value: " << list[0].toInt();
+
+        uint16_t cde = list[0].toInt();
+        QString cde_str = n2hexstr(cde, 2);
+        QColor col = list[1].value<QColor>();
+        bool trayCheck = list[2].toBool();
+
+        if (VCP_FEATURES.commands.find(cde_str) != VCP_FEATURES.commands.end())
+        {
+            qDebug() << "Code (" << cde_str << ") Exists--> " << VCP_FEATURES.commands[cde_str].name;
+
+            bool code_supported = true;
+
+            for (auto& mon : registered_monitors)
+            {
+                if (!(mon->features.find(cde_str) != mon->features.end())) code_supported = false;
+            }
+
+            if (!code_supported)
+            {
+                FeatureWarning dlg(cde);
+                int ret = dlg.exec();
+
+                switch (ret) {
+                case QMessageBox::Yes:
+                    qDebug() << "Continue";
+                    emit emit_add_slider(cde, col, trayCheck);
+
+                    break;
+                case QMessageBox::Abort:
+                    qDebug() << "Abort";
+                    break;
+                default:
+                    // should never be reached
+                    break;
+                }
+
+            }
+
+        }
+
+        else qDebug() << "Code (" << cde_str << ") Does Not Exist ";
+    }
+
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)

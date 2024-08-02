@@ -18,21 +18,33 @@
 
 
 
+
 MonitorWidget::MonitorWidget()
 {
 	QHBoxLayout* layout = new QHBoxLayout(this);
     settings_continous_layout = new QHBoxLayout();
+    settings_continous_layout->setSpacing(0);
 
-    hSliderLayout = new QHBoxLayout();
-    hSliderLayout->setSpacing(0);
+	settings_discrete = new QGroupBox(tr("Monitor Settings"));
+    settings_discrete->setMinimumWidth(150);
+    monitorCombo = new QComboBox();
 
-	settings_discrete = new QGroupBox();
-	settings_continous = new QGroupBox("Controls");
+    QVBoxLayout* discreteLayout = new QVBoxLayout(settings_discrete);
+
+    discreteLayout->addWidget(monitorCombo);
+
+    foreach(auto elem, Linker::getInstance().get_monitors())
+    {
+        monitorCombo->addItem(elem->get_name());
+    }
+
 
     CustomFrame* settingsFrame = new CustomFrame(this);
     settingsFrame->setLayout(settings_continous_layout);
     
     connect(settingsFrame->get_button(), &QPushButton::clicked, &Linker::getInstance(), &Linker::receive_slider_add_request);
+
+    connect(&Linker::getInstance(), &Linker::emit_add_slider, this, &MonitorWidget::receive_add_slider);
 
 	layout->addWidget(settings_discrete);
 	layout->addWidget(settingsFrame);
@@ -50,7 +62,10 @@ void MonitorWidget::add_slider(uint16_t code, bool btrayIcon)
 
     settings_continous_layout->addWidget(cSlider);
 
-    connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
+    if (btrayIcon)
+    {
+        connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
+    }
 }
 
 void MonitorWidget::add_slider(uint16_t code, QColor color, bool btrayIcon)
@@ -64,7 +79,10 @@ void MonitorWidget::add_slider(uint16_t code, QColor color, bool btrayIcon)
 
     settings_continous_layout->addWidget(cSlider);
 
-    connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
+    if (btrayIcon)
+    {
+        connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
+    }
     //connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, parent, &MainWindow::iconActivated);
 }
 
@@ -75,6 +93,11 @@ void MonitorWidget::add_contextMenu(QMenu* menu)
 
 }
 
+void MonitorWidget::receive_add_slider(uint16_t& cde, QColor& col, bool& trayCheck)
+{
+    qDebug() << "Adding Slider ... " << cde << " " << col;
+    this->add_slider(cde, col, trayCheck);
+}
 
 
 

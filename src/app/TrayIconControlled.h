@@ -20,6 +20,7 @@ public:
 
 private:
 	int receiver_id;
+	QString receiver_code;
 	QString receiverType = "trayIcon";
 
 	QColor font_color;

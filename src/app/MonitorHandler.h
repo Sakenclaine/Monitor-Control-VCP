@@ -90,6 +90,7 @@ private:
 	bool dummy = true;
 	bool status = false;
 
+public:
 	std::map<QString, monitor_vcp> features;
 
 private:

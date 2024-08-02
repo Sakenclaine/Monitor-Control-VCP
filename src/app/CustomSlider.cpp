@@ -96,6 +96,11 @@ void CustomSlider::setup()
 	this->setLayout(mainVLayout);
 	this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
 
+	QString idCode = n2hexstr(code);
+	QString idSlider = QString("sliderControl_%1_%2").arg(_id).arg(idCode);
+
+	this->setObjectName(idSlider);
+
 }
 
 void CustomSlider::set_colors(QColor col_handle, QColor col_fill, QColor col_background)
@@ -135,11 +140,10 @@ void CustomSlider::add_trayIcon()
 	connect(this, &CustomSlider::slider_changed_value, &Linker::getInstance(), &Linker::receive_value_update);
 	connect(&Linker::getInstance(), &Linker::emit_value_update, this, &CustomSlider::set_slider_value);
 
-	QString idIcon = QString("trayIcon_%1").arg(_id);
-	QString idSlider = QString("sliderControl_%1").arg(_id);
+	QString idCode = n2hexstr(code);
+	QString idIcon = QString("trayIcon_%1_%2").arg(_id).arg(idCode);
 
 	icon->setObjectName(idIcon);
-	this->setObjectName(idSlider);
 
 	icon->show();
 
@@ -210,8 +214,9 @@ void CustomSlider::set_slider_value(int& value, QObject& senderObj)
 	if (senderName != "" && obj == nullptr)
 	{
 		QStringList id_components = senderName.split("_");
-		QString senderType = id_components.value(id_components.length() - 2);
-		int sender_id = (id_components.value(id_components.length()-1)).toInt();
+		QString senderType = id_components.value(id_components.length() - 3);
+		int sender_id = (id_components.value(id_components.length()-2)).toInt();
+		QString sender_code = id_components.value(id_components.length() - 1);
 
 		if (sender_id == _id && current_value != value)
 		{

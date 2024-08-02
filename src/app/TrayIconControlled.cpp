@@ -58,8 +58,9 @@ void TrayIconControlled::update_value(int& val, QObject& senderObj)
 
             if (id_components_receiver.length() > 1)
             {
-                QString receiverType = id_components_receiver.value(id_components_receiver.length() - 2);
-                receiver_id = (id_components_receiver.value(id_components_receiver.length() - 1)).toInt();
+                QString receiverType = id_components_receiver.value(id_components_receiver.length() - 3);
+                receiver_id = (id_components_receiver.value(id_components_receiver.length() - 2)).toInt();
+                receiver_code = id_components_receiver.value(id_components_receiver.length() - 1);
             }
 
             else { throw 0; }
@@ -71,8 +72,9 @@ void TrayIconControlled::update_value(int& val, QObject& senderObj)
         }
 
         QStringList id_components_sender = senderName.split("_");
-        QString senderType = id_components_sender.value(id_components_sender.length() - 2);
-        int sender_id = (id_components_sender.value(id_components_sender.length() - 1)).toInt();
+        QString senderType = id_components_sender.value(id_components_sender.length() - 3);
+        int sender_id = (id_components_sender.value(id_components_sender.length() - 2)).toInt();
+        QString sender_code = id_components_sender.value(id_components_sender.length() - 1);
 
         if (sender_id == receiver_id && senderType != receiverType)
         {

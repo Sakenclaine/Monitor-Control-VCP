@@ -11,11 +11,22 @@
 #include <QRect>
 #include <QPoint>
 #include <QPainterPath>
+#include <QList>
+#include <QVariant>
+#include <QValidator>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include <QSizePolicy>
+#include <QFontMetrics>
+#include <QCheckBox>
 
+#include <QFormLayout>
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QPushButton>
 
+
+// https://stackoverflow.com/questions/17512542/getting-multiple-inputs-from-qinputdialog-in-qt
 
 class Dialog_AddSlider : public QDialog
 {
@@ -23,17 +34,20 @@ class Dialog_AddSlider : public QDialog
 
 private:
 	QColor color = QColor("red");
+	uint16_t code = 0;
 	QString colBtnStyle = "background-color: red;";
 
+
+
 private:
-	QVBoxLayout* mainLayout;
-	QHBoxLayout* buttonLayout;
-	QHBoxLayout* inputLayout;
+	QFormLayout* layout;
 
 	QLineEdit* lineCode;
 	QPushButton* colorBtn;
 	QPushButton* acceptBtn;
 	QPushButton* cancelBtn;
+
+	QCheckBox* trayIconCheck;
 
 	QColorDialog* colDialog;
 
@@ -57,18 +71,27 @@ private:
 
 
 public:
-	Dialog_AddSlider(QWidget* parent = nullptr) : QDialog(parent) 
+	explicit Dialog_AddSlider(QWidget* parent = nullptr) : QDialog(parent) 
 	{
 		this->setWindowTitle(tr("Add Slider"));
 		set_color_btn(QColor("beige"));
 
-		mainLayout = new QVBoxLayout(this);
-		buttonLayout = new QHBoxLayout();
-		inputLayout = new QHBoxLayout();
+		layout = new QFormLayout(this);
 
 		colDialog = new QColorDialog();
+		colDialog->adjustSize();
+
+		
+		QValidator* validator = new QRegularExpressionValidator(QRegularExpression("0x[0-9A-Fa-f][0-9A-Fa-f]{1,1}"));
+
+		QString plcHolder = tr("HEX VCP Code, e.g. 0x10");
+		QFontMetrics fontMtrcs = QWidget::fontMetrics();
 
 		lineCode = new QLineEdit();
+		lineCode->setPlaceholderText(plcHolder);
+		lineCode->setValidator(validator);
+		lineCode->setMinimumWidth(fontMtrcs.boundingRect(plcHolder).width() + 50);
+
 		colorBtn = new QPushButton();
 		colorBtn->setStyleSheet(colBtnStyle);
 
@@ -81,14 +104,43 @@ public:
 		connect(acceptBtn, &QPushButton::clicked, this, &QDialog::accept);
 		connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
 
-		mainLayout->addLayout(inputLayout);
-		mainLayout->addLayout(buttonLayout);
+		trayIconCheck = new QCheckBox();
+		trayIconCheck->setChecked(true);
 
-		inputLayout->addWidget(lineCode);
-		inputLayout->addWidget(colorBtn);
+		layout->addRow(lineCode, colorBtn);
+		layout->addRow(tr("&Icon:"), trayIconCheck);
+		layout->addRow(acceptBtn, cancelBtn);
 		
-		buttonLayout->addWidget(acceptBtn);
-		buttonLayout->addWidget(cancelBtn);
+
+	}
+
+	static QList<QVariant> get_input(QWidget* parent, bool* ok = nullptr)
+	{
+		Dialog_AddSlider* dialog = new Dialog_AddSlider(parent);
+		dialog->adjustSize();
+
+		QList<QVariant> list;
+		const int ret = dialog->exec();
+
+		if (ok)
+			*ok = !!ret;
+
+		if (ret) {
+			QString txt = dialog->lineCode->text();
+
+			bool flag;
+			uint16_t c = txt.toUInt(&flag, 16);
+
+			if (flag) list.append(QVariant(c));
+			else list.append(QVariant(-1));
+
+			list.append(QVariant(dialog->color));
+			list.append(QVariant(dialog->trayIconCheck->isChecked()));
+		}
+
+		dialog->deleteLater();
+
+		return list;
 	}
 
 private slots:
@@ -103,7 +155,6 @@ private slots:
 		colorBtn->setStyleSheet(colBtnStyle);
 	}
 
-signals:
 
 };
 

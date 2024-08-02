@@ -1,8 +1,12 @@
 #pragma once
 #include <QObject>
 #include <QtCore>
+#include <QList>
+#include <QVariant>
 
 #include <QSystemTrayIcon>
+
+#include "MonitorHandler.h"
 
 //Singleton Class: https://stackoverflow.com/questions/45059490/how-to-connect-signals-to-the-slots-of-all-instances-of-a-class (not working)
 
@@ -16,9 +20,17 @@ class Linker : public QObject
 private:
     explicit Linker(QObject* parent);
 
+private:
+    QList<Monitor*> registered_monitors;
+
 public:
     ~Linker();
     static Linker& getInstance();
+
+public:
+    void register_monitor(Monitor* monitor);
+
+    QList<Monitor*> get_monitors();
 
 
 public slots:
@@ -38,6 +50,8 @@ public slots:
 
     // Add Slider
     void receive_slider_add_request();
+    void receive_add_slider(uint16_t&, QColor&, bool&);
+
 
 signals:
     void emit_mouse_update(const struct inSignal& output);
@@ -48,6 +62,7 @@ signals:
     void emit_icon_click(QSystemTrayIcon::ActivationReason reason);
 
     void emit_slider_add_request();
+    void emit_add_slider(uint16_t&, QColor&, bool&);
 };
 
 

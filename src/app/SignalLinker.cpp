@@ -16,6 +16,17 @@ Linker& Linker::getInstance()
 }
 
 
+void Linker::register_monitor(Monitor* monitor)
+{
+    registered_monitors.append(monitor);
+}
+
+QList<Monitor*> Linker::get_monitors()
+{
+    return registered_monitors;
+}
+
+
 void Linker::receive_signal()
 {
     //qDebug("Linker received signal...");
@@ -51,7 +62,10 @@ void Linker::receive_icon_click(QSystemTrayIcon::ActivationReason reason)
 
 void Linker::receive_slider_add_request()
 {
-    qDebug() << "Add Slider Requested";
-
     emit emit_slider_add_request();
+}
+
+void Linker::receive_add_slider(uint16_t& code, QColor& color, bool& trayCheck)
+{
+    emit emit_add_slider(code, color, trayCheck);
 }

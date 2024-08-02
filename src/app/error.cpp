@@ -16,4 +16,6 @@ FeatureWarning::FeatureWarning(uint16_t code)
 	setInformativeText("Do you want to proceed?");
 	setStandardButtons(QMessageBox::Yes | QMessageBox::Abort);
 	setDefaultButton(QMessageBox::Abort);
+
+	adjustSize();
 }

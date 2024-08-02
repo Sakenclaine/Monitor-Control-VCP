@@ -16,6 +16,7 @@
 #include <QScrollBar>
 #include <QList>
 #include <QFont>
+#include <QComboBox>
 
 #include "MonitorHandler.h"
 #include "CustomSlider.h"
@@ -109,7 +110,6 @@ class MonitorWidget : public QWidget
 	Q_OBJECT
 
 private:
-	Monitor* monitor = nullptr;
 	QMap<QString, CustomSlider*> customSliders;
 
 public:
@@ -118,12 +118,11 @@ public:
 
 private:
 	QGroupBox* settings_discrete;
-	QGroupBox* settings_continous;
 
 	QScrollArea* scrollArea;
 	CustomFrame* settingsFrame;
+	QComboBox* monitorCombo;
 
-	QHBoxLayout* hSliderLayout;
 	QHBoxLayout* settings_continous_layout;
 
 
@@ -132,7 +131,11 @@ public:
 	void add_slider(uint16_t code, QColor color, bool btrayIcon);
 	void add_contextMenu(QMenu* menu);
 
+public slots:
+	void receive_add_slider(uint16_t&, QColor&, bool&);
 };
+
+
 
 
 class PlaceholderWidget : public QWidget
