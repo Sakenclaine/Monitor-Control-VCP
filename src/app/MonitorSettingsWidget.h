@@ -17,6 +17,7 @@
 #include <QList>
 #include <QFont>
 #include <QComboBox>
+#include <QAbstractItemView>
 
 #include "MonitorHandler.h"
 #include "CustomSlider.h"
@@ -104,6 +105,69 @@ public:
 
 };
 
+class ComboBoxFrame : public QFrame
+{
+	Q_OBJECT
+
+private:
+	QFrame* innerContent;
+	QScrollArea* scrollArea;
+
+public:
+	QComboBox* monitorBox;
+
+private:
+	enum { rimX = 0, rimY = 11 };
+
+public:
+	ComboBoxFrame(QWidget* parent = nullptr) : QFrame(parent)
+	{
+		//setFrameStyle(QFrame::Panel);
+
+		innerContent = new QFrame(this);
+		innerContent->setFrameStyle(QFrame::Panel);
+		innerContent->resize(QSize(width() - rimX, height() - rimY));
+		innerContent->move(rimX, rimY);
+		innerContent->show();
+
+		monitorBox = new QComboBox(this);
+		monitorBox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+		monitorBox->move(0, 0);
+		monitorBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+		monitorBox->setWindowOpacity(0);
+		
+
+		monitorBox->show();
+	}
+
+	void resizeEvent(QResizeEvent* evnt)
+	{
+		innerContent->resize(QSize(evnt->size().width() - rimX, evnt->size().height() - rimY));
+
+		updateGeometry();
+		innerContent->updateGeometry();
+	}
+
+
+public:
+	void setLayout(QLayout* layout)
+	{
+		layout->setContentsMargins(0, 4, 10, 0);
+		innerContent->setLayout(layout);
+		monitorBox->adjustSize();
+	}
+
+	QSize sizeHint() const override
+	{
+		return innerContent->sizeHint();
+	}
+
+	QSize minimumSizeHint() const override
+	{
+		return QSize(innerContent->minimumSizeHint().width(), innerContent->minimumSizeHint().height() + 20);
+	}
+
+};
 
 class MonitorWidget : public QWidget
 {

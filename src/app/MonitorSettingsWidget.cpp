@@ -25,18 +25,22 @@ MonitorWidget::MonitorWidget()
     settings_continous_layout = new QHBoxLayout();
     settings_continous_layout->setSpacing(0);
 
-	settings_discrete = new QGroupBox(tr("Monitor Settings"));
+    ComboBoxFrame* settings_discrete = new ComboBoxFrame(); //new QGroupBox(tr("Monitor Settings"));
     settings_discrete->setMinimumWidth(150);
-    monitorCombo = new QComboBox();
 
-    QVBoxLayout* discreteLayout = new QVBoxLayout(settings_discrete);
+    QVBoxLayout* discreteLayout = new QVBoxLayout();
+    settings_discrete->setLayout(discreteLayout);
 
-    discreteLayout->addWidget(monitorCombo);
 
     foreach(auto elem, Linker::getInstance().get_monitors())
     {
-        monitorCombo->addItem(elem->get_name());
+        settings_discrete->monitorBox->addItem(elem->get_name());
     }
+
+    QLabel* test = new QLabel();
+    test->setText("Hakatalatadikatadidu");
+
+    discreteLayout->addWidget(test);
 
 
     CustomFrame* settingsFrame = new CustomFrame(this);

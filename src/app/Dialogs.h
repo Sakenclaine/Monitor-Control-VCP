@@ -78,7 +78,7 @@ public:
 
 		layout = new QFormLayout(this);
 
-		colDialog = new QColorDialog();
+		colDialog = new QColorDialog(this);
 		colDialog->adjustSize();
 
 		
@@ -145,14 +145,17 @@ public:
 
 private slots:
 	void color_dialog() {
-		colDialog->exec();
+		this->colDialog->exec();
 	}
 
 	void set_color(const QColor& col)
 	{
-		color = col;
-		this->set_color_btn(col);
-		colorBtn->setStyleSheet(colBtnStyle);
+		if (color != col)
+		{
+			color = col;
+			this->set_color_btn(col);
+			colorBtn->setStyleSheet(colBtnStyle);
+		}
 	}
 
 
