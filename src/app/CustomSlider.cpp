@@ -101,6 +101,8 @@ void CustomSlider::setup()
 
 	this->setObjectName(idSlider);
 
+	Linker::getInstance().register_slider(this);
+
 }
 
 void CustomSlider::set_colors(QColor col_handle, QColor col_fill, QColor col_background)
@@ -144,6 +146,7 @@ void CustomSlider::add_trayIcon()
 	QString idIcon = QString("trayIcon_%1_%2").arg(_id).arg(idCode);
 
 	icon->setObjectName(idIcon);
+	Linker::getInstance().register_icon(icon);
 
 	icon->show();
 

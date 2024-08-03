@@ -35,12 +35,12 @@ VCP_COMMANDS::VCP_COMMANDS()
     add_allowed_values(0x14, { 0x01, 0x02, 0x03, 0x04, 0x05, 0x05, 0x006, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D }, 
         { "sRGB", "Native", "4000K", "5000K", "6500K", "7500K", "8200K", "9300K", "10000K", "11500K", "User 1", "User 2", "User 3"});
 
-    new_command(0x16).set_name("Video Gain (Drive): Red").set_desc("Increasing (decreasing) this value will increase (decrease) the luminance of red pixels.").add_command();
+    new_command(0x16).set_name("Video Gain (Drive): Red").set_desc("Increasing (decreasing) this value will increase (decrease) the luminance of red pixels.").continous().all_range().add_command();
 
     new_command(0x17).set_name("User Color Vision Compensation").add_command();
     
-    new_command(0x18).set_name("Video Gain (Drive): Green").set_desc("Increasing (decreasing) this value will increase (decrease) the luminance of green pixels.").add_command();
-    new_command(0x1A).set_name("Video Gain (Drive): Blue").set_desc("Increasing (decreasing) this value will increase (decrease) the luminance of blue pixels.").add_command();
+    new_command(0x18).set_name("Video Gain (Drive): Green").set_desc("Increasing (decreasing) this value will increase (decrease) the luminance of green pixels.").continous().all_range().add_command();
+    new_command(0x1A).set_name("Video Gain (Drive): Blue").set_desc("Increasing (decreasing) this value will increase (decrease) the luminance of blue pixels.").continous().all_range().add_command();
   
     //add_command("Focus", "Increasing (decreasing) this value will adjust the focus of the image.", 0x1C, false, false);
   
@@ -385,6 +385,17 @@ void get_monitor_features_WIN(std::map<QString, monitor_vcp>& features, PHYSICAL
                     }
                 }
             }
+
+            unsigned long current_value = 0;
+            unsigned long max_value = 0;
+            MC_VCP_CODE_TYPE code_type;
+
+            uint16_t test = elem_.toUInt();
+
+            bool bRet = GetVCPFeatureAndVCPFeatureReply(monitor.hPhysicalMonitor, test, &code_type, &current_value, &max_value);
+            qDebug() << "Current Value (" << int(test) << "): " << current_value;
+
+            if (bRet) mon_feature.current_value = current_value;
 
             features[elem_] = mon_feature;
         }

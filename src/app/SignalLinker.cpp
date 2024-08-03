@@ -21,11 +21,30 @@ void Linker::register_monitor(Monitor* monitor)
     registered_monitors.append(monitor);
 }
 
+void Linker::register_slider(CustomSlider* slider)
+{
+    registered_sliders.append(slider);
+}
+
+void Linker::register_icon(TrayIconControlled* icon)
+{
+    registered_trayIcons.append(icon);
+}
+
 QList<Monitor*> Linker::get_monitors()
 {
     return registered_monitors;
 }
 
+QList<CustomSlider*> Linker::get_sliders()
+{
+    return registered_sliders;
+}
+
+QList<TrayIconControlled*> Linker::get_icons()
+{
+    return registered_trayIcons;
+}
 
 void Linker::receive_signal()
 {

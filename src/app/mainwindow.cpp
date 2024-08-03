@@ -197,6 +197,12 @@ void MainWindow::init_monitors_WIN()
     registered_monitors.push_back(mon2);
 
     Linker::getInstance().register_monitor(mon2);
+
+    Monitor* mon3 = new Monitor("Monitor 3 XYZABC");
+    mon3->monitor_init();
+    registered_monitors.push_back(mon3);
+
+    Linker::getInstance().register_monitor(mon3);
     #endif
 
 
@@ -217,25 +223,23 @@ void MainWindow::add_monitor_control_widget()
     MonitorWidget* wMonSet = new MonitorWidget();
     wMonSet->add_slider(0x10, true);
     wMonSet->add_slider(0x12, QColor(255, 0, 255), true);
-    wMonSet->add_slider(0x62, QColor(0, 0, 255), true);
+    wMonSet->add_slider(0x62, QColor(50, 240, 250), true);
 
     mainLayout->addWidget(wMonSet);
 
     wMonSet->add_contextMenu(trayIconMenu);
 
-    QSystemTrayIcon* trayIcon = new QSystemTrayIcon();
+    //QSystemTrayIcon* trayIcon = new QSystemTrayIcon();
+    //QIcon icon = createIconFromText("T", QColor(256, 256, 0), QRect(0, 0, 10, 10));
 
+    //trayIcon->setIcon(icon);
+    //trayIcon->setContextMenu(trayIconMenu);
 
-    QIcon icon = createIconFromText("T", QColor(256, 256, 0), QRect(0, 0, 10, 10));
+    //trayIcons.push_back(trayIcon);
 
-    trayIcon->setIcon(icon);
-    trayIcon->setContextMenu(trayIconMenu);
-
-    trayIcons.push_back(trayIcon);
-
-    connect(trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
-    
-    trayIcon->show();
+    //connect(trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
+    //
+    //trayIcon->show();
 }
 
 
@@ -257,39 +261,40 @@ void MainWindow::add_slider()
         {
             qDebug() << "Code (" << cde_str << ") Exists--> " << VCP_FEATURES.commands[cde_str].name;
 
-            bool code_supported = true;
-
-            for (auto& mon : registered_monitors)
+            if (VCP_FEATURES.commands[cde_str].continous == true)
             {
-                if (!(mon->features.find(cde_str) != mon->features.end())) code_supported = false;
-            }
+                bool code_supported = true;
 
-            if (!code_supported)
-            {
-                FeatureWarning dlg(cde);
-                int ret = dlg.exec();
-
-                switch (ret) {
-                case QMessageBox::Yes:
-                    qDebug() << "Continue";
-                    emit emit_add_slider(cde, col, trayCheck);
-
-                    break;
-                case QMessageBox::Abort:
-                    qDebug() << "Abort";
-                    break;
-                default:
-                    // should never be reached
-                    break;
+                for (auto& mon : registered_monitors)
+                {
+                    if (!(mon->features.find(cde_str) != mon->features.end())) code_supported = false;
                 }
 
-            }
+                if (!code_supported)
+                {
+                    FeatureWarning dlg(cde);
+                    int ret = dlg.exec();
 
+                    switch (ret) {
+                    case QMessageBox::Yes:
+                        qDebug() << "Continue";
+                        emit emit_add_slider(cde, col, trayCheck);
+
+                        break;
+                    case QMessageBox::Abort:
+                        qDebug() << "Abort";
+                        break;
+                    default:
+                        // should never be reached
+                        break;
+                    }
+
+                }
+            }
         }
 
         else qDebug() << "Code (" << cde_str << ") Does Not Exist ";
     }
-
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -299,7 +304,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     bool trayIcon_visible = false;
     
-    for (auto icon : trayIcons)
+    for (auto icon : Linker::getInstance().get_icons())
     {
         trayIcon_visible = trayIcon_visible || icon->isVisible();
     }

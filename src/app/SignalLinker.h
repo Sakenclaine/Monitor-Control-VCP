@@ -7,6 +7,8 @@
 #include <QSystemTrayIcon>
 
 #include "MonitorHandler.h"
+#include "CustomSlider.h"
+#include "TrayIconControlled.h"
 
 //Singleton Class: https://stackoverflow.com/questions/45059490/how-to-connect-signals-to-the-slots-of-all-instances-of-a-class (not working)
 
@@ -22,6 +24,8 @@ private:
 
 private:
     QList<Monitor*> registered_monitors;
+    QList<CustomSlider*> registered_sliders;
+    QList<TrayIconControlled*> registered_trayIcons;
 
 public:
     ~Linker();
@@ -29,8 +33,12 @@ public:
 
 public:
     void register_monitor(Monitor* monitor);
+    void register_slider(CustomSlider* slider);
+    void register_icon(TrayIconControlled* icon);
 
     QList<Monitor*> get_monitors();
+    QList<CustomSlider*> get_sliders();
+    QList<TrayIconControlled*> get_icons();
 
 
 public slots:
