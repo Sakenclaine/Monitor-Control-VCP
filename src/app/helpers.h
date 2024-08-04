@@ -51,4 +51,4 @@ template <typename I> QString n2hexstr(I w, size_t hex_len = sizeof(I) << 1)
     return QString::fromStdString(str_);
 }
 
-void get_screen_geometry(int& xWO_taskbar, int& yWO_taskbar);
+void get_screen_geometry(int& xWO_TAB_TOB, int& yWO_TAB_TOB, int& xWO_TAB, int& yWO_TAB, int& x, int& y);

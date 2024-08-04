@@ -81,6 +81,10 @@ MainWindow::MainWindow(QWidget* parent) :
     #ifdef Q_OS_WIN
     init_monitors_WIN();
 
+    int a, b, c, d;
+
+    get_screen_geometry(a, b, screenSizeX, screenSizeY, c, d);
+
     #elif Q_OS_UNIX
     init_monitors_UNIX();
 
@@ -125,7 +129,7 @@ void MainWindow::setup()
 
     trayIconMenu = new QMenu(this);
     trayIconMenu->addAction(minimizeAction);
-    trayIconMenu->addAction(maximizeAction);
+    //trayIconMenu->addAction(maximizeAction);
     trayIconMenu->addAction(restoreAction);
     trayIconMenu->addSeparator();
 
@@ -159,7 +163,7 @@ void MainWindow::createActions()
     connect(maximizeAction, &QAction::triggered, this, &QWidget::showMaximized);
 
     restoreAction = new QAction(tr("&Restore"), this);
-    connect(restoreAction, &QAction::triggered, this, &QWidget::showNormal);
+    connect(restoreAction, &QAction::triggered, this, &MainWindow::restore);
 
     quitAction = new QAction(tr("&Quit"), this);
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
@@ -435,7 +439,11 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
     switch (reason) {
     case QSystemTrayIcon::Trigger:
         //qDebug() << "\n-------------\nTray Trigger" << reason << "\n-------------\n";
-        dialogueWidget->show();
+        this->setWindowFlags(flags | Qt::Popup);
+        this->move(screenSizeX - width(), screenSizeY - minimumHeight());
+        show();
+
+
         break;
 
     case QSystemTrayIcon::DoubleClick:
@@ -459,6 +467,10 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
-
+void MainWindow::restore()
+{
+    this->setWindowFlags(flags | Qt::Window);
+    show();
+}
 
 

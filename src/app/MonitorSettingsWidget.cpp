@@ -108,8 +108,8 @@ void MonitorWidget::receive_add_slider(uint16_t& cde, QColor& col, bool& trayChe
 
 PlaceholderWidget::PlaceholderWidget()
 {
-    int xS, yS;
-    get_screen_geometry(xS, yS);
+    int xS, yS, a, b, c, d;
+    get_screen_geometry(xS, yS, a, b, c, d);
 
     
     QHBoxLayout* tLayout = new QHBoxLayout();

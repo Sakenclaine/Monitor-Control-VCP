@@ -63,6 +63,11 @@ private:
 	bool autoStart = false;
 	QString config_path;
 
+	Qt::WindowFlags flags = windowFlags();
+
+	int screenSizeX, screenSizeY;
+
+private:
 	//std::vector<TrayIconControlled*> trayIcons;
 	std::vector<QSystemTrayIcon*> trayIcons;
 	std::vector<CustomSlider*> sliders;
@@ -93,6 +98,7 @@ private:
 
 
 private slots:
+	void restore();
 	void iconActivated(QSystemTrayIcon::ActivationReason reason);
 	void add_slider();
 

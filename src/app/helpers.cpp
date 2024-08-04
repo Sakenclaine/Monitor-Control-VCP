@@ -134,11 +134,11 @@ std::string uIntToString(uint16_t u)
 }
 
 
-void get_screen_geometry(int& xWO_taskbar, int& yWO_taskbar)
+void get_screen_geometry(int& xWO_TAB_TOB, int& yWO_TAB_TOB, int& xWO_TAB, int& yWO_TAB, int& x, int& y)
 {
 	// size of screen (primary monitor) without taskbar or desktop toolbars
-	xWO_taskbar = GetSystemMetrics(SM_CXFULLSCREEN);
-	yWO_taskbar = GetSystemMetrics(SM_CYFULLSCREEN);
+	xWO_TAB_TOB = GetSystemMetrics(SM_CXFULLSCREEN);
+	yWO_TAB_TOB = GetSystemMetrics(SM_CYFULLSCREEN);
 
 	//qDebug() << GetSystemMetrics(SM_CXFULLSCREEN) << " x " << GetSystemMetrics(SM_CYFULLSCREEN) << "\n";
 
@@ -146,10 +146,13 @@ void get_screen_geometry(int& xWO_taskbar, int& yWO_taskbar)
 	RECT xy;
 	BOOL fResult = SystemParametersInfo(SPI_GETWORKAREA, 0, &xy, 0);
 	//qDebug() << xy.right - xy.left << " x " << xy.bottom - xy.top << "\n";
+	xWO_TAB = xy.right - xy.left;
+	yWO_TAB = xy.bottom - xy.top;
 
 	// the full width and height of the screen (primary monitor)
 	//qDebug() << GetDeviceCaps(GetDC(NULL), HORZRES) << " x " << GetDeviceCaps(GetDC(NULL), VERTRES) << "\n";
-
+	x = GetDeviceCaps(GetDC(NULL), HORZRES);
+	y = GetDeviceCaps(GetDC(NULL), VERTRES);
 }
 
 
