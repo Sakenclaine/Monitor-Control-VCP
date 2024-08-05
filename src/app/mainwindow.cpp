@@ -82,7 +82,6 @@ MainWindow::MainWindow(QWidget* parent) :
     init_monitors_WIN();
 
     int a, b, c, d;
-
     get_screen_geometry(a, b, screenSizeX, screenSizeY, c, d);
 
     #elif Q_OS_UNIX
@@ -137,7 +136,7 @@ void MainWindow::setup()
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(quitAction);
 
-    for (auto elem : registered_monitors)
+    for (auto elem : Linker::getInstance().get_monitors())
     {
         auto action = new QAction(elem->get_name(), trayMonitorMenu);
         action->setCheckable(true);
@@ -152,6 +151,25 @@ void MainWindow::setup()
     connect(&Linker::getInstance(), &Linker::emit_icon_click, this, &MainWindow::iconActivated);
     connect(this, &MainWindow::emit_add_slider, &Linker::getInstance(), &Linker::receive_add_slider);
 
+}
+
+void MainWindow::createMonitorGroupBox()
+{
+    monitorGroupBox = new QGroupBox(tr("Registered Monitors"));
+    monitorGroupBox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+
+    QVBoxLayout* vLayout = new QVBoxLayout;
+    monitorGroupBox->setLayout(vLayout);
+
+    MonitorTable* tableWidget = new MonitorTable(this, QStringList{ "", "Monitor" });
+
+    vLayout->addWidget(tableWidget);
+
+
+    for (auto& monitor : Linker::getInstance().get_monitors())
+    {
+        tableWidget->add_monitor(monitor);
+    }
 }
 
 void MainWindow::createActions()
@@ -185,32 +203,26 @@ void MainWindow::init_monitors_WIN()
         Monitor* mon = new Monitor(mons, name);
 
         mon->monitor_init();
-        registered_monitors.push_back(mon);
+        //registered_monitors.push_back(mon);
+        Linker::getInstance().register_monitor(mon);
     }
     #endif
     
     #ifdef QT_DEBUG
     Monitor* mon1 = new Monitor("Monitor 1");
     mon1->monitor_init();
-    registered_monitors.push_back(mon1);
-
+    //registered_monitors.push_back(mon1);
     Linker::getInstance().register_monitor(mon1);
 
     Monitor* mon2 = new Monitor("Monitor 2");
     mon2->monitor_init();
-    registered_monitors.push_back(mon2);
-
+    //registered_monitors.push_back(mon2);
     Linker::getInstance().register_monitor(mon2);
 
-    Monitor* mon3 = new Monitor("Monitor 3 XYZABC");
-    mon3->monitor_init();
-    registered_monitors.push_back(mon3);
-
-    Linker::getInstance().register_monitor(mon3);
     #endif
 
 
-    for (auto& elem : registered_monitors)
+    for (auto& elem : Linker::getInstance().get_monitors())
     {
         connect(&Linker::getInstance(), &Linker::emit_monitor_value_update, elem, &Monitor::receive_signal);
     }
@@ -232,18 +244,6 @@ void MainWindow::add_monitor_control_widget()
     mainLayout->addWidget(wMonSet);
 
     wMonSet->add_contextMenu(trayIconMenu);
-
-    //QSystemTrayIcon* trayIcon = new QSystemTrayIcon();
-    //QIcon icon = createIconFromText("T", QColor(256, 256, 0), QRect(0, 0, 10, 10));
-
-    //trayIcon->setIcon(icon);
-    //trayIcon->setContextMenu(trayIconMenu);
-
-    //trayIcons.push_back(trayIcon);
-
-    //connect(trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
-    //
-    //trayIcon->show();
 }
 
 
@@ -269,7 +269,7 @@ void MainWindow::add_slider()
             {
                 bool code_supported = true;
 
-                for (auto& mon : registered_monitors)
+                for (auto& mon : Linker::getInstance().get_monitors())
                 {
                     if (!(mon->features.find(cde_str) != mon->features.end())) code_supported = false;
                 }
@@ -282,6 +282,17 @@ void MainWindow::add_slider()
                     switch (ret) {
                     case QMessageBox::Yes:
                         qDebug() << "Continue";
+
+                        for (auto& mon : Linker::getInstance().get_monitors())
+                        {
+                            monitor_vcp monVCP;
+                            
+
+                            
+                            //mon->features[cde_str] = 
+                        }
+
+
                         emit emit_add_slider(cde, col, trayCheck);
 
                         break;
@@ -292,7 +303,6 @@ void MainWindow::add_slider()
                         // should never be reached
                         break;
                     }
-
                 }
             }
         }
@@ -410,27 +420,6 @@ void MainWindow::readSettings()
     settings.endGroup();
 }
 
-
-void MainWindow::createMonitorGroupBox()
-{
-    monitorGroupBox = new QGroupBox(tr("Registered Monitors"));
-    monitorGroupBox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-
-    QVBoxLayout* vLayout = new QVBoxLayout;
-    monitorGroupBox->setLayout(vLayout);
-
-    MonitorTable* tableWidget = new MonitorTable(this, QStringList{ "", "Monitor" });
-
-    vLayout->addWidget(tableWidget);
-
-    QTableWidgetItem* newItem = new QTableWidgetItem("Test");
-    newItem->setTextAlignment(Qt::AlignCenter);
-
-    for (auto& monitor : registered_monitors)
-    {
-        tableWidget->add_monitor(monitor);
-    }  
-}
 
 
 //https://stackoverflow.com/questions/11562319/cannot-get-qsystemtrayicon-to-work-correctly-with-activation-reason

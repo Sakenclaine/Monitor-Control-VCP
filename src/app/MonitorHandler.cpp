@@ -407,15 +407,19 @@ void get_monitor_features_WIN(std::map<QString, monitor_vcp>& features, PHYSICAL
 
 // BEGIN --------------------------------------------------------------
 // Constructors and Desctructor for Monitor class
+int Monitor::idProvider = 0;
+
 Monitor::Monitor(PHYSICAL_MONITOR monitor, QString name) :
     monitor_(monitor),
-    name(name)
+    name(name),
+    _id(++idProvider)
 {
     dummy = false;
 }
 
 Monitor::Monitor(QString name) :
-    name(name)
+    name(name),
+    _id(++idProvider)
 {
 }
 
@@ -445,31 +449,29 @@ void Monitor::monitor_init()
 // BEGIN --------------------------------------------------------------
 // Definitions for getting and setting features
 
-void Monitor::get_feature_WIN(uint16_t code)
+void Monitor::get_feature_WIN(uint16_t code, uint16_t& ret_code)
 {
     unsigned long current_value = 0;
     unsigned long max_value = 0;
     MC_VCP_CODE_TYPE code_type;
 
-    uint16_t test = 0x10;
-
     if (!dummy)
     {   
-        GetVCPFeatureAndVCPFeatureReply(monitor_.hPhysicalMonitor, test, &code_type, &current_value, &max_value);
-        qDebug() << "Current Value (" << int(test) << "): " << current_value;
+        GetVCPFeatureAndVCPFeatureReply(monitor_.hPhysicalMonitor, code, &code_type, &current_value, &max_value);
+        qDebug() << "Current Value (" << int(code) << "): " << current_value;
+
+        ret_code = current_value;
     }
 
     else
     {
-        qDebug() << "Current Value (" << int(test) << "): " << "None -> Dummy Monitor";
+        qDebug() << "Current Value (" << int(code) << "): " << "Dummy Monitor";
+
     }    
 }
 
 void Monitor::set_feature_WIN(uint16_t code, int value)
 {
-    
-    
-    
     if (code == 0x10)
     {
         //unsigned long ulMinBrightness;
@@ -528,22 +530,86 @@ void Monitor::set_feature_UNIX(uint16_t code, int value)
     throw std::exception(NotImplemented());
 }
 
-void Monitor::get_feature(uint16_t code)
+const uint16_t& Monitor::get_feature(uint16_t code, bool fromMonitor)
 {
-#ifdef Q_OS_WIN
-    get_feature_WIN(code);
-#elif Q_OS_UNIX
-    get_feature_UNIX(code);
-#endif
+    QString code_str = n2hexstr(code);
+
+    // Check if code is supported by monitor
+    if (features.find(code_str) != features.end())
+    {
+        if (!fromMonitor){
+            return features[code_str].current_value;
+        }
+
+        else {
+            uint16_t curr_value;
+
+        #ifdef Q_OS_WIN
+            get_feature_WIN(code, curr_value);
+
+        #elif Q_OS_UNIX
+            get_feature_UNIX(code);
+        #endif
+
+            return curr_value;
+        }
+    }
+
+    else
+    {
+        qDebug() << "Code not supported";
+    }
+
 }
 
-void Monitor::set_feature(uint16_t code, int value)
+void Monitor::set_feature(uint16_t code, uint16_t value)
 {
+    QString code_str = n2hexstr(code);
+
 #ifdef Q_OS_WIN
     set_feature_WIN(code, value);
 #elif Q_OS_UNIX
     set_feature_UNIX(code, value);
 #endif
+
+ 
+}
+
+void Monitor::check_feature_WIN(uint16_t code, bool& checkRet)
+{
+    unsigned long current_value = 0;
+    unsigned long max_value = 0;
+    MC_VCP_CODE_TYPE code_type;
+
+    if (!dummy)
+    {
+        checkRet = GetVCPFeatureAndVCPFeatureReply(monitor_.hPhysicalMonitor, code, &code_type, &current_value, &max_value);
+    }
+
+    else checkRet = true;
+}
+
+bool Monitor::check_feature(uint16_t code)
+{
+    bool checkRet;
+#ifdef Q_OS_WIN
+    check_feature_WIN(code, checkRet);
+#elif Q_OS_UNIX
+    qDebug() << "Not Implemented";
+#endif
+
+    return checkRet;
+}
+
+bool Monitor::add_feature(uint16_t code)
+{
+    bool check = check_feature(code);
+
+    if (check)
+    {
+        monitor_vcp monVCP;
+
+    }
 }
 
 // END ----------------------------------------------------------------

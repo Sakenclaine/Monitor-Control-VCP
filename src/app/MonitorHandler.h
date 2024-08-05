@@ -89,16 +89,21 @@ private:
 
 	bool dummy = true;
 	bool status = false;
+	
+	int _id;
+	static int idProvider;
 
 public:
 	std::map<QString, monitor_vcp> features;
 
 private:
-	void get_feature_WIN(uint16_t code);
+	void get_feature_WIN(uint16_t code, uint16_t& ret_code);
 	void set_feature_WIN(uint16_t code, int value);
 
 	void get_feature_UNIX(uint16_t code);
 	void set_feature_UNIX(uint16_t code, int value);
+
+	void check_feature_WIN(uint16_t code, bool& checkRet);
 
 public:
 	Monitor(PHYSICAL_MONITOR monitor, QString name);
@@ -108,8 +113,11 @@ public:
 public:
 	void monitor_init();
 
-	void get_feature(uint16_t code);
-	void set_feature(uint16_t code, int value);
+	const uint16_t& get_feature(uint16_t code, bool fromMonitor = false);
+	void set_feature(uint16_t code, uint16_t value);
+	bool check_feature(uint16_t code);
+
+	bool add_feature(uint16_t code);
 
 
 	bool get_status();
@@ -119,6 +127,7 @@ public:
 
 public slots:
 	void set_status(bool bval);
+
 	void receive_signal(uint16_t code, int value);
 	void receive_value_request(uint16_t code);
 

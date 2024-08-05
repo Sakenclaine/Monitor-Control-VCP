@@ -69,9 +69,9 @@ private:
 
 private:
 	//std::vector<TrayIconControlled*> trayIcons;
-	std::vector<QSystemTrayIcon*> trayIcons;
-	std::vector<CustomSlider*> sliders;
-	std::vector<Monitor*> registered_monitors;
+	//std::vector<QSystemTrayIcon*> trayIcons;
+	//std::vector<CustomSlider*> sliders;
+	//std::vector<Monitor*> registered_monitors;
 
 	// Widgets
 	QWidget* mainWidget;
