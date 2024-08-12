@@ -131,13 +131,14 @@ public:
 		innerContent->show();
 
 		monitorBox = new QComboBox(this);
+		monitorBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 		monitorBox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
 		monitorBox->move(0, 0);
-		monitorBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 		monitorBox->setWindowOpacity(0);
 		
-
 		monitorBox->show();
+
+		connect(monitorBox, &QComboBox::currentIndexChanged, this, &ComboBoxFrame::comboBoxItemChanged_);
 	}
 
 	void resizeEvent(QResizeEvent* evnt)
@@ -166,6 +167,15 @@ public:
 	{
 		return QSize(innerContent->minimumSizeHint().width(), innerContent->minimumSizeHint().height() + 20);
 	}
+
+private slots:
+	void comboBoxItemChanged_(int itemInd)
+	{
+		qDebug() << "Item Changed: " << itemInd << " --> " << monitorBox->currentText();
+	}
+
+signals:
+	void comboBoxItemChanged(QString& item);
 
 };
 

@@ -121,6 +121,7 @@ public:
 
 
 	bool get_status();
+	const int get_ID();
 
 	QString get_name();
 

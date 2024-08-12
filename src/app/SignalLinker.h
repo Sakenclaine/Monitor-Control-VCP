@@ -2,6 +2,7 @@
 #include <QObject>
 #include <QtCore>
 #include <QList>
+#include <QMap>
 #include <QVariant>
 
 #include <QSystemTrayIcon>
@@ -26,6 +27,10 @@ private:
     QList<Monitor*> registered_monitors;
     QList<CustomSlider*> registered_sliders;
     QList<TrayIconControlled*> registered_trayIcons;
+
+public:
+    QMap<int, QMap<QString, QVariant>> monitor_global_status;
+    QMap<QString, QVariant> global_settings;
 
 public:
     ~Linker();
@@ -59,6 +64,9 @@ public slots:
     // Add Slider
     void receive_slider_add_request();
     void receive_add_slider(uint16_t&, QColor&, bool&);
+
+    //Receive update to monitor information
+    void receive_monitor_status_update(int& id_, QMap<QString, QVariant>& update_);
 
 
 signals:

@@ -53,9 +53,10 @@ void MonitorTable::add_monitor(Monitor* monitor)
 
     setItem(rowCount() - 1, 1, nameItem);
 
-    checkBoxes.back()->setObjectName("cb_" + monitor->get_name());  
+    checkBoxes.back()->setObjectName("cb_" + monitor->get_name() + "_" + QString::number(monitor->get_ID()));
     connect(checkBoxes.back(), &QCheckBox::checkStateChanged, monitor, &Monitor::set_status);
     connect(monitor, &Monitor::send_status, checkBoxes.back(), &QCheckBox::setChecked);
+
 
     resizeColumnsToContents();
 }

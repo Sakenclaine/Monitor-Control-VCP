@@ -610,6 +610,8 @@ bool Monitor::add_feature(uint16_t code)
         monitor_vcp monVCP;
 
     }
+
+    return false;
 }
 
 // END ----------------------------------------------------------------
@@ -627,6 +629,10 @@ bool Monitor::get_status()
     return status;
 }
 
+const int Monitor::get_ID()
+{
+    return _id;
+}
 // END ----------------------------------------------------------------
 
 

@@ -88,3 +88,8 @@ void Linker::receive_add_slider(uint16_t& code, QColor& color, bool& trayCheck)
 {
     emit emit_add_slider(code, color, trayCheck);
 }
+
+void Linker::receive_monitor_status_update(int& id_, QMap<QString, QVariant>& update_)
+{
+    monitor_global_status[id_] = update_;
+}

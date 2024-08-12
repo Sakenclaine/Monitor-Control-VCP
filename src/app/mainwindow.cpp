@@ -1,28 +1,23 @@
 #include <QAction>
+#include <QDebug> 
+#include <QEvent>
+#include <QCloseEvent>
+#include <QMetaEnum>
+
 #include <QCheckBox>
 #include <QComboBox>
-#include <QCoreApplication>
-#include <QCloseEvent>
 #include <QGroupBox>
 #include <QLabel>
-#include <QLineEdit>
-#include <QMenu>
 #include <QPushButton>
-#include <QSpinBox>
-#include <QTextEdit>
+
+#include <QMenu>
 #include <QVBoxLayout>
 #include <QMessageBox>
-#include <QGridLayout>
 #include <QTableWidget>
 #include <QHeaderView>
 
-#include <QDebug> 
-#include <QEvent>
-#include <QMetaEnum>
 
-
-
-
+#include "utilities.h"
 #include "mainwindow.h"
 #include "helpers.h"
 #include "workers.h"
@@ -37,47 +32,13 @@
 
 #include "SignalLinker.h"
 
-// andreybutov https://gist.github.com/andreybutov/33783bca1af9db8f9f36c463c77d7a86
-QString windowsAppPath()
-{
-#ifdef Q_OS_WIN
-    return QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
-#else
-    return "";
-#endif
-}
-
-void setAppToStartAutomatically(bool startAutomatically)
-{
-#if defined ( Q_OS_WIN )
-
-    QString key = "Monitor-Control";
-
-    QSettings registrySettings(
-        "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-        QSettings::NativeFormat);
-
-    registrySettings.remove(key);
-
-    if (startAutomatically) {
-        registrySettings.setValue(key, QString("\"" + windowsAppPath() + "\""));
-    }
-
-    registrySettings.sync();
-
-#endif
-}
-
-
 
 
 MainWindow::MainWindow(QWidget* parent) : 
     QMainWindow(parent)
 {
-    config_path = qApp->applicationDirPath() + "/config.ini";
-
     readSettings();
-    
+
     #ifdef Q_OS_WIN
     init_monitors_WIN();
 
@@ -89,6 +50,17 @@ MainWindow::MainWindow(QWidget* parent) :
 
     #endif
 
+    foreach(auto elem, Linker::getInstance().get_monitors())
+    {
+        int id = elem->get_ID();
+        QMap<QString, QVariant> temp;
+        QVariant chkd(false);
+
+        temp["checked"] = chkd;
+        Linker::getInstance().monitor_global_status[id] = temp;
+    }
+
+
     Controller::getInstance().operate();
 
     connect(&Controller::getInstance(), &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
@@ -97,7 +69,9 @@ MainWindow::MainWindow(QWidget* parent) :
 
 
     add_monitor_control_widget();
-
+    
+    connect(&Linker::getInstance(), &Linker::emit_icon_click, this, &MainWindow::iconActivated);
+    connect(this, &MainWindow::emit_add_slider, &Linker::getInstance(), &Linker::receive_add_slider);
     connect(&Linker::getInstance(), &Linker::emit_slider_add_request, this, &MainWindow::add_slider);
 
  }
@@ -147,10 +121,6 @@ void MainWindow::setup()
         connect(action, &QAction::triggered, elem, &Monitor::set_status);
         connect(elem, &Monitor::send_status, action, &QAction::setChecked);
     }
-
-    connect(&Linker::getInstance(), &Linker::emit_icon_click, this, &MainWindow::iconActivated);
-    connect(this, &MainWindow::emit_add_slider, &Linker::getInstance(), &Linker::receive_add_slider);
-
 }
 
 void MainWindow::createMonitorGroupBox()
@@ -286,14 +256,19 @@ void MainWindow::add_slider()
                         for (auto& mon : Linker::getInstance().get_monitors())
                         {
                             monitor_vcp monVCP;
-                            
-
-                            
-                            //mon->features[cde_str] = 
                         }
 
-
                         emit emit_add_slider(cde, col, trayCheck);
+
+                        //if (!Linker::getInstance().global_settings.contains("Slider"))
+                        //{
+                        //    QList<QVariant> sldr{cde_str, col, trayCheck};
+                        //    QList<QList<QVariant>> sldrs{sldr};
+
+                        //    SettingsManager::getInstance().writeSettingsGroup("Sliders", )
+
+                        //
+                        //}
 
                         break;
                     case QMessageBox::Abort:
@@ -389,23 +364,17 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::writeSettings()
 {
-    QSettings settings(config_path, QSettings::IniFormat);
+    QMap<QString, QVariant> test;
+    test["size"] = QVariant(10);
+    test["height"] = QVariant(20);
 
-    qDebug() << "\n===========================================";
-    qDebug() << "Write Settings to " << config_path;
-
-    settings.beginGroup("MainWindow");
-    settings.setValue("test", 100);
-    settings.endGroup();
+    SettingsManager::getInstance().writeSettingsGroup("Window", test);
 
 }
 
 void MainWindow::readSettings()
 {
-    QSettings settings(config_path, QSettings::IniFormat);
-
-    settings.beginGroup("MainWindow");
-    const auto geometry = settings.value("test").value<int>();
+    const auto geometry = SettingsManager::getInstance().readSetting("MainWindow", "test").value<int>();
 
     if (geometry == NULL)
     {
@@ -417,7 +386,6 @@ void MainWindow::readSettings()
         qDebug() << "Saved value: " << geometry;
     }
     
-    settings.endGroup();
 }
 
 

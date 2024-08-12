@@ -39,8 +39,6 @@ public:
 	explicit MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
-public:
-	//void add_slider(QColor color, QString name, uint16_t code);
 
 protected:
 	void closeEvent(QCloseEvent* event) override;
@@ -68,11 +66,6 @@ private:
 	int screenSizeX, screenSizeY;
 
 private:
-	//std::vector<TrayIconControlled*> trayIcons;
-	//std::vector<QSystemTrayIcon*> trayIcons;
-	//std::vector<CustomSlider*> sliders;
-	//std::vector<Monitor*> registered_monitors;
-
 	// Widgets
 	QWidget* mainWidget;
 	PlaceholderWidget* dialogueWidget;
