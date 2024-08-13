@@ -191,19 +191,31 @@ public:
 
 
 private:
-	QGroupBox* settings_discrete;
+	ComboBoxFrame* settings_discrete;
 
 	QScrollArea* scrollArea;
 	CustomFrame* settingsFrame;
 	QComboBox* monitorCombo;
 
 	QHBoxLayout* settings_continous_layout;
+	QVBoxLayout* discreteLayout;
+
+	// Comboboxes for discrete settings
+	QComboBox* cbInput;
+	QComboBox* cbClrProfile;
+	QComboBox* cbMode;
+
+
+private:
+	void setup_discrete_settings();
 
 
 public:
 	void add_slider(uint16_t code, bool btrayIcon);
 	void add_slider(uint16_t code, QColor color, bool btrayIcon);
 	void add_contextMenu(QMenu* menu);
+
+
 
 public slots:
 	void receive_add_slider(uint16_t&, QColor&, bool&);

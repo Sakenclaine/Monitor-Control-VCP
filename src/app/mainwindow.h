@@ -53,8 +53,7 @@ private:
 
 	void createActions();
 	void createMonitorGroupBox();
-
-	void add_monitor_control_widget();
+	void create_monitor_control_widget();
 
 
 private:
@@ -68,8 +67,8 @@ private:
 private:
 	// Widgets
 	QWidget* mainWidget;
-	PlaceholderWidget* dialogueWidget;
 	SettingsWidget* wSettings;
+	MonitorWidget* wMonSet;
 
 	Dialog_AddSlider* dAddSlider;
 

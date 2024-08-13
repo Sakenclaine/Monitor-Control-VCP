@@ -25,22 +25,8 @@ MonitorWidget::MonitorWidget()
     settings_continous_layout = new QHBoxLayout();
     settings_continous_layout->setSpacing(0);
 
-    ComboBoxFrame* settings_discrete = new ComboBoxFrame(); //new QGroupBox(tr("Monitor Settings"));
-    settings_discrete->setMinimumWidth(150);
 
-    QVBoxLayout* discreteLayout = new QVBoxLayout();
-    settings_discrete->setLayout(discreteLayout);
-
-
-    foreach(auto elem, Linker::getInstance().get_monitors())
-    {
-        settings_discrete->monitorBox->addItem(elem->get_name());
-    }
-
-    QLabel* test = new QLabel();
-    test->setText("Hakatalatadikatadidu");
-
-    discreteLayout->addWidget(test);
+    setup_discrete_settings();
 
 
     CustomFrame* settingsFrame = new CustomFrame(this);
@@ -54,6 +40,31 @@ MonitorWidget::MonitorWidget()
 	layout->addWidget(settingsFrame);
 }
 
+
+void MonitorWidget::setup_discrete_settings()
+{
+    settings_discrete = new ComboBoxFrame(); //new QGroupBox(tr("Monitor Settings"));
+    settings_discrete->setMinimumWidth(150);
+    settings_discrete->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+
+    discreteLayout = new QVBoxLayout();
+    discreteLayout->setAlignment(Qt::AlignTop);
+    settings_discrete->setLayout(discreteLayout);
+    
+    foreach(auto elem, Linker::getInstance().get_monitors())
+    {
+        settings_discrete->monitorBox->addItem(elem->get_name());
+    }
+    
+    cbInput = new QComboBox();
+    cbClrProfile = new QComboBox();
+    cbMode = new QComboBox();
+
+    discreteLayout->setContentsMargins(5, 15, 10, 0);
+    discreteLayout->addWidget(cbInput);
+    discreteLayout->addWidget(cbClrProfile);
+    discreteLayout->addWidget(cbMode);
+}
 
 void MonitorWidget::add_slider(uint16_t code, bool btrayIcon)
 {

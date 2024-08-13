@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget* parent) :
     
 
     setup();
-    add_monitor_control_widget();
+ 
     
     connect(&Linker::getInstance(), &Linker::emit_icon_click, this, &MainWindow::iconActivated);
     connect(this, &MainWindow::emit_add_slider, &Linker::getInstance(), &Linker::receive_add_slider);
@@ -85,22 +85,21 @@ void MainWindow::setup()
     // Create main widget and layout set as content for the main window
     mainWidget = new QWidget(this);
     setCentralWidget(mainWidget);
+
     mainLayout = new QVBoxLayout;
     mainWidget->setLayout(mainLayout);
 
     dAddSlider = new Dialog_AddSlider();
 
-    createActions();
-    createMonitorGroupBox();
+    createActions(); // Create all actions defined in the class with forward declarations
+    createMonitorGroupBox(); // Create table listing the monitors
+    create_monitor_control_widget();
 
     wSettings = new SettingsWidget();
-    dialogueWidget = new PlaceholderWidget();
 
-    mainLayout->addWidget(monitorGroupBox);
-
+    // Create context menu for tray icons
     trayIconMenu = new QMenu(this);
     trayIconMenu->addAction(minimizeAction);
-    //trayIconMenu->addAction(maximizeAction);
     trayIconMenu->addAction(restoreAction);
     trayIconMenu->addSeparator();
 
@@ -119,6 +118,10 @@ void MainWindow::setup()
         connect(action, &QAction::triggered, elem, &Monitor::set_status);
         connect(elem, &Monitor::send_status, action, &QAction::setChecked);
     }
+
+    mainLayout->addWidget(monitorGroupBox);
+    mainLayout->addWidget(wMonSet);
+    wMonSet->add_contextMenu(trayIconMenu);
 }
 
 void MainWindow::createMonitorGroupBox()
@@ -196,16 +199,35 @@ void MainWindow::init_monitors_UNIX()
     qDebug() << "Not Implemented";
 }
 
-void MainWindow::add_monitor_control_widget()
+void MainWindow::create_monitor_control_widget()
 {
-    MonitorWidget* wMonSet = new MonitorWidget();
+    wMonSet = new MonitorWidget();
     wMonSet->add_slider(0x10, true);
     wMonSet->add_slider(0x12, QColor(255, 0, 255), true);
     //wMonSet->add_slider(0x62, QColor(50, 240, 250), true);
 
-    mainLayout->addWidget(wMonSet);
+    const auto clrs = SettingsManager::getInstance().readSetting("Sliders", "colors");
+    const auto cdes = SettingsManager::getInstance().readSetting("Sliders", "codes");
+    const auto ids = SettingsManager::getInstance().readSetting("Sliders", "ids");
+    const auto trayChks = SettingsManager::getInstance().readSetting("Sliders", "tray");
 
-    wMonSet->add_contextMenu(trayIconMenu);
+    if (clrs != NULL && cdes != NULL && ids != NULL && trayChks != NULL)
+    {
+        if (cdes.toList().size() > 2)
+        {
+            for (int i = 2; i < clrs.toList().size(); i++)
+            {
+                qDebug() << "Load slider: " << cdes.toList()[i];
+                
+                uint16_t code = cdes.toList()[i].toUInt();
+                QColor color = clrs.toList()[i].value<QColor>();
+                bool tray = trayChks.toList()[i].toBool();
+
+                wMonSet->add_slider(code, color, tray);
+            }
+        }
+    }
+    
 }
 
 
@@ -311,18 +333,7 @@ void MainWindow::writeSettings()
 
 void MainWindow::readSettings()
 {
-    const auto clrs = SettingsManager::getInstance().readSetting("Sliders", "colors");
-    const auto cdes = SettingsManager::getInstance().readSetting("Sliders", "codes");
-    const auto ids = SettingsManager::getInstance().readSetting("Sliders", "ids");
-    const auto trayChk = SettingsManager::getInstance().readSetting("Sliders", "tray");
 
-    if (clrs != NULL && cdes != NULL && ids != NULL && trayChk != NULL)
-    {
-        qDebug() << "Values loaded";
-
-        foreach(auto elem, clrs.toList())
-            qDebug() << elem.value<QColor>();
-    }
     
 }
 
