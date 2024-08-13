@@ -60,14 +60,12 @@ MainWindow::MainWindow(QWidget* parent) :
         Linker::getInstance().monitor_global_status[id] = temp;
     }
 
-
     Controller::getInstance().operate();
 
     connect(&Controller::getInstance(), &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
     
+
     setup();
-
-
     add_monitor_control_widget();
     
     connect(&Linker::getInstance(), &Linker::emit_icon_click, this, &MainWindow::iconActivated);
@@ -135,7 +133,6 @@ void MainWindow::createMonitorGroupBox()
 
     vLayout->addWidget(tableWidget);
 
-
     for (auto& monitor : Linker::getInstance().get_monitors())
     {
         tableWidget->add_monitor(monitor);
@@ -159,13 +156,12 @@ void MainWindow::createActions()
 
 void MainWindow::init_monitors_WIN()
 {
+    #ifndef QT_DEBUG 
+    //Register monitors
     std::vector<PHYSICAL_MONITOR> monitors;
-    //get_physical_monitors_WIN(monitors);
 
     qDebug() << "Number of physical monitors: " << monitors.size();
 
-    #ifndef QT_DEBUG 
-    //Register monitors
     for (auto& mons : monitors)
     {
         QString name = QString::fromWCharArray(mons.szPhysicalMonitorDescription);
@@ -181,22 +177,18 @@ void MainWindow::init_monitors_WIN()
     #ifdef QT_DEBUG
     Monitor* mon1 = new Monitor("Monitor 1");
     mon1->monitor_init();
-    //registered_monitors.push_back(mon1);
     Linker::getInstance().register_monitor(mon1);
 
     Monitor* mon2 = new Monitor("Monitor 2");
     mon2->monitor_init();
-    //registered_monitors.push_back(mon2);
     Linker::getInstance().register_monitor(mon2);
 
     #endif
-
 
     for (auto& elem : Linker::getInstance().get_monitors())
     {
         connect(&Linker::getInstance(), &Linker::emit_monitor_value_update, elem, &Monitor::receive_signal);
     }
-
 }
 
 void MainWindow::init_monitors_UNIX()
@@ -209,7 +201,7 @@ void MainWindow::add_monitor_control_widget()
     MonitorWidget* wMonSet = new MonitorWidget();
     wMonSet->add_slider(0x10, true);
     wMonSet->add_slider(0x12, QColor(255, 0, 255), true);
-    wMonSet->add_slider(0x62, QColor(50, 240, 250), true);
+    //wMonSet->add_slider(0x62, QColor(50, 240, 250), true);
 
     mainLayout->addWidget(wMonSet);
 
@@ -217,74 +209,7 @@ void MainWindow::add_monitor_control_widget()
 }
 
 
-void MainWindow::add_slider()
-{
-    bool ok;
-    QList<QVariant> list = Dialog_AddSlider::get_input(this, &ok);
-    if (ok) {
-        qDebug() << "Results:";
-        qDebug() << "Color: " << list[1].value<QColor>();
-        qDebug() << "Value: " << list[0].toInt();
 
-        uint16_t cde = list[0].toInt();
-        QString cde_str = n2hexstr(cde, 2);
-        QColor col = list[1].value<QColor>();
-        bool trayCheck = list[2].toBool();
-
-        if (VCP_FEATURES.commands.find(cde_str) != VCP_FEATURES.commands.end())
-        {
-            qDebug() << "Code (" << cde_str << ") Exists--> " << VCP_FEATURES.commands[cde_str].name;
-
-            if (VCP_FEATURES.commands[cde_str].continous == true)
-            {
-                bool code_supported = true;
-
-                for (auto& mon : Linker::getInstance().get_monitors())
-                {
-                    if (!(mon->features.find(cde_str) != mon->features.end())) code_supported = false;
-                }
-
-                if (!code_supported)
-                {
-                    FeatureWarning dlg(cde);
-                    int ret = dlg.exec();
-
-                    switch (ret) {
-                    case QMessageBox::Yes:
-                        qDebug() << "Continue";
-
-                        for (auto& mon : Linker::getInstance().get_monitors())
-                        {
-                            monitor_vcp monVCP;
-                        }
-
-                        emit emit_add_slider(cde, col, trayCheck);
-
-                        //if (!Linker::getInstance().global_settings.contains("Slider"))
-                        //{
-                        //    QList<QVariant> sldr{cde_str, col, trayCheck};
-                        //    QList<QList<QVariant>> sldrs{sldr};
-
-                        //    SettingsManager::getInstance().writeSettingsGroup("Sliders", )
-
-                        //
-                        //}
-
-                        break;
-                    case QMessageBox::Abort:
-                        qDebug() << "Abort";
-                        break;
-                    default:
-                        // should never be reached
-                        break;
-                    }
-                }
-            }
-        }
-
-        else qDebug() << "Code (" << cde_str << ") Does Not Exist ";
-    }
-}
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
@@ -364,31 +289,105 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::writeSettings()
 {
-    QMap<QString, QVariant> test;
-    test["size"] = QVariant(10);
-    test["height"] = QVariant(20);
+    QList<QVariant> cdes;
+    QList<QVariant> clrs;
+    QList<QVariant> ids;
+    QList<QVariant> bTrayChk;
 
-    SettingsManager::getInstance().writeSettingsGroup("Window", test);
+    for (auto elem : Linker::getInstance().get_sliders())
+    {
+        cdes.append(QVariant(elem->get_code()));
+        clrs.append(QVariant(elem->get_color()));
+        ids.append(QVariant(elem->get_ID()));
+        bTrayChk.append(QVariant(elem->get_trayCheck()));
+    }
+
+    SettingsManager::getInstance().writeSettingInGroup("Sliders", "codes", cdes);
+    SettingsManager::getInstance().writeSettingInGroup("Sliders", "colors", clrs);
+    SettingsManager::getInstance().writeSettingInGroup("Sliders", "ids", ids);
+    SettingsManager::getInstance().writeSettingInGroup("Sliders", "tray", bTrayChk);
 
 }
 
 void MainWindow::readSettings()
 {
-    const auto geometry = SettingsManager::getInstance().readSetting("MainWindow", "test").value<int>();
+    const auto clrs = SettingsManager::getInstance().readSetting("Sliders", "colors");
+    const auto cdes = SettingsManager::getInstance().readSetting("Sliders", "codes");
+    const auto ids = SettingsManager::getInstance().readSetting("Sliders", "ids");
+    const auto trayChk = SettingsManager::getInstance().readSetting("Sliders", "tray");
 
-    if (geometry == NULL)
+    if (clrs != NULL && cdes != NULL && ids != NULL && trayChk != NULL)
     {
-        qDebug() << "No saved value";
-    }
+        qDebug() << "Values loaded";
 
-    else
-    {
-        qDebug() << "Saved value: " << geometry;
+        foreach(auto elem, clrs.toList())
+            qDebug() << elem.value<QColor>();
     }
     
 }
 
 
+
+// Slots
+void MainWindow::add_slider()
+{
+    bool ok;
+    QList<QVariant> list = Dialog_AddSlider::get_input(this, &ok);
+
+    if (ok) {
+        qDebug() << "Results:";
+        qDebug() << "Color: " << list[1].value<QColor>();
+        qDebug() << "Value: " << list[0].toInt();
+
+        uint16_t cde = list[0].toInt();
+        QString cde_str = n2hexstr(cde, 2);
+        QColor col = list[1].value<QColor>();
+        bool trayCheck = list[2].toBool();
+
+        if (VCP_FEATURES.commands.find(cde_str) != VCP_FEATURES.commands.end())
+        {
+            qDebug() << "Code (" << cde_str << ") Exists--> " << VCP_FEATURES.commands[cde_str].name;
+
+            if (VCP_FEATURES.commands[cde_str].continous == true)
+            {
+                bool code_supported = true;
+
+                for (auto& mon : Linker::getInstance().get_monitors())
+                {
+                    if (!(mon->features.find(cde_str) != mon->features.end())) code_supported = false;
+                }
+
+                if (!code_supported)
+                {
+                    FeatureWarning dlg(cde);
+                    int ret = dlg.exec();
+
+                    switch (ret) {
+                    case QMessageBox::Yes:
+                        qDebug() << "Continue";
+
+                        for (auto& mon : Linker::getInstance().get_monitors())
+                        {
+                            monitor_vcp monVCP;
+                        }
+
+                        emit emit_add_slider(cde, col, trayCheck);
+
+                        break;
+                    case QMessageBox::Abort:
+                        qDebug() << "Abort";
+                        break;
+                    default:
+                        // should never be reached
+                        break;
+                    }
+                }
+            }
+        }
+
+        else qDebug() << "Code (" << cde_str << ") Does Not Exist ";
+    }
+}
 
 //https://stackoverflow.com/questions/11562319/cannot-get-qsystemtrayicon-to-work-correctly-with-activation-reason
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -397,9 +396,9 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
     case QSystemTrayIcon::Trigger:
         //qDebug() << "\n-------------\nTray Trigger" << reason << "\n-------------\n";
         this->setWindowFlags(flags | Qt::Popup);
-        this->move(screenSizeX - width(), screenSizeY - minimumHeight());
-        show();
 
+        //this->move(screenSizeX - width(), screenSizeY - minimumHeight());
+        show();
 
         break;
 

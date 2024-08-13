@@ -44,6 +44,26 @@ CustomSlider::~CustomSlider()
 
 }
 
+const QColor& CustomSlider::get_color()
+{
+	return color;
+}
+
+const uint16_t& CustomSlider::get_code()
+{
+	return code;
+}
+
+const int& CustomSlider::get_ID()
+{
+	return _id;
+}
+
+const bool& CustomSlider::get_trayCheck()
+{
+	return trayIcon;
+}
+
 void CustomSlider::setup()
 {
 	connect(this, &CustomSlider::send_monitor_value, &Linker::getInstance(), &Linker::receive_monitor_value);

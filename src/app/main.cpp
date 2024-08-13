@@ -10,6 +10,7 @@ int main(int argc, char* argv[])
 	// Setup main application 
     QApplication a(argc, argv);
 
+
  	
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         auto choice = QMessageBox::critical(

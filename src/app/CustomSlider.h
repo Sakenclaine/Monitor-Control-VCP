@@ -44,6 +44,11 @@ public:
 	TrayIconControlled* get_trayIcon();
 	QSlider* get_slider();
 
+	const QColor& get_color();
+	const uint16_t& get_code();
+	const int& get_ID();
+	const bool& get_trayCheck();
+
 
 private:
 	int _id;

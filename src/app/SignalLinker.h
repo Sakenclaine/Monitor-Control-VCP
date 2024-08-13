@@ -30,7 +30,7 @@ private:
 
 public:
     QMap<int, QMap<QString, QVariant>> monitor_global_status;
-    QMap<QString, QVariant> global_settings;
+    QMap<QString, QMap<QString, QVariant>> global_settings;
 
 public:
     ~Linker();

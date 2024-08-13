@@ -73,6 +73,19 @@ void SettingsManager::writeSettingsGroup(const QString& groupName, const QMap<QS
 
 }
 
+
+void SettingsManager::writeSettingInGroup(const QString& group, const QString& key, const QList<QVariant>& variant)
+{
+    QSettings settings(confPath, QSettings::IniFormat);
+
+    settings.beginGroup(group);
+
+    settings.setValue(key, variant);
+
+    settings.endGroup();
+
+}
+
 QVariant SettingsManager::readSetting(const QString& key)
 {
     QSettings settings(confPath, QSettings::IniFormat);

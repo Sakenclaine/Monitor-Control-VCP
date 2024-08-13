@@ -443,6 +443,14 @@ void Monitor::monitor_init()
         #endif
        
     }
+
+    else
+    {
+        monitor_vcp t1;
+        t1.enabled = true;
+        
+        features["10"] = t1;
+    }
 }
 
 
