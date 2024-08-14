@@ -98,10 +98,10 @@ public:
 
 private:
 	void get_feature_WIN(uint16_t code, uint16_t& ret_code);
-	void set_feature_WIN(uint16_t code, int value);
+	void set_feature_WIN(uint16_t code, int value, bool& bSet);
 
 	void get_feature_UNIX(uint16_t code);
-	void set_feature_UNIX(uint16_t code, int value);
+	void set_feature_UNIX(uint16_t code, int value, bool& bSet);
 
 	void check_feature_WIN(uint16_t code, bool& checkRet);
 
@@ -114,7 +114,7 @@ public:
 	void monitor_init();
 
 	const uint16_t& get_feature(uint16_t code, bool fromMonitor = false);
-	void set_feature(uint16_t code, uint16_t value);
+	bool set_feature(uint16_t code, uint16_t value);
 	bool check_feature(uint16_t code);
 
 	bool add_feature(uint16_t code);

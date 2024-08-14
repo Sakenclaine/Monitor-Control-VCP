@@ -61,7 +61,7 @@ void MonitorWidget::setup_discrete_settings()
     
     foreach(auto elem, Linker::getInstance().get_monitors())
     {
-        settings_discrete->monitorBox->addItem(elem->get_name());
+        settings_discrete->monitorBox->addItem(elem->get_name(), QVariant(elem->get_ID()));
 
         QWidget* pageWidget = new QWidget;
         QVBoxLayout* pageLayout = new QVBoxLayout;
@@ -213,11 +213,12 @@ void MonitorWidget::discrete_setting_changed(int index)
 
     if (obj != nullptr)
     {
-        qDebug() << "Changed Setting: " << obj->currentData();
+        int id = settings_discrete->monitorBox->currentData().toInt();
+        QString cde_str = (obj->currentData()).toList()[0].toString();
+        uint16_t value = (obj->currentData()).toList()[1].toUInt();
 
+        emit send_discrete_setting(id, cde_str, value);
     }
-
-
 }
 
 PlaceholderWidget::PlaceholderWidget()

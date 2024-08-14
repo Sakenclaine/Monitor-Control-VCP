@@ -490,28 +490,28 @@ void Monitor::get_feature_WIN(uint16_t code, uint16_t& ret_code)
     }    
 }
 
-void Monitor::set_feature_WIN(uint16_t code, int value)
+void Monitor::set_feature_WIN(uint16_t code, int value, bool& bSet)
 {
     if (code == 0x10)
     {
-        //unsigned long ulMinBrightness;
-        //unsigned long ulCurrBrightness;
-        //unsigned long ulMaxBrightness;
-        //
-        //bool bGet = GetMonitorBrightness(monitor_.hPhysicalMonitor, &ulMinBrightness, &ulCurrBrightness, &ulMaxBrightness);
+        unsigned long ulMinBrightness;
+        unsigned long ulCurrBrightness;
+        unsigned long ulMaxBrightness;
+        
+        bool bGet = GetMonitorBrightness(monitor_.hPhysicalMonitor, &ulMinBrightness, &ulCurrBrightness, &ulMaxBrightness);
 
-        //if (bGet && ulCurrBrightness != value)
-        //{
-        //    unsigned long ulNewValue = ulMinBrightness + (ulMaxBrightness - ulMinBrightness) / (100 - 0) * (value - 0);
+        if (bGet && ulCurrBrightness != value)
+        {
+            unsigned long ulNewValue = ulMinBrightness + (ulMaxBrightness - ulMinBrightness) / (100 - 0) * (value - 0);
 
-        //    qDebug() << "Min: " << ulMinBrightness << " Max: " << ulMaxBrightness;
-        //    qDebug() << "New Value: " << ulNewValue;
+            qDebug() << "Min: " << ulMinBrightness << " Max: " << ulMaxBrightness;
+            qDebug() << "New Value: " << ulNewValue;
 
-        //    if (ulNewValue <= ulMaxBrightness)
-        //    {
-        //        SetMonitorBrightness(monitor_.hPhysicalMonitor, ulNewValue);
-        //    }
-        //}
+            if (ulNewValue <= ulMaxBrightness)
+            {
+                SetMonitorBrightness(monitor_.hPhysicalMonitor, ulNewValue);
+            }
+        }
     }
 
     else if (code == 0x12)
@@ -536,6 +536,11 @@ void Monitor::set_feature_WIN(uint16_t code, int value)
         //}
     }
 
+
+    else
+    {
+        bSet = SetVCPFeature(monitor_.hPhysicalMonitor, code, value);
+    }
 }
 
 void Monitor::get_feature_UNIX(uint16_t code)
@@ -544,7 +549,7 @@ void Monitor::get_feature_UNIX(uint16_t code)
     throw std::exception(NotImplemented());
 }
 
-void Monitor::set_feature_UNIX(uint16_t code, int value)
+void Monitor::set_feature_UNIX(uint16_t code, int value, bool& bSet)
 {
     qDebug() << "Not implemented";
     throw std::exception(NotImplemented());
@@ -582,15 +587,25 @@ const uint16_t& Monitor::get_feature(uint16_t code, bool fromMonitor)
 
 }
 
-void Monitor::set_feature(uint16_t code, uint16_t value)
+bool Monitor::set_feature(uint16_t code, uint16_t value)
 {
     QString code_str = n2hexstr(code);
 
-#ifdef Q_OS_WIN
-    set_feature_WIN(code, value);
-#elif Q_OS_UNIX
-    set_feature_UNIX(code, value);
-#endif
+    if (features.contains(code_str) && !dummy)
+    {
+        if (features[code_str].current_value == value) return false;
+
+        bool bSet;
+
+    #ifdef Q_OS_WIN
+        set_feature_WIN(code, value, bSet);
+    #elif Q_OS_UNIX
+        set_feature_UNIX(code, value, bSet);
+    #endif
+
+        if (bSet) features[code_str].current_value = value;
+
+    }
 
  
 }

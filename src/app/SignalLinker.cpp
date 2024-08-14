@@ -120,3 +120,8 @@ void Linker::receive_monitor_status_update(int& id_, QMap<QString, QVariant>& up
 {
     monitor_global_status[id_] = update_;
 }
+
+void Linker::receive_monitor_setting(int& monitorID, QString& cde_str, uint16_t& value)
+{
+    qDebug() << "Changed Setting: " << monitorID << " ->" << cde_str << " -- " << value;
+}

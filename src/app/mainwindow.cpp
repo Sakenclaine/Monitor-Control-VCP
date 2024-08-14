@@ -72,6 +72,8 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(this, &MainWindow::emit_add_slider, &Linker::getInstance(), &Linker::receive_add_slider);
     connect(&Linker::getInstance(), &Linker::emit_slider_add_request, this, &MainWindow::add_slider);
 
+    connect(wMonSet, &MonitorWidget::send_discrete_setting, &Linker::getInstance(), &Linker::receive_monitor_setting);
+
  }
 
 

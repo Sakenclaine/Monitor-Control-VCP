@@ -72,6 +72,8 @@ public slots:
     //Receive update to monitor information
     void receive_monitor_status_update(int& id_, QMap<QString, QVariant>& update_);
 
+    void receive_monitor_setting(int&, QString&, uint16_t&);
+
 
 signals:
     void emit_mouse_update(const struct inSignal& output);
