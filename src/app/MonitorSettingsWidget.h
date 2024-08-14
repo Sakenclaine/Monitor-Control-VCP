@@ -18,6 +18,7 @@
 #include <QFont>
 #include <QComboBox>
 #include <QAbstractItemView>
+#include <QStackedWidget>
 
 #include "MonitorHandler.h"
 #include "CustomSlider.h"
@@ -199,15 +200,12 @@ private:
 
 	QScrollArea* scrollArea;
 	CustomFrame* settingsFrame;
-	QComboBox* monitorCombo;
 
 	QHBoxLayout* settings_continous_layout;
 	QVBoxLayout* discreteLayout;
 
-	// Comboboxes for discrete settings
-	QComboBox* cbInput;
-	QComboBox* cbClrProfile;
-	QComboBox* cbMode;
+	QStackedWidget* stackedWidget;
+
 
 
 
@@ -220,6 +218,7 @@ public:
 	void add_slider(uint16_t code, QColor color, bool btrayIcon);
 	void add_contextMenu(QMenu* menu);
 	void chk_add_discrete_feature(QString monName, QString qsft);
+	void chk_add_discrete_feature(Monitor* mon, QString qsft);
 
 
 

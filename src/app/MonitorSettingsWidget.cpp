@@ -53,16 +53,11 @@ void MonitorWidget::setup_discrete_settings()
     discreteLayout->setAlignment(Qt::AlignTop);
     settings_discrete->setLayout(discreteLayout);
 
-    QStackedWidget* stackedWidget = new QStackedWidget;
+    stackedWidget = new QStackedWidget;
     discreteLayout->addWidget(stackedWidget);
 
-    //cbInput = new QComboBox();
-    //cbInput->setObjectName("cb_60");
-    //cbClrProfile = new QComboBox();
-    //cbClrProfile->setObjectName("cb_14");
-    //cbMode = new QComboBox();
 
-    //connect(cbInput, &QComboBox::currentIndexChanged, this, &MonitorWidget::discrete_setting_changed);
+  
     
     foreach(auto elem, Linker::getInstance().get_monitors())
     {
@@ -74,26 +69,25 @@ void MonitorWidget::setup_discrete_settings()
         pageWidget->setLayout(pageLayout);
 
         QComboBox* cbInput = new QComboBox;
+        cbInput->setObjectName(QString("cb_%1_60").arg(elem->get_name()));
         QComboBox* cbClrProfile = new QComboBox;
+        cbClrProfile->setObjectName(QString("cb_%1_14").arg(elem->get_name()));
 
         pageLayout->addWidget(cbInput);
         pageLayout->addWidget(cbClrProfile);
 
         stackedWidget->addWidget(pageWidget);
 
+        chk_add_discrete_feature(elem, "60");
+        chk_add_discrete_feature(elem, "14");
+
+        connect(cbInput, &QComboBox::currentIndexChanged, this, &MonitorWidget::discrete_setting_changed);
+        connect(cbClrProfile, &QComboBox::currentIndexChanged, this, &MonitorWidget::discrete_setting_changed);
+
     }
 
-    //connect(settings_discrete, &ComboBoxFrame::comboBoxItemChanged, this, &MonitorWidget::cb_monitor_change);
-    //
-    //discreteLayout->setContentsMargins(5, 15, 10, 0);
-    //discreteLayout->addWidget(cbInput);
-    //discreteLayout->addWidget(cbClrProfile);
-    //discreteLayout->addWidget(cbMode);
+    connect(settings_discrete, &ComboBoxFrame::comboBoxItemChanged, this, &MonitorWidget::cb_monitor_change);
 
-    //QString cName = settings_discrete->monitorBox->currentText();
-    //int cInd = settings_discrete->monitorBox->currentIndex();
-
-    //cb_monitor_change(cName, cInd);
 
 }
 
@@ -151,12 +145,7 @@ void MonitorWidget::cb_monitor_change(QString& name, int& id)
     qDebug() << name << " -- " << id;
     qDebug() << "Update ComboBoxes ...";
 
-    cbInput->clear();
-
-    chk_add_discrete_feature(name, "60");
-    chk_add_discrete_feature(name, "14");
-
-
+    stackedWidget->setCurrentIndex(id);
 }
 
 void MonitorWidget::chk_add_discrete_feature(QString monName, QString qsft)
@@ -176,11 +165,40 @@ void MonitorWidget::chk_add_discrete_feature(QString monName, QString qsft)
             {
                 int index = it - tempVec.begin();
 
-                QString cbName = QString("cb_%1").arg(qsft);
+                QString cbName = QString("cb_%1_%2").arg(monName).arg(qsft);
                 QComboBox* cb = this->findChild<QComboBox*>(cbName);
 
                 QList<QVariant> itemData{ QVariant(qsft), QVariant(tempVec[index]) };
                 
+                if (cb != NULL) {
+                    cb->addItem(VCP_FEATURES.commands[qsft].possible_values_desc[index], itemData);
+                }
+            }
+        }
+    }
+}
+
+void MonitorWidget::chk_add_discrete_feature(Monitor* mon, QString qsft)
+{
+    qDebug() << mon->get_name() << " " << qsft;
+    
+    if (mon->features.contains(qsft))
+    {
+        auto tempVec = VCP_FEATURES.commands[qsft].possible_values;
+
+        for (auto& ft : mon->features[qsft].possible_values)
+        {
+            auto it = std::find(tempVec.begin(), tempVec.end(), ft);
+
+            if (it != tempVec.end())
+            {
+                int index = it - tempVec.begin();
+
+                QString cbName = QString("cb_%1_%2").arg(mon->get_name()).arg(qsft);
+                QComboBox* cb = this->findChild<QComboBox*>(cbName);
+
+                QList<QVariant> itemData{ QVariant(qsft), QVariant(tempVec[index]) };
+
                 if (cb != NULL) {
                     cb->addItem(VCP_FEATURES.commands[qsft].possible_values_desc[index], itemData);
                 }
