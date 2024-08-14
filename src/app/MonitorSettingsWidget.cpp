@@ -56,9 +56,6 @@ void MonitorWidget::setup_discrete_settings()
     stackedWidget = new QStackedWidget;
     discreteLayout->addWidget(stackedWidget);
 
-
-  
-    
     foreach(auto elem, Linker::getInstance().get_monitors())
     {
         settings_discrete->monitorBox->addItem(elem->get_name(), QVariant(elem->get_ID()));
@@ -78,6 +75,7 @@ void MonitorWidget::setup_discrete_settings()
 
         stackedWidget->addWidget(pageWidget);
 
+        //TODO: Set combobox item to current value of monitor
         chk_add_discrete_feature(elem, "60");
         chk_add_discrete_feature(elem, "14");
 
@@ -180,8 +178,6 @@ void MonitorWidget::chk_add_discrete_feature(QString monName, QString qsft)
 
 void MonitorWidget::chk_add_discrete_feature(Monitor* mon, QString qsft)
 {
-    qDebug() << mon->get_name() << " " << qsft;
-    
     if (mon->features.contains(qsft))
     {
         auto tempVec = VCP_FEATURES.commands[qsft].possible_values;

@@ -161,9 +161,10 @@ void MainWindow::createActions()
 
 void MainWindow::init_monitors_WIN()
 {
-    #ifndef QT_DEBUG 
+    #ifndef QT_DEBUG
     //Register monitors
     std::vector<PHYSICAL_MONITOR> monitors;
+    get_physical_monitors_WIN(monitors);
 
     qDebug() << "Number of physical monitors: " << monitors.size();
 
@@ -178,6 +179,7 @@ void MainWindow::init_monitors_WIN()
         Linker::getInstance().register_monitor(mon);
     }
     #endif
+
     
     #ifdef QT_DEBUG
     Monitor* mon1 = new Monitor("Monitor 1");
