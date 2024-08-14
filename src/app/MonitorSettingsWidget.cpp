@@ -43,27 +43,37 @@ MonitorWidget::MonitorWidget()
 
 void MonitorWidget::setup_discrete_settings()
 {
-    settings_discrete = new ComboBoxFrame(); //new QGroupBox(tr("Monitor Settings"));
+    settings_discrete = new ComboBoxFrame(this); //new QGroupBox(tr("Monitor Settings"));
     settings_discrete->setMinimumWidth(150);
     settings_discrete->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
     discreteLayout = new QVBoxLayout();
     discreteLayout->setAlignment(Qt::AlignTop);
     settings_discrete->setLayout(discreteLayout);
+
+    cbInput = new QComboBox();
+    cbInput->setObjectName("cb_60");
+    cbClrProfile = new QComboBox();
+    cbClrProfile->setObjectName("cb_14");
+    cbMode = new QComboBox();
     
     foreach(auto elem, Linker::getInstance().get_monitors())
     {
         settings_discrete->monitorBox->addItem(elem->get_name());
     }
-    
-    cbInput = new QComboBox();
-    cbClrProfile = new QComboBox();
-    cbMode = new QComboBox();
 
+    connect(settings_discrete, &ComboBoxFrame::comboBoxItemChanged, this, &MonitorWidget::cb_monitor_change);
+    
     discreteLayout->setContentsMargins(5, 15, 10, 0);
     discreteLayout->addWidget(cbInput);
     discreteLayout->addWidget(cbClrProfile);
     discreteLayout->addWidget(cbMode);
+
+    QString cName = settings_discrete->monitorBox->currentText();
+    int cInd = settings_discrete->monitorBox->currentIndex();
+
+    cb_monitor_change(cName, cInd);
+
 }
 
 void MonitorWidget::add_slider(uint16_t code, bool btrayIcon)
@@ -115,6 +125,47 @@ void MonitorWidget::receive_add_slider(uint16_t& cde, QColor& col, bool& trayChe
 }
 
 
+void MonitorWidget::cb_monitor_change(QString& name, int& id)
+{
+    qDebug() << name << " -- " << id;
+    qDebug() << "Update ComboBoxes ...";
+
+    cbInput->clear();
+
+    chk_add_discrete_feature(name, "60");
+    chk_add_discrete_feature(name, "14");
+
+
+}
+
+void MonitorWidget::chk_add_discrete_feature(QString monName, QString qsft)
+{
+    Monitor* mon = Linker::getInstance().get_monitor_byName(monName);
+
+    if (mon->features.contains(qsft))
+    {
+        auto tempVec = VCP_FEATURES.commands[qsft].possible_values;
+        auto nm = VCP_FEATURES.commands[qsft].name;
+
+        for (auto& ft : mon->features[qsft].possible_values)
+        {
+            auto it = std::find(tempVec.begin(), tempVec.end(), ft);
+
+            if (it != tempVec.end())
+            {
+                int index = it - tempVec.begin();
+
+                QString cbName = QString("cb_%1").arg(qsft);
+                QComboBox* cb = this->findChild<QComboBox*>(cbName);
+                
+                if (cb != NULL) {
+                    cb->addItem(VCP_FEATURES.commands[qsft].possible_values_desc[index]);
+                }
+            }
+        }
+    }
+
+}
 
 PlaceholderWidget::PlaceholderWidget()
 {

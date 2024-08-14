@@ -113,11 +113,11 @@ private:
 	QFrame* innerContent;
 	QScrollArea* scrollArea;
 
-public:
-	QComboBox* monitorBox;
-
 private:
 	enum { rimX = 0, rimY = 11 };
+
+public:
+	QComboBox* monitorBox;
 
 public:
 	ComboBoxFrame(QWidget* parent = nullptr) : QFrame(parent)
@@ -168,14 +168,18 @@ public:
 		return QSize(innerContent->minimumSizeHint().width(), innerContent->minimumSizeHint().height() + 20);
 	}
 
+
 private slots:
-	void comboBoxItemChanged_(int itemInd)
+	void comboBoxItemChanged_(int itemID)
 	{
-		qDebug() << "Item Changed: " << itemInd << " --> " << monitorBox->currentText();
+		//qDebug() << "Item Changed: " << itemID << " --> " << monitorBox->currentText();
+
+		QString temp = monitorBox->currentText();
+		emit comboBoxItemChanged(temp, itemID);
 	}
 
 signals:
-	void comboBoxItemChanged(QString& item);
+	void comboBoxItemChanged(QString& itemName, int& itemID);
 
 };
 
@@ -206,6 +210,7 @@ private:
 	QComboBox* cbMode;
 
 
+
 private:
 	void setup_discrete_settings();
 
@@ -214,11 +219,15 @@ public:
 	void add_slider(uint16_t code, bool btrayIcon);
 	void add_slider(uint16_t code, QColor color, bool btrayIcon);
 	void add_contextMenu(QMenu* menu);
+	void chk_add_discrete_feature(QString monName, QString qsft);
 
 
 
 public slots:
 	void receive_add_slider(uint16_t&, QColor&, bool&);
+
+private slots:
+	void cb_monitor_change(QString& name, int& ids);
 };
 
 

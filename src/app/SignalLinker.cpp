@@ -46,6 +46,27 @@ QList<TrayIconControlled*> Linker::get_icons()
     return registered_trayIcons;
 }
 
+// Change way of saving monitors? https://stackoverflow.com/questions/752658/is-the-practice-of-returning-a-c-reference-variable-evil
+Monitor* Linker::get_monitor_byID(int& id)
+{
+    for (auto elem : registered_monitors)
+    {
+        if (elem->get_ID() == id) { return elem; }
+    }
+
+    return NULL;
+}
+
+Monitor* Linker::get_monitor_byName(QString& name)
+{
+    for (auto elem : registered_monitors)
+    {
+        if (elem->get_name() == name) { return elem; }
+    }
+
+    return NULL;
+}
+
 void Linker::receive_signal()
 {
     //qDebug("Linker received signal...");
@@ -72,6 +93,12 @@ void Linker::receive_monitor_value(uint16_t& code, int& value)
     //qDebug() << "Code: " << code << " -- Value: " << value;
 
     emit emit_monitor_value_update(code, value);
+}
+
+void Linker::receive_monitor_value_ID(uint16_t& code, int& value, int& id)
+{
+    qDebug() << "Code: " << code << " Value: " << value << " Monitor: " << id;
+
 }
 
 void Linker::receive_icon_click(QSystemTrayIcon::ActivationReason reason)

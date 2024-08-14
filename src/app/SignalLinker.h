@@ -45,6 +45,9 @@ public:
     QList<CustomSlider*> get_sliders();
     QList<TrayIconControlled*> get_icons();
 
+    Monitor* get_monitor_byID(int& id);
+    Monitor* get_monitor_byName(QString& name);
+
 
 public slots:
     void receive_signal();
@@ -57,6 +60,7 @@ public slots:
 
     // Receive value update for a specific code
     void receive_monitor_value(uint16_t& code, int& value);
+    void receive_monitor_value_ID(uint16_t& code, int& value, int& id);
 
     // Receive Tray Icon Clicked
     void receive_icon_click(QSystemTrayIcon::ActivationReason reason);
