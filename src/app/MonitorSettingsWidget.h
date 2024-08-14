@@ -228,6 +228,8 @@ public slots:
 
 private slots:
 	void cb_monitor_change(QString& name, int& ids);
+
+	void discrete_setting_changed(int index);
 };
 
 

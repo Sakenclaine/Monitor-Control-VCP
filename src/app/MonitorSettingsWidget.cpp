@@ -15,6 +15,8 @@
 #include <QFrame>
 #include <QLabel>
 
+#include <QStackedWidget>
+
 
 
 
@@ -51,28 +53,47 @@ void MonitorWidget::setup_discrete_settings()
     discreteLayout->setAlignment(Qt::AlignTop);
     settings_discrete->setLayout(discreteLayout);
 
-    cbInput = new QComboBox();
-    cbInput->setObjectName("cb_60");
-    cbClrProfile = new QComboBox();
-    cbClrProfile->setObjectName("cb_14");
-    cbMode = new QComboBox();
+    QStackedWidget* stackedWidget = new QStackedWidget;
+    discreteLayout->addWidget(stackedWidget);
+
+    //cbInput = new QComboBox();
+    //cbInput->setObjectName("cb_60");
+    //cbClrProfile = new QComboBox();
+    //cbClrProfile->setObjectName("cb_14");
+    //cbMode = new QComboBox();
+
+    //connect(cbInput, &QComboBox::currentIndexChanged, this, &MonitorWidget::discrete_setting_changed);
     
     foreach(auto elem, Linker::getInstance().get_monitors())
     {
         settings_discrete->monitorBox->addItem(elem->get_name());
+
+        QWidget* pageWidget = new QWidget;
+        QVBoxLayout* pageLayout = new QVBoxLayout;
+        pageLayout->setAlignment(Qt::AlignTop);
+        pageWidget->setLayout(pageLayout);
+
+        QComboBox* cbInput = new QComboBox;
+        QComboBox* cbClrProfile = new QComboBox;
+
+        pageLayout->addWidget(cbInput);
+        pageLayout->addWidget(cbClrProfile);
+
+        stackedWidget->addWidget(pageWidget);
+
     }
 
-    connect(settings_discrete, &ComboBoxFrame::comboBoxItemChanged, this, &MonitorWidget::cb_monitor_change);
-    
-    discreteLayout->setContentsMargins(5, 15, 10, 0);
-    discreteLayout->addWidget(cbInput);
-    discreteLayout->addWidget(cbClrProfile);
-    discreteLayout->addWidget(cbMode);
+    //connect(settings_discrete, &ComboBoxFrame::comboBoxItemChanged, this, &MonitorWidget::cb_monitor_change);
+    //
+    //discreteLayout->setContentsMargins(5, 15, 10, 0);
+    //discreteLayout->addWidget(cbInput);
+    //discreteLayout->addWidget(cbClrProfile);
+    //discreteLayout->addWidget(cbMode);
 
-    QString cName = settings_discrete->monitorBox->currentText();
-    int cInd = settings_discrete->monitorBox->currentIndex();
+    //QString cName = settings_discrete->monitorBox->currentText();
+    //int cInd = settings_discrete->monitorBox->currentIndex();
 
-    cb_monitor_change(cName, cInd);
+    //cb_monitor_change(cName, cInd);
 
 }
 
@@ -157,13 +178,27 @@ void MonitorWidget::chk_add_discrete_feature(QString monName, QString qsft)
 
                 QString cbName = QString("cb_%1").arg(qsft);
                 QComboBox* cb = this->findChild<QComboBox*>(cbName);
+
+                QList<QVariant> itemData{ QVariant(qsft), QVariant(tempVec[index]) };
                 
                 if (cb != NULL) {
-                    cb->addItem(VCP_FEATURES.commands[qsft].possible_values_desc[index]);
+                    cb->addItem(VCP_FEATURES.commands[qsft].possible_values_desc[index], itemData);
                 }
             }
         }
     }
+}
+
+void MonitorWidget::discrete_setting_changed(int index)
+{
+    auto obj = qobject_cast<QComboBox*>(sender());
+
+    if (obj != nullptr)
+    {
+        qDebug() << "Changed Setting: " << obj->currentData();
+
+    }
+
 
 }
 
