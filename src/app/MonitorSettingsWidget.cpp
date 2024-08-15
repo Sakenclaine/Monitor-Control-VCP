@@ -182,6 +182,9 @@ void MonitorWidget::chk_add_discrete_feature(Monitor* mon, QString qsft)
     {
         auto tempVec = VCP_FEATURES.commands[qsft].possible_values;
 
+        QString cbName = QString("cb_%1_%2").arg(mon->get_name()).arg(qsft);
+        QComboBox* cb = this->findChild<QComboBox*>(cbName);
+
         for (auto& ft : mon->features[qsft].possible_values)
         {
             auto it = std::find(tempVec.begin(), tempVec.end(), ft);
@@ -190,15 +193,19 @@ void MonitorWidget::chk_add_discrete_feature(Monitor* mon, QString qsft)
             {
                 int index = it - tempVec.begin();
 
-                QString cbName = QString("cb_%1_%2").arg(mon->get_name()).arg(qsft);
-                QComboBox* cb = this->findChild<QComboBox*>(cbName);
-
                 QList<QVariant> itemData{ QVariant(qsft), QVariant(tempVec[index]) };
 
                 if (cb != NULL) {
                     cb->addItem(VCP_FEATURES.commands[qsft].possible_values_desc[index], itemData);
                 }
             }
+        }
+
+        QVariant currentData(QVariantList{ QVariant(qsft), QVariant(mon->features[qsft].current_value) });
+        int ind = cb->findData(currentData);
+
+        if (ind != -1) { // -1 for not found
+            cb->setCurrentIndex(ind);
         }
     }
 }

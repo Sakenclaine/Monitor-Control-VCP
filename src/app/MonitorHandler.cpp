@@ -454,12 +454,14 @@ void Monitor::monitor_init()
         monitor_vcp clrProfile;
         clrProfile.enabled = true;
         clrProfile.possible_values = std::vector<uint16_t>{0x01, 0x02, 0x03};
+        clrProfile.current_value = 0x01;
 
         features["14"] = clrProfile;
 
         monitor_vcp monInput;
         monInput.enabled = true;
         monInput.possible_values = std::vector<uint16_t>{ 0x01, 0x02, 0x03 };
+        monInput.current_value = 0x02;
 
         features["60"] = monInput;
     }
