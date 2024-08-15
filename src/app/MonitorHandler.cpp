@@ -589,11 +589,14 @@ const uint16_t& Monitor::get_feature(uint16_t code, bool fromMonitor)
 
 bool Monitor::set_feature(uint16_t code, uint16_t value)
 {
+    qDebug() << "Set Feature ...";
+    
     QString code_str = n2hexstr(code);
 
     if (features.contains(code_str) && !dummy)
     {
         if (features[code_str].current_value == value) return false;
+        if (!(features[code_str].enabled)) return false;
 
         bool bSet;
 
@@ -605,30 +608,96 @@ bool Monitor::set_feature(uint16_t code, uint16_t value)
 
         if (bSet) features[code_str].current_value = value;
 
+        return true;
+
     }
 
- 
+    else if (!(features.contains(code_str)))
+    {
+        uint16_t cVal, maxVal;
+        bool bChk = check_feature(code, cVal, maxVal);
+     
+        if (bChk)
+        {
+            monitor_vcp new_feature;
+            new_feature.enabled = true;
+            new_feature.current_value = cVal;
+            new_feature.max_value = maxVal;
+
+            FeatureWarning dlg(code, name, bChk);
+            int ret = dlg.exec();
+
+            switch (ret) {
+            case QMessageBox::Yes:
+                features[code_str] = new_feature;
+
+                bool bSet;
+                #ifdef Q_OS_WIN
+                set_feature_WIN(code, value, bSet);
+                #elif Q_OS_UNIX
+                set_feature_UNIX(code, value, bSet);
+                #endif
+
+                if (bSet) features[code_str].current_value = value;
+
+                return true;
+
+                break;
+            case QMessageBox::Abort:
+                qDebug() << "Abort";
+                new_feature.enabled = false;
+                features[code_str] = new_feature;
+
+                break;
+            default:
+                // should never be reached
+                break;
+            }
+        }
+    }
+
+    return false;
 }
 
-void Monitor::check_feature_WIN(uint16_t code, bool& checkRet)
+void Monitor::check_feature_WIN(uint16_t code, bool& checkRet, uint16_t& cVal, uint16_t& maxVal)
 {
     unsigned long current_value = 0;
     unsigned long max_value = 0;
     MC_VCP_CODE_TYPE code_type;
 
-    if (!dummy)
-    {
+    if (!dummy) {
         checkRet = GetVCPFeatureAndVCPFeatureReply(monitor_.hPhysicalMonitor, code, &code_type, &current_value, &max_value);
+
+        cVal = current_value;
+        maxVal = max_value;
     }
 
-    else checkRet = true;
+    else {
+        checkRet = true;         
+        cVal = current_value;
+        maxVal = max_value;
+    }
+}
+
+bool Monitor::check_feature(uint16_t code, uint16_t& current_value, uint16_t& max_value)
+{
+    bool checkRet;
+#ifdef Q_OS_WIN
+    check_feature_WIN(code, checkRet, current_value, max_value);
+#elif Q_OS_UNIX
+    qDebug() << "Not Implemented";
+#endif
+
+    return checkRet;
 }
 
 bool Monitor::check_feature(uint16_t code)
 {
     bool checkRet;
+    uint16_t current_value, max_value;
+
 #ifdef Q_OS_WIN
-    check_feature_WIN(code, checkRet);
+    check_feature_WIN(code, checkRet, current_value, max_value);
 #elif Q_OS_UNIX
     qDebug() << "Not Implemented";
 #endif
@@ -690,10 +759,9 @@ void Monitor::receive_signal(uint16_t code, int value)
 
         QString code_str = n2hexstr(code, 2);
 
-        if (features.find(code_str) != features.end())
+        if (features.contains(code_str))
         {
-            //get_feature_WIN(code);
-            //set_feature_WIN(code, value);
+            if (features[code_str].enabled) set_feature(code, value);
         }
     }
 }

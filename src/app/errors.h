@@ -19,5 +19,8 @@ class FeatureWarning : public QMessageBox
 
 public:
     FeatureWarning(uint16_t code);
+    FeatureWarning(uint16_t code, QString& monitorName, bool ftChk);
 };
+
+
 

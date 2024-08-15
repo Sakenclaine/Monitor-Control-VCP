@@ -76,6 +76,7 @@ struct monitor_vcp
 	std::vector<uint16_t> possible_values;
 	bool enabled = false;
 	uint16_t current_value = 0;
+	uint16_t max_value = 255;
 };
 
 
@@ -103,7 +104,7 @@ private:
 	void get_feature_UNIX(uint16_t code);
 	void set_feature_UNIX(uint16_t code, int value, bool& bSet);
 
-	void check_feature_WIN(uint16_t code, bool& checkRet);
+	void check_feature_WIN(uint16_t code, bool& checkRet, uint16_t& cVal, uint16_t& maxVal);
 
 public:
 	Monitor(PHYSICAL_MONITOR monitor, QString name);
@@ -115,6 +116,7 @@ public:
 
 	const uint16_t& get_feature(uint16_t code, bool fromMonitor = false);
 	bool set_feature(uint16_t code, uint16_t value);
+	bool check_feature(uint16_t code, uint16_t& current_value, uint16_t& max_value);
 	bool check_feature(uint16_t code);
 
 	bool add_feature(uint16_t code);
