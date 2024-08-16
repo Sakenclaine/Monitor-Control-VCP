@@ -25,4 +25,10 @@ public:
 public:
 	void add_monitor();
 	void add_monitor(Monitor* monitor);
+
+private slots:
+	void monitor_selection_changed_();
+
+signals:
+	void monitor_selection_changed(QString&, int&);
 };

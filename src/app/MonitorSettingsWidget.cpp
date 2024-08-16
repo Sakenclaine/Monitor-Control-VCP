@@ -37,6 +37,7 @@ MonitorWidget::MonitorWidget()
     connect(settingsFrame->get_button(), &QPushButton::clicked, &Linker::getInstance(), &Linker::receive_slider_add_request);
 
     connect(&Linker::getInstance(), &Linker::emit_add_slider, this, &MonitorWidget::receive_add_slider);
+    connect(&Linker::getInstance(), &Linker::emit_slider_init, this, &MonitorWidget::receive_slider_init);
 
 	layout->addWidget(settings_discrete);
 	layout->addWidget(settingsFrame);
@@ -93,7 +94,7 @@ void MonitorWidget::add_slider(uint16_t code, bool btrayIcon)
 {
     CustomSlider* cSlider = new CustomSlider(NULL, code);
 
-    QString name = n2hexstr(code);
+    QString name = n2hexstr(code, 2);
     customSliders[name] = cSlider;
 
     if (btrayIcon) cSlider->add_trayIcon();
@@ -110,8 +111,8 @@ void MonitorWidget::add_slider(uint16_t code, QColor color, bool btrayIcon)
 {
     CustomSlider* cSlider = new CustomSlider(NULL, color, code);
 
-    QString name = n2hexstr(code);
-    customSliders[name] = cSlider;
+    QString name = n2hexstr(code, 2);
+    customSliders[name] = cSlider; // 
 
     if (btrayIcon) cSlider->add_trayIcon();
 
@@ -121,7 +122,6 @@ void MonitorWidget::add_slider(uint16_t code, QColor color, bool btrayIcon)
     {
         connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
     }
-    //connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, parent, &MainWindow::iconActivated);
 }
 
 void MonitorWidget::add_contextMenu(QMenu* menu)
@@ -223,6 +223,30 @@ void MonitorWidget::discrete_setting_changed(int index)
         emit send_discrete_setting(id, cde_str, value);
     }
 }
+
+
+void MonitorWidget::init_slider(QString name)
+{
+
+}
+
+void MonitorWidget::receive_slider_init(Monitor* monitor)
+{
+    qDebug() << "Receive Init from " << monitor->get_name();
+
+    for (auto [key, sldr] : customSliders.asKeyValueRange()) {
+        qDebug() << key;
+        
+        if (monitor->features.contains(key))
+        {
+            int val = monitor->features[key].current_value;
+
+            sldr->set_value(val);
+        }
+    }
+
+}
+
 
 PlaceholderWidget::PlaceholderWidget()
 {

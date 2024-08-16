@@ -1,4 +1,5 @@
 #include "MonitorTable.h"
+#include "SignalLinker.h"
 
 #include <QCheckBox>
 #include <QHBoxLayout>
@@ -14,6 +15,8 @@ MonitorTable::MonitorTable(QWidget* parent, QStringList tableHeader) :
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     setEditTriggers(QAbstractItemView::NoEditTriggers);
+    setSelectionBehavior(QAbstractItemView::SelectRows);
+    setSelectionMode(QAbstractItemView::SingleSelection);
 
     setHorizontalHeaderLabels(tableHeader);
     verticalHeader()->setVisible(false);
@@ -34,6 +37,10 @@ MonitorTable::MonitorTable(QWidget* parent, QStringList tableHeader) :
     // https://forum.qt.io/topic/78350/qtableview-give-columnwidth-a-percentage-and-keep-percentage-when-table-gets-wider/3
     setColumnWidth(0, qCheckBoxSize.width());
     resizeColumnToContents(0);
+
+    connect(this, &QTableWidget::itemSelectionChanged, this, &MonitorTable::monitor_selection_changed_);
+
+    connect(this, &MonitorTable::monitor_selection_changed, &Linker::getInstance(), &Linker::receive_monitor_highlighting);
 }
 
 
@@ -60,6 +67,16 @@ void MonitorTable::add_monitor(Monitor* monitor)
 
     resizeColumnsToContents();
 }
+
+
+void MonitorTable::monitor_selection_changed_()
+{
+    int id = currentRow();
+    QString name = item(id, 1)->text();
+
+    emit monitor_selection_changed(name, id);
+}
+
 
 QWidget* MonitorTable::create_checkbox()
 {

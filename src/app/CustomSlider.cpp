@@ -229,6 +229,12 @@ void CustomSlider::buttonClick()
 		}
 }
 
+
+void CustomSlider::set_value(int val)
+{
+	if (current_value != val) slider->setValue(val);
+}
+
 void CustomSlider::set_slider_value(int& value, QObject& senderObj)
 {
 	QString senderName = senderObj.objectName();

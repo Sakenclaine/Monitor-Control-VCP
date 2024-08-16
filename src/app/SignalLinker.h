@@ -74,6 +74,9 @@ public slots:
 
     void receive_monitor_setting(int&, QString&, uint16_t&);
 
+    //Receive Monitor Row Selection
+    void receive_monitor_highlighting(QString&, int&);
+
 
 signals:
     void emit_mouse_update(const struct inSignal& output);
@@ -85,6 +88,8 @@ signals:
 
     void emit_slider_add_request();
     void emit_add_slider(uint16_t&, QColor&, bool&);
+
+    void emit_slider_init(Monitor* monitor);
 };
 
 

@@ -125,3 +125,12 @@ void Linker::receive_monitor_setting(int& monitorID, QString& cde_str, uint16_t&
 {
     qDebug() << "Changed Setting: " << monitorID << " ->" << cde_str << " -- " << value;
 }
+
+void Linker::receive_monitor_highlighting(QString& name, int& id)
+{
+    qDebug() << "Highlighted monitor changed: " << name << " (" << id << ")";
+
+    Monitor* mon = get_monitor_byName(name);
+
+    emit emit_slider_init(mon);
+}

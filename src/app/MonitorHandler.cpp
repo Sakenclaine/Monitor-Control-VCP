@@ -448,8 +448,15 @@ void Monitor::monitor_init()
     {
         monitor_vcp t1;
         t1.enabled = true;
+        t1.current_value = 10;
         
         features["10"] = t1;
+
+        monitor_vcp contrast;
+        contrast.enabled = true;
+        contrast.current_value = 50;
+
+        features["12"] = contrast;
 
         monitor_vcp clrProfile;
         clrProfile.enabled = true;

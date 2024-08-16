@@ -211,6 +211,7 @@ private:
 
 private:
 	void setup_discrete_settings();
+	void init_slider(QString name);
 
 
 public:
@@ -224,6 +225,7 @@ public:
 
 public slots:
 	void receive_add_slider(uint16_t&, QColor&, bool&);
+	void receive_slider_init(Monitor* monitor);
 
 private slots:
 	void cb_monitor_change(QString& name, int& ids);
