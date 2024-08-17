@@ -256,7 +256,7 @@ void CustomSlider::set_slider_value(int& value, QObject& senderObj)
 }
 
 void CustomSlider::slider_changed()
-{
+{	
 	current_value = slider->value();
 
 	//qDebug() << " Receiver: " << " .. " << _id << receiverType << " --> " << current_value;

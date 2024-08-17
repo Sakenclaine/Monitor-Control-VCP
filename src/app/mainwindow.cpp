@@ -62,11 +62,11 @@ MainWindow::MainWindow(QWidget* parent) :
 
     Controller::getInstance().operate();
 
-    connect(&Controller::getInstance(), &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
-    
 
     setup();
  
+    // Connect mouse tracking to Linker
+    connect(&Controller::getInstance(), &Controller::updated, &Linker::getInstance(), &Linker::receive_mouse_update);
     
     connect(&Linker::getInstance(), &Linker::emit_icon_click, this, &MainWindow::iconActivated);
     connect(this, &MainWindow::emit_add_slider, &Linker::getInstance(), &Linker::receive_add_slider);
@@ -124,6 +124,12 @@ void MainWindow::setup()
     mainLayout->addWidget(monitorGroupBox);
     mainLayout->addWidget(wMonSet);
     wMonSet->add_contextMenu(trayIconMenu);
+
+    int id = tableWidget->currentRow();
+    QString name = tableWidget->item(id, 1)->text();
+    Monitor* mon = Linker::getInstance().get_monitor_byName(name);
+
+    wMonSet->receive_slider_init(mon);
 }
 
 void MainWindow::createMonitorGroupBox()
@@ -134,7 +140,7 @@ void MainWindow::createMonitorGroupBox()
     QVBoxLayout* vLayout = new QVBoxLayout;
     monitorGroupBox->setLayout(vLayout);
 
-    MonitorTable* tableWidget = new MonitorTable(this, QStringList{ "", "Monitor" });
+    tableWidget = new MonitorTable(this, QStringList{ "", "Monitor" });
 
     vLayout->addWidget(tableWidget);
 
@@ -194,10 +200,7 @@ void MainWindow::init_monitors_WIN()
 
     #endif
 
-    for (auto& elem : Linker::getInstance().get_monitors())
-    {
-        connect(&Linker::getInstance(), &Linker::emit_monitor_value_update, elem, &Monitor::receive_signal);
-    }
+
 }
 
 void MainWindow::init_monitors_UNIX()

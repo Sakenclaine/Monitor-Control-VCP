@@ -23,6 +23,58 @@
 #include "MonitorHandler.h"
 #include "CustomSlider.h"
 
+#include <QSlider>
+
+
+class Slider : public QSlider
+{
+	Q_OBJECT
+
+private:
+	bool locked = false;
+
+public:
+	Slider(QWidget* parent = nullptr) : QSlider(parent) {
+		setTracking(false);
+	};
+
+private slots:
+	void check_move(int& val) {
+		qDebug() << val;
+	}
+
+public slots:
+	void set_lock(bool lock) {
+		locked = lock;
+	}
+
+	void lock() {
+		locked = true;
+	}
+
+	void unlock() {
+		locked = false;
+	}
+
+	void set_value(int value) {
+		if (!locked)
+		{
+			setValue(value);
+		}
+	}
+
+	void wheelEvent(QWheelEvent* e) {
+		if (!locked) QSlider::wheelEvent(e);
+	}
+
+	void keyPressEvent(QKeyEvent* e) {
+		if (!locked) QSlider::keyPressEvent(e);
+	}
+
+	void timerEvent(QTimerEvent* e) {
+		qDebug() << e;
+	}
+};
 
 
 class CustomFrame : public QFrame

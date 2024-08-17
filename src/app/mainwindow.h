@@ -12,6 +12,7 @@
 #include "SettingsWidget.h"
 #include "MonitorSettingsWidget.h"
 #include "Dialogs.h"
+#include "MonitorTable.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -69,6 +70,7 @@ private:
 	QWidget* mainWidget;
 	SettingsWidget* wSettings;
 	MonitorWidget* wMonSet;
+	MonitorTable* tableWidget;
 
 	Dialog_AddSlider* dAddSlider;
 

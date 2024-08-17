@@ -1,6 +1,7 @@
 #include "MonitorHandler.h"
 #include "helpers.h"
 #include "errors.h"
+#include "SignalLinker.h"
 
 ///////////////////////////////////// VCP FEATURE SETUP /////////////////////////////////////////////////////
 
@@ -472,6 +473,10 @@ void Monitor::monitor_init()
 
         features["60"] = monInput;
     }
+
+
+    connect(&Linker::getInstance(), &Linker::emit_monitor_value_update, this, &Monitor::receive_signal);
+   
 }
 
 

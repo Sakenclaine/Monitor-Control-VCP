@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QSizePolicy>
 
+
 QT_BEGIN_NAMESPACE
 class QAction;
 class QCheckBox;
@@ -21,6 +22,10 @@ QT_END_NAMESPACE
 
 #include "TrayIconControlled.h"
 #include "MonitorHandler.h"
+
+
+
+
 
 class CustomSlider : public QWidget
 {
@@ -92,10 +97,13 @@ public slots:
 	void toggle_trayIcon(bool toggle);
 	void slider_changed();
 
+
 signals:
 	void request_value(uint16_t code);
 	void slider_changed_value(int& value);
 	void send_monitor_value(uint16_t& code, int& value);
+
+
 };
 
 

@@ -41,6 +41,8 @@ MonitorTable::MonitorTable(QWidget* parent, QStringList tableHeader) :
     connect(this, &QTableWidget::itemSelectionChanged, this, &MonitorTable::monitor_selection_changed_);
 
     connect(this, &MonitorTable::monitor_selection_changed, &Linker::getInstance(), &Linker::receive_monitor_highlighting);
+    
+    
 }
 
 

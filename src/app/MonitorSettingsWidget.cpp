@@ -74,6 +74,10 @@ void MonitorWidget::setup_discrete_settings()
         pageLayout->addWidget(cbInput);
         pageLayout->addWidget(cbClrProfile);
 
+        Slider* testSlider = new Slider();
+        testSlider->lock();
+        pageLayout->addWidget(testSlider);
+
         stackedWidget->addWidget(pageWidget);
 
         //TODO: Set combobox item to current value of monitor
@@ -86,6 +90,10 @@ void MonitorWidget::setup_discrete_settings()
     }
 
     connect(settings_discrete, &ComboBoxFrame::comboBoxItemChanged, this, &MonitorWidget::cb_monitor_change);
+
+  
+
+
 
 
 }
