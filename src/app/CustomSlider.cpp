@@ -148,6 +148,7 @@ void SliderWidget::setup()
 	}
 	
 	mainVLayout = new QVBoxLayout();
+	mainVLayout->setContentsMargins(0, 5, 0, 0);
 	mainHLayout = new QHBoxLayout();
 	buttonLayout = new QVBoxLayout();
 
@@ -163,7 +164,7 @@ void SliderWidget::setup()
 
 	if (VCP_FEATURES.commands.contains(cde_str))
 	{
-		slider->setToolTip(name);
+		slider->setToolTip(QString("%1\n%2").arg(name).arg(0));
 	}
 
 	lower_fill = color.name();
@@ -256,6 +257,8 @@ void SliderWidget::set_color(QColor col)
 	).arg(width).arg(upper_fill).arg(lower_fill).arg(handle);
 
 	slider->setStyleSheet(style);
+
+	if (trayIcon) icon->set_color(col);
 
 }
 

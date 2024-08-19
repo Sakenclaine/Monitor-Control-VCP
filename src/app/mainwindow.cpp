@@ -94,6 +94,8 @@ void MainWindow::createMonitorGroupBox()
         tableWidget->add_monitor(monitor);
     }
 
+
+
     tableWidget->selectRow(0);
     mainLayout->addWidget(monitorGroupBox);
 }

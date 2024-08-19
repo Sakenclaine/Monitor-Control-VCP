@@ -56,8 +56,8 @@ VCP_COMMANDS::VCP_COMMANDS()
     new_command(0x60).set_name("Input Select").add_command();
     add_allowed_values(0x60, { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12 }, {"Analog Video 1", "Analog Video 2", "DVI 1", "DVI 2", "Composite Video 1", "Composite Video 2", "S-Video 1", "S-Video 2", "Tuner 1", "Tuner 2", "Tuner 3", "Component Video 1", "Component Video 2", "Component Video 3", "Display Port 1", "Display Port 2", "HDMI 1", "HDMI 2"});
 
-    //new_command(0x62).set_name("Speaker Volume").continous().all_range().add_command();
-    //add_allowed_values(0x62, { 0x00, 0xFF }, { "Fixed (Default) level", "Mute" });
+    new_command(0x62).set_name("Speaker Volume").continous().all_range().add_command();
+    add_allowed_values(0x62, { 0x00, 0xFF }, { "Fixed (Default) level", "Mute" });
 
     ////add_command("Display Scaling", 0x86, false, false);
     ////add_allowed_values(0x86, { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A }, { "No Scaling", "Max Image", "Max Vt 1", "Max Hz 1", "Max Vt 2", "Max Hz 2", "Full Mode", "Zoom Mode", "Squeeze Mode", "Variable" });

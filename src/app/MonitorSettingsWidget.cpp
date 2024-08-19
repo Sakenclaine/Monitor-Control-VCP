@@ -19,6 +19,8 @@ MonitorWidget::MonitorWidget(QWidget* parent) :
 	QWidget(parent)
 {
 	layout = new QHBoxLayout(this);
+    subVLayout = new QVBoxLayout();
+    subHLayout = new QHBoxLayout();
 
     // Discrete settings setup
     settings_discrete = new ComboBoxFrame(this);
@@ -40,8 +42,9 @@ MonitorWidget::MonitorWidget(QWidget* parent) :
     continousLayout->setSpacing(0);
     settings_continous->setLayout(continousLayout);
 
+    subVLayout->addWidget(settings_discrete);
 
-    layout->addWidget(settings_discrete);
+    layout->addLayout(subVLayout);
     layout->addWidget(settings_continous);
 
     setup_discrete_settings();
@@ -84,10 +87,20 @@ void MonitorWidget::setup_discrete_settings()
 
 void MonitorWidget::setup_continous_settings()
 {
-    SliderWidget* slider = new SliderWidget(this, 0x12);
-    slider->add_trayIcon();
+    SliderWidget* lumSlider = new SliderWidget(this, 0x10);
+    lumSlider->add_trayIcon();
+    lumSlider->lock();
 
-    continousLayout->addWidget(slider);
+    lumSlider->get_slider()->setValue(10);
+
+    //SliderWidget* volSlider = new SliderWidget(this, 0x62);
+    //volSlider->set_color(QColor(0, 255, 0));
+    //volSlider->add_trayIcon();
+
+    subHLayout->addWidget(lumSlider);
+    //subHLayout->addWidget(volSlider);
+
+    subVLayout->addLayout(subHLayout);
 }
 
 void MonitorWidget::chk_add_discrete_feature(Monitor* mon, QString qsft)

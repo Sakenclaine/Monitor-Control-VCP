@@ -35,6 +35,9 @@ private:
 	QHBoxLayout* layout;
 	QHBoxLayout* continousLayout;
 	QVBoxLayout* discreteLayout;
+
+	QVBoxLayout* subVLayout;
+	QHBoxLayout* subHLayout;
 	
 
 	QStackedWidget* stackedWidget;
