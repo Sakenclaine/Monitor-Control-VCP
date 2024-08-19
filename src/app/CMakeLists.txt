@@ -30,5 +30,8 @@ target_link_libraries(MonitorControl
         Qt::Widgets
 )
 
+# For some reason at one point something got written to 
+# C:\Users\User\6.7.1\msvc2019_64\lib\cmake\Qt6Core\Qt6CoreMacros.cmake
+
 
 
