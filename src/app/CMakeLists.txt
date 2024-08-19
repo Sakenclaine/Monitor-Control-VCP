@@ -6,6 +6,7 @@ file(GLOB all_SRCS
 set(PROJECT_SOURCES
     main.cpp
     ${all_SRCS}
+    ${app_icon_resource_windows}
 )
 
 
