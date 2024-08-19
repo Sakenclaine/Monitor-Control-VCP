@@ -10,11 +10,11 @@ set(PROJECT_SOURCES
 
 
 
-qt_add_executable(Barebone ${PROJECT_SOURCES})
+qt_add_executable(MonitorControl ${PROJECT_SOURCES})
 
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  set_target_properties(Barebone
+  set_target_properties(MonitorControl
     PROPERTIES
         WIN32_EXECUTABLE TRUE
     )
@@ -22,7 +22,7 @@ endif()
 
 
 
-target_link_libraries(Barebone
+target_link_libraries(MonitorControl
     PUBLIC
         Qt::Core
         Qt::Gui
