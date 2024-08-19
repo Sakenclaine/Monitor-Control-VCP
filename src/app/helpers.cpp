@@ -70,6 +70,7 @@ QIcon createIconFromText(const QString& content, QColor color, QRect frame)
 	return QIcon(pixmap); //.scaledToWidth(sX)
 }
 
+
 bool bracket_pair_finder(std::string s, std::vector<int>& indices)
 {
 	// indices = vector containing the inices of paired brackets
@@ -133,7 +134,6 @@ std::string uIntToString(uint16_t u)
 	return str_;
 }
 
-
 void get_screen_geometry(int& xWO_TAB_TOB, int& yWO_TAB_TOB, int& xWO_TAB, int& yWO_TAB, int& x, int& y)
 {
 	// size of screen (primary monitor) without taskbar or desktop toolbars
@@ -156,3 +156,60 @@ void get_screen_geometry(int& xWO_TAB_TOB, int& yWO_TAB_TOB, int& xWO_TAB, int& 
 }
 
 
+
+// Parse capability string sent from monitor
+void parse_capability_string(std::string s, std::vector<std::string>& keywords, std::vector<std::string>& parsed_string, std::map<std::string, std::string>& vcp_dict)
+{
+	std::vector<int> inds; // vector containing the inices of paired brackets
+	std::string vcps_with_options = "";
+	bracket_pair_finder(s, inds);
+
+	// Iterate through index positions of open brackets
+	for (size_t i = 0; i < inds.size() - 2; i += 2)
+	{
+		// Get substrings of capability string corresponding to the content inbetween a pair of brackets
+		std::string temp_value = s.substr(inds[i] + 1, (inds[i + 1] - inds[i]) - 1);
+		parsed_string.push_back(temp_value);
+
+		// Get term before the brackets
+		std::string temp_string("");
+
+		// Iterate from current index inds[i] - 1 (one position before an open bracket in the string) backwards through the string
+		// until another bracket or a space appears in the string
+		for (size_t k = inds[i] - 1; k >= 0; k--)
+		{
+			if (s[k] == ')' || s[k] == '(' || s[k] == ' ') { break; }
+			temp_string += s[k];
+		}
+
+		std::reverse(temp_string.begin(), temp_string.end());
+		keywords.push_back(temp_string);
+
+		vcp_dict[temp_string] = temp_value;
+
+
+		if (std::all_of(temp_string.begin(), temp_string.end(), ::isxdigit)) {
+			//qDebug() << temp_string << " contains only hexadecimal digits";
+			vcps_with_options += temp_string + " ";
+		}
+	}
+
+	// Get only vcp codes
+	std::string vcps = vcp_dict["vcp"];
+	std::vector<int> inds_2;
+	bool found_brackets = bracket_pair_finder(vcps, inds_2);
+	int stop = 0;
+
+	while (found_brackets)
+	{
+		vcps = vcps.erase(inds_2[0], (inds_2[1] - inds_2[0]) + 1);
+		found_brackets = bracket_pair_finder(vcps, inds_2);
+
+		stop++;
+
+		if (stop > 1000) { break; }
+	}
+
+	vcp_dict["vcp_only"] = vcps;
+	vcp_dict["vcps_with_options"] = vcps_with_options;
+}

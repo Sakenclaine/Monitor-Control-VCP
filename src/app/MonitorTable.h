@@ -4,8 +4,6 @@
 #include <QStringList>
 #include <QCheckBox>
 
-#include <vector>
-
 #include "MonitorHandler.h"
 
 class MonitorTable : public QTableWidget
@@ -17,10 +15,10 @@ private:
 	QList<QCheckBox*> checkBoxes;
 
 private:
-	QWidget* create_checkbox();
+	QWidget* create_checkbox(); // Create checkbox to add to first table column
 
 public:
-	MonitorTable(QWidget* parent = 0, QStringList tableHeader = QStringList{});
+	MonitorTable(QWidget* parent = nullptr, QStringList tableHeader = QStringList{});
 
 public:
 	void add_monitor();
@@ -29,6 +27,8 @@ public:
 private slots:
 	void monitor_selection_changed_();
 
+
 signals:
 	void monitor_selection_changed(QString&, int&);
+
 };

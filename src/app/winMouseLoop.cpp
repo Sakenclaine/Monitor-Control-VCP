@@ -1,7 +1,7 @@
-#include "RawData.h"
+#include "winMouseLoop.h"
 
 
-struct inSignal input;
+struct mouseSignal input;
 
 // Event handler for the hidden/invisible window getting the raw mouse input
 // Adapted from original code from luluco250: MouseRaw.cpp https://gist.github.com/luluco250/ac79d72a734295f167851ffdb36d77ee

@@ -7,7 +7,7 @@
 
 // Structure to store out input data.
 // Not necessary, I just find it neat.
-struct inSignal {
+struct mouseSignal {
 	struct Mouse {
 		// Keep in mind these are all deltas,
 		// they'll change for one frame/cycle

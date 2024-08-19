@@ -1,4 +1,5 @@
 #pragma once
+
 #pragma comment(lib, "Dxva2.lib")
 #pragma comment(lib, "user32.lib")
 
@@ -8,9 +9,13 @@
 #include <highlevelmonitorconfigurationapi.h>
 #include <physicalmonitorenumerationapi.h>
 
+
 #include <QtCore>
 #include <QString>
 #include <QObject>
+#include <QMap>
+#include <QList>
+#include <QDebug>
 
 
 #include <vector>
@@ -18,7 +23,7 @@
 #include <map>
 #include <initializer_list>
 
-#include "helpers.h"
+
 
 
 struct VCP_COMM
@@ -27,12 +32,13 @@ struct VCP_COMM
 	QString description = "None";
 
 	uint16_t vcp_code = 0x00;
+	uint16_t min = 0, max = 0xFF;
+
 	bool read_only = false, write_only = false;
 	bool continous = false;
-	bool all_range = false; 
+	bool all_range = false;
 
-	std::vector<uint16_t> possible_values{0};
-	std::vector<QString> possible_values_desc{ "" };
+	QMap<QString, QString> possible_values;
 };
 
 
@@ -52,15 +58,14 @@ public:
 	VCP_COMMANDS& continous();
 	VCP_COMMANDS& all_range();
 
-	VCP_COMMANDS& possible_values(std::vector<uint16_t> vals);
-	VCP_COMMANDS& possible_values_desc(std::vector<QString> valDesc);
+	VCP_COMMANDS& possible_values(std::initializer_list<uint16_t> vals, std::initializer_list<QString> descs);
 	void add_command();
 
-	void add_allowed_values(uint16_t code, std::vector<uint16_t> vals, std::vector<QString> desc);
 	void add_allowed_values(uint16_t code, std::initializer_list<uint16_t> codeList, std::initializer_list<QString> descList);
 
+
 public:
-	std::map<QString, VCP_COMM> commands;
+	QMap<QString, VCP_COMM> commands;
 
 public:	
 	VCP_COMMANDS();
@@ -69,17 +74,19 @@ public:
 extern VCP_COMMANDS VCP_FEATURES;
 
 
-
-
 struct monitor_vcp
 {
-	std::vector<uint16_t> possible_values;
+	QList<uint16_t> possible_values;
 	bool enabled = false;
+
 	uint16_t current_value = 0;
 	uint16_t max_value = 255;
 };
 
 
+
+
+// Monitor Class
 class Monitor : public QObject
 {
 	Q_OBJECT
@@ -90,21 +97,14 @@ private:
 
 	bool dummy = true;
 	bool status = false;
-	
+
 	int _id;
 	static int idProvider;
 
+
 public:
-	std::map<QString, monitor_vcp> features;
+	QMap<QString, monitor_vcp> features;
 
-private:
-	void get_feature_WIN(uint16_t code, uint16_t& ret_code);
-	void set_feature_WIN(uint16_t code, int value, bool& bSet);
-
-	void get_feature_UNIX(uint16_t code);
-	void set_feature_UNIX(uint16_t code, int value, bool& bSet);
-
-	void check_feature_WIN(uint16_t code, bool& checkRet, uint16_t& cVal, uint16_t& maxVal);
 
 public:
 	Monitor(PHYSICAL_MONITOR monitor, QString name);
@@ -112,44 +112,29 @@ public:
 	~Monitor();
 
 public:
-	void monitor_init();
+	void init();
 
-	const uint16_t& get_feature(uint16_t code, bool fromMonitor = false);
-	bool set_feature(uint16_t code, uint16_t value);
-	bool check_feature(uint16_t code, uint16_t& current_value, uint16_t& max_value);
-	bool check_feature(uint16_t code);
-
-	bool add_feature(uint16_t code);
-
-
-	bool get_status();
-	const int get_ID();
-
+	int get_ID();
 	QString get_name();
+	bool get_status();
 
 
 public slots:
-	void set_status(bool bval);
-
-	void receive_signal(uint16_t code, int value);
-	void receive_value_request(uint16_t code);
+	void set_status(bool chk);
 
 signals:
-	void send_status(const bool&);
-	
-};
+	void send_status(bool chk);
 
+};
 
 
 struct MonitorRects
 {
-	//std::vector<RECT> rcMonitors;
 	std::vector<HMONITOR> monitorHandles;
 
 	static BOOL CALLBACK MonitorEnum(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM pData)
 	{
 		MonitorRects* pThis = reinterpret_cast<MonitorRects*>(pData);
-		//pThis->rcMonitors.push_back(*lprcMonitor);
 		pThis->monitorHandles.push_back(hMon);
 
 		return TRUE;
@@ -162,13 +147,7 @@ struct MonitorRects
 };
 
 
-void get_monitor_capabilities_WIN(PHYSICAL_MONITOR& monitor, std::vector<std::string>& kwrds, std::vector<std::string>& vals, std::map<std::string, std::string>& capabilities_dict);
+// Methods to get (physical) monitors in Windows
+bool get_connected_monitors(QList<Monitor*>& monitors);
 
-void get_monitor_features_WIN(std::map<QString, monitor_vcp>& features, PHYSICAL_MONITOR& monitor);
-
-void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors);
-
-void DumpDevice(const DISPLAY_DEVICE& dd, size_t nSpaceCount);
-
-void list_devices();
 

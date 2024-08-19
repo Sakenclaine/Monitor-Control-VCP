@@ -1,8 +1,7 @@
 #pragma once
-
 #include <QSystemTrayIcon>
 
-#include "RawData.h"
+struct mouseSignal;
 
 
 class TrayIconControlled : public QSystemTrayIcon
@@ -16,7 +15,10 @@ public:
 
 public:
 	int get_value();
+
+	void set_identifier(int id, QString code);
 	void set_step(int new_step);
+	void set_color(QColor);
 
 private:
 	int receiver_id;
@@ -28,12 +30,18 @@ private:
 	int value;
 	int min_val, max_val, step;
 
+	bool locked = false;
+
 private:
 	void update_icon();
 
 public slots:
+	void set_lock(bool lock);
+	void lock();
+	void unlock();
+
 	void update_value(int&, QObject&);
-	void mouse_over(const struct inSignal&);
+	void mouse_over(const struct mouseSignal&);
 
 signals:
 	void value_changed(int& value);

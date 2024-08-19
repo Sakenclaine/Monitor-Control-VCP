@@ -1,109 +1,107 @@
 #pragma once
-
+#include <QtCore>
+#include <QSlider>
 #include <QWidget>
-#include <QSizePolicy>
-
+#include <QString>
+#include <QColor>
+#include <QCheckBox>
+#include <QMenu>
 
 QT_BEGIN_NAMESPACE
-class QAction;
-class QCheckBox;
-class QComboBox;
-class QGroupBox;
-class QLabel;
-class QLineEdit;
-class QMenu;
-class QPushButton;
-class QSpinBox;
-class QTextEdit;
-class QSlider;
 class QHBoxLayout;
 class QVBoxLayout;
+
+class TrayIconControlled;
+class CustomSlider;
 QT_END_NAMESPACE
 
-#include "TrayIconControlled.h"
-#include "MonitorHandler.h"
+class CustomSlider : public QSlider
+{
+	Q_OBJECT
+
+private:
+	bool locked = false;
+	QString receiverType = "slider";
+
+public:
+	CustomSlider(QWidget* parent = nullptr);
+
+	void set_style(QString& style);
+
+
+public slots:
+	void set_lock(bool lock);
+	void lock();
+	void unlock();
+
+	void set_value(int value);
+	void update_value(int& val, QObject& senderObj);
+
+
+protected:
+	void wheelEvent(QWheelEvent* e);
+
+	bool event(QEvent* e);
+};
 
 
 
-
-
-class CustomSlider : public QWidget
+class SliderWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CustomSlider(QWidget *parent, uint16_t code);
-	CustomSlider(QWidget* parent, QColor color, uint16_t code);
-	
-	~CustomSlider();
+	SliderWidget(QWidget* parent, uint16_t code);
+	SliderWidget(QWidget* parent, QColor color, uint16_t code);
 
-public:
-	void set_colors(QColor col_handle, QColor col_fill, QColor col_background);
-	void set_tooltip(QString tooltip);
-
-	void add_trayIcon();
-
-	void set_contextMenu(QMenu&);
-	void refresh_value();
-	void set_value(int val);
-
-	TrayIconControlled* get_trayIcon();
-	QSlider* get_slider();
-
-	const QColor& get_color();
-	const uint16_t& get_code();
-	const int& get_ID();
-	const bool& get_trayCheck();
-
+	~SliderWidget();
 
 private:
 	int _id;
 	static int idProvider;
-	QString receiverType = "sliderControl";
-
 	bool trayIcon = false;
+	bool locked = false;
 
-	QColor color = QColor("pink");
 	uint16_t code = 0x00;
+	QString name = "";
+	QString cde_str = "";
+	QColor color = QColor("pink");
+
+	QString width = QString::number(0);
+	QString handle = "#1795f6";
+	QString lower_fill = "pink";
+	QString upper_fill = "gray";
+
 
 	QHBoxLayout* mainLayout;
 	QVBoxLayout* mainVLayout;
 	QHBoxLayout* mainHLayout;
 	QVBoxLayout* buttonLayout;
 
-
-	QSlider* slider;
 	TrayIconControlled* icon;
-
-
-	std::string width = std::to_string(0);
-	std::string handle = "#1795f6";
-	std::string lower_fill = "pink";
-	std::string upper_fill = "gray";
-
-
-	int current_value;
-
+	CustomSlider* slider;
+	QCheckBox* trayChk;
 
 private:
 	void setup();
 
+public:
+	void set_color(QColor col);
+	void add_trayIcon();
+	void set_contextMenu(QMenu* menu);
+
+	CustomSlider* get_slider();
+	TrayIconControlled* get_icon();
+
 private slots:
-	void value_changed();
 	void buttonClick();
+	void toggleTray(bool chk);
+
+	void update_ToolTip(int val);
 
 public slots:
-	void set_slider_value(int &, QObject&);
-	void toggle_trayIcon(bool toggle);
-	void slider_changed();
-
-
-signals:
-	void request_value(uint16_t code);
-	void slider_changed_value(int& value);
-	void send_monitor_value(uint16_t& code, int& value);
-
+	void set_lock(bool lock);
+	void lock();
+	void unlock();
 
 };
-
-

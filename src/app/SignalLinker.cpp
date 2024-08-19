@@ -1,5 +1,7 @@
 #include "SignalLinker.h"
 
+#include "MonitorHandler.h"
+
 Linker::Linker(QObject* parent=nullptr) : QObject(parent)
 {
 
@@ -15,20 +17,14 @@ Linker& Linker::getInstance()
     return cntr;
 }
 
-
 void Linker::register_monitor(Monitor* monitor)
 {
     registered_monitors.append(monitor);
 }
 
-void Linker::register_slider(CustomSlider* slider)
+void Linker::register_monitor(QList<Monitor*> monitors)
 {
-    registered_sliders.append(slider);
-}
-
-void Linker::register_icon(TrayIconControlled* icon)
-{
-    registered_trayIcons.append(icon);
+    registered_monitors = monitors;
 }
 
 QList<Monitor*> Linker::get_monitors()
@@ -36,17 +32,6 @@ QList<Monitor*> Linker::get_monitors()
     return registered_monitors;
 }
 
-QList<CustomSlider*> Linker::get_sliders()
-{
-    return registered_sliders;
-}
-
-QList<TrayIconControlled*> Linker::get_icons()
-{
-    return registered_trayIcons;
-}
-
-// Change way of saving monitors? https://stackoverflow.com/questions/752658/is-the-practice-of-returning-a-c-reference-variable-evil
 Monitor* Linker::get_monitor_byID(int& id)
 {
     for (auto elem : registered_monitors)
@@ -67,70 +52,41 @@ Monitor* Linker::get_monitor_byName(QString& name)
     return NULL;
 }
 
-void Linker::receive_signal()
+// SLOTS
+void Linker::receive_lock(bool lck)
 {
-    //qDebug("Linker received signal...");
-    //qDebug() << &(this->get_instance());
-    //qDebug() << sender();
-    
+    QList<bool> chks;
+    QList<int> chkd_mons;
+
+    for (auto& elem : registered_monitors)
+    {    
+        bool chk = elem->get_status();
+        chks.append(chk);
+
+        if (chk) chkd_mons.append(elem->get_ID());
+    }
+
+    emit send_lock(!chks.contains(true));
+    emit send_checked_monitors(chkd_mons);
 }
 
-void Linker::receive_mouse_update(const struct inSignal& input)
+void Linker::receive_value_update(int value)
 {
-    emit emit_mouse_update(input);
+    QObject* obj = sender();
+
+    if (obj != nullptr) { 
+        qDebug() << obj->objectName() << " -> " << value; 
+        emit send_value_update(value, *obj);
+    }
 }
 
-void Linker::receive_value_update(int& value)
+void Linker::receive_discrete_setting(int& monitorID, QString& cde_str, uint16_t& value)
 {
-    QObject* senderObj = sender();
-    
-    //qDebug() << "Linker: Updated value from " << sender() << " "<< sender()->objectName() << " --> " << value;
-    emit emit_value_update(value, *senderObj);
+    qDebug() << "Monitor " << monitorID << " -- Code" << cde_str << " -- Value " << value;
 }
 
-void Linker::receive_monitor_value(uint16_t& code, int& value)
-{
-    //qDebug() << "Code: " << code << " -- Value: " << value;
 
-    emit emit_monitor_value_update(code, value);
-}
 
-void Linker::receive_monitor_value_ID(uint16_t& code, int& value, int& id)
-{
-    qDebug() << "Code: " << code << " Value: " << value << " Monitor: " << id;
 
-}
 
-void Linker::receive_icon_click(QSystemTrayIcon::ActivationReason reason)
-{
-    emit emit_icon_click(reason);
-}
 
-void Linker::receive_slider_add_request()
-{
-    emit emit_slider_add_request();
-}
-
-void Linker::receive_add_slider(uint16_t& code, QColor& color, bool& trayCheck)
-{
-    emit emit_add_slider(code, color, trayCheck);
-}
-
-void Linker::receive_monitor_status_update(int& id_, QMap<QString, QVariant>& update_)
-{
-    monitor_global_status[id_] = update_;
-}
-
-void Linker::receive_monitor_setting(int& monitorID, QString& cde_str, uint16_t& value)
-{
-    qDebug() << "Changed Setting: " << monitorID << " ->" << cde_str << " -- " << value;
-}
-
-void Linker::receive_monitor_highlighting(QString& name, int& id)
-{
-    qDebug() << "Highlighted monitor changed: " << name << " (" << id << ")";
-
-    Monitor* mon = get_monitor_byName(name);
-
-    emit emit_slider_init(mon);
-}

@@ -5,7 +5,7 @@
 #include <QObject>
 #include <QThread>
 
-#include "RawData.h"
+#include "winMouseLoop.h"
 
 
 class Worker : public QObject
@@ -17,7 +17,6 @@ public:
     ~Worker();
 
 private:
-    struct inSignal input;
     bool quit = false;
 
 public slots:
@@ -26,7 +25,7 @@ public slots:
 
 signals:
     void finished();
-    void update_mouse_pos(const struct inSignal& input);
+    void update_mouse_pos(const struct mouseSignal& input);
 };
 
 
@@ -35,25 +34,23 @@ class Controller : public QObject
     Q_OBJECT
 
 private:
-    QThread* thread;
-
-    int i = 0;
-
-private:
     explicit Controller(QObject* parent = nullptr);
+
+    QThread* thread;
 
 public:
     ~Controller();
     static Controller& getInstance();
 
+public slots:
+    void start_worker();
     void stop_worker();
 
-public slots:
-    void receive_update(const struct inSignal&);
+    void receive_update(const struct mouseSignal&);
 
 signals:
-    void operate();
-    void stop();
+    void startP();
+    void stopP();
 
-    void updated(const struct inSignal& input);
+    void updated(const struct mouseSignal& input);
 };

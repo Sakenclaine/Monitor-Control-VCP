@@ -1,53 +1,28 @@
 #include "MonitorSettingsWidget.h"
+#include "MonitorHandler.h"
+#include "CustomFrames.h"
 #include "SignalLinker.h"
 #include "helpers.h"
 
-#include <QGroupBox>
+
 #include <QHBoxLayout>
-
-#include <QPushButton>
-#include <QPixmap>
-#include <QPainter>
-#include <QImage>
-#include <QScrollArea>
-#include <QAbstractScrollArea>
-#include <QScrollBar>
-#include <QFrame>
-#include <QLabel>
-
+#include <QVBoxLayout>
 #include <QStackedWidget>
+#include <QComboBox>
+
+#include <QList>
+#include <QString>
 
 
-
-
-
-MonitorWidget::MonitorWidget()
+MonitorWidget::MonitorWidget(QWidget* parent) :
+	QWidget(parent)
 {
-	QHBoxLayout* layout = new QHBoxLayout(this);
-    settings_continous_layout = new QHBoxLayout();
-    settings_continous_layout->setSpacing(0);
+	layout = new QHBoxLayout(this);
 
-
-    setup_discrete_settings();
-
-
-    CustomFrame* settingsFrame = new CustomFrame(this);
-    settingsFrame->setLayout(settings_continous_layout);
-    
-    connect(settingsFrame->get_button(), &QPushButton::clicked, &Linker::getInstance(), &Linker::receive_slider_add_request);
-
-    connect(&Linker::getInstance(), &Linker::emit_add_slider, this, &MonitorWidget::receive_add_slider);
-    connect(&Linker::getInstance(), &Linker::emit_slider_init, this, &MonitorWidget::receive_slider_init);
-
-	layout->addWidget(settings_discrete);
-	layout->addWidget(settingsFrame);
-}
-
-
-void MonitorWidget::setup_discrete_settings()
-{
-    settings_discrete = new ComboBoxFrame(this); //new QGroupBox(tr("Monitor Settings"));
+    // Discrete settings setup
+    settings_discrete = new ComboBoxFrame(this);
     settings_discrete->setMinimumWidth(150);
+    settings_discrete->setMaximumWidth(250);
     settings_discrete->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
     discreteLayout = new QVBoxLayout();
@@ -57,10 +32,26 @@ void MonitorWidget::setup_discrete_settings()
     stackedWidget = new QStackedWidget;
     discreteLayout->addWidget(stackedWidget);
 
+    // Contonious settings setup
+    settings_continous = new ScrollFrame(this);
+
+    continousLayout = new QHBoxLayout();
+    continousLayout->setSpacing(0);
+    settings_continous->setLayout(continousLayout);
+
+
+    layout->addWidget(settings_discrete);
+    layout->addWidget(settings_continous);
+
+    setup_discrete_settings();
+}
+
+void MonitorWidget::setup_discrete_settings()
+{ 
     foreach(auto elem, Linker::getInstance().get_monitors())
     {
-        settings_discrete->monitorBox->addItem(elem->get_name(), QVariant(elem->get_ID()));
-
+        settings_discrete->addItem(elem->get_name(), QVariant(elem->get_ID()));
+        
         QWidget* pageWidget = new QWidget;
         QVBoxLayout* pageLayout = new QVBoxLayout;
         pageLayout->setAlignment(Qt::AlignTop);
@@ -68,19 +59,16 @@ void MonitorWidget::setup_discrete_settings()
 
         QComboBox* cbInput = new QComboBox;
         cbInput->setObjectName(QString("cb_%1_60").arg(elem->get_name()));
+
         QComboBox* cbClrProfile = new QComboBox;
         cbClrProfile->setObjectName(QString("cb_%1_14").arg(elem->get_name()));
 
         pageLayout->addWidget(cbInput);
         pageLayout->addWidget(cbClrProfile);
 
-        Slider* testSlider = new Slider();
-        testSlider->lock();
-        pageLayout->addWidget(testSlider);
-
         stackedWidget->addWidget(pageWidget);
 
-        //TODO: Set combobox item to current value of monitor
+        ////TODO: Set combobox item to current value of monitor
         chk_add_discrete_feature(elem, "60");
         chk_add_discrete_feature(elem, "14");
 
@@ -90,133 +78,42 @@ void MonitorWidget::setup_discrete_settings()
     }
 
     connect(settings_discrete, &ComboBoxFrame::comboBoxItemChanged, this, &MonitorWidget::cb_monitor_change);
-
-  
-
-
-
-
 }
 
-void MonitorWidget::add_slider(uint16_t code, bool btrayIcon)
-{
-    CustomSlider* cSlider = new CustomSlider(NULL, code);
-
-    QString name = n2hexstr(code, 2);
-    customSliders[name] = cSlider;
-
-    if (btrayIcon) cSlider->add_trayIcon();
-
-    settings_continous_layout->addWidget(cSlider);
-
-    if (btrayIcon)
-    {
-        connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
-    }
-}
-
-void MonitorWidget::add_slider(uint16_t code, QColor color, bool btrayIcon)
-{
-    CustomSlider* cSlider = new CustomSlider(NULL, color, code);
-
-    QString name = n2hexstr(code, 2);
-    customSliders[name] = cSlider; // 
-
-    if (btrayIcon) cSlider->add_trayIcon();
-
-    settings_continous_layout->addWidget(cSlider);
-
-    if (btrayIcon)
-    {
-        connect(cSlider->get_trayIcon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
-    }
-}
-
-void MonitorWidget::add_contextMenu(QMenu* menu)
-{
-    foreach(CustomSlider * elem, customSliders)
-        elem->get_trayIcon()->setContextMenu(menu);
-
-}
-
-void MonitorWidget::receive_add_slider(uint16_t& cde, QColor& col, bool& trayCheck)
-{
-    qDebug() << "Adding Slider ... " << cde << " " << col;
-    this->add_slider(cde, col, trayCheck);
-}
-
-
-void MonitorWidget::cb_monitor_change(QString& name, int& id)
-{
-    qDebug() << name << " -- " << id;
-    qDebug() << "Update ComboBoxes ...";
-
-    stackedWidget->setCurrentIndex(id);
-}
-
-void MonitorWidget::chk_add_discrete_feature(QString monName, QString qsft)
-{
-    Monitor* mon = Linker::getInstance().get_monitor_byName(monName);
-
-    if (mon->features.contains(qsft))
-    {
-        auto tempVec = VCP_FEATURES.commands[qsft].possible_values;
-        auto nm = VCP_FEATURES.commands[qsft].name;
-
-        for (auto& ft : mon->features[qsft].possible_values)
-        {
-            auto it = std::find(tempVec.begin(), tempVec.end(), ft);
-
-            if (it != tempVec.end())
-            {
-                int index = it - tempVec.begin();
-
-                QString cbName = QString("cb_%1_%2").arg(monName).arg(qsft);
-                QComboBox* cb = this->findChild<QComboBox*>(cbName);
-
-                QList<QVariant> itemData{ QVariant(qsft), QVariant(tempVec[index]) };
-                
-                if (cb != NULL) {
-                    cb->addItem(VCP_FEATURES.commands[qsft].possible_values_desc[index], itemData);
-                }
-            }
-        }
-    }
-}
 
 void MonitorWidget::chk_add_discrete_feature(Monitor* mon, QString qsft)
 {
     if (mon->features.contains(qsft))
     {
-        auto tempVec = VCP_FEATURES.commands[qsft].possible_values;
+        QList<QString> tempVec = VCP_FEATURES.commands[qsft].possible_values.keys();
 
         QString cbName = QString("cb_%1_%2").arg(mon->get_name()).arg(qsft);
         QComboBox* cb = this->findChild<QComboBox*>(cbName);
 
         for (auto& ft : mon->features[qsft].possible_values)
         {
-            auto it = std::find(tempVec.begin(), tempVec.end(), ft);
+            QString ft_name = n2hexstr(ft, 2);
 
-            if (it != tempVec.end())
+            if (VCP_FEATURES.commands[qsft].possible_values.contains(ft_name))
             {
-                int index = it - tempVec.begin();
-
-                QList<QVariant> itemData{ QVariant(qsft), QVariant(tempVec[index]) };
+                QList<QVariant> itemData{ QVariant(qsft), QVariant(ft) };
 
                 if (cb != NULL) {
-                    cb->addItem(VCP_FEATURES.commands[qsft].possible_values_desc[index], itemData);
+                    cb->addItem(VCP_FEATURES.commands[qsft].possible_values[ft_name], itemData);
+
                 }
             }
-        }
 
-        QVariant currentData(QVariantList{ QVariant(qsft), QVariant(mon->features[qsft].current_value) });
-        int ind = cb->findData(currentData);
+            QVariant currentData(QVariantList{ QVariant(qsft), QVariant(mon->features[qsft].current_value) });
+            int ind = cb->findData(currentData);
 
-        if (ind != -1) { // -1 for not found
-            cb->setCurrentIndex(ind);
+            if (ind != -1) { // -1 for not found
+                cb->setCurrentIndex(ind);
+            }
         }
     }
 }
+
 
 void MonitorWidget::discrete_setting_changed(int index)
 {
@@ -228,67 +125,15 @@ void MonitorWidget::discrete_setting_changed(int index)
         QString cde_str = (obj->currentData()).toList()[0].toString();
         uint16_t value = (obj->currentData()).toList()[1].toUInt();
 
-        emit send_discrete_setting(id, cde_str, value);
+        Linker::getInstance().receive_discrete_setting(id, cde_str, value);
+        //emit send_discrete_setting(id, cde_str, value);
     }
 }
 
-
-void MonitorWidget::init_slider(QString name)
+void MonitorWidget::cb_monitor_change(QString& name, int& id)
 {
+    qDebug() << name << " -- " << id;
+    qDebug() << "Update ComboBoxes ...";
 
-}
-
-void MonitorWidget::receive_slider_init(Monitor* monitor)
-{
-    qDebug() << "Receive Init from " << monitor->get_name();
-
-    for (auto [key, sldr] : customSliders.asKeyValueRange()) {
-        qDebug() << key;
-        
-        if (monitor->features.contains(key))
-        {
-            int val = monitor->features[key].current_value;
-
-            sldr->set_value(val);
-        }
-    }
-
-}
-
-
-PlaceholderWidget::PlaceholderWidget()
-{
-    int xS, yS, a, b, c, d;
-    get_screen_geometry(xS, yS, a, b, c, d);
-
-    
-    QHBoxLayout* tLayout = new QHBoxLayout();
-
-    QImage image(":/images/placeholder.png");
-
-    QLabel* imageLabel = new QLabel();
-    imageLabel->setBackgroundRole(QPalette::Base);
-    imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    imageLabel->setScaledContents(true);
-
-    QScrollArea* scrollArea = new QScrollArea();
-    scrollArea->setBackgroundRole(QPalette::Dark);
-    scrollArea->setWidget(imageLabel);
-    scrollArea->setVisible(false);
-
-    QPushButton* button = new QPushButton;
-    button->setIcon(QIcon(":/images/monitorcontrol.ico"));
-    button->setIconSize(QSize(65, 65));
-
-    tLayout->addWidget(scrollArea);
-    tLayout->addWidget(button);
-
-    setLayout(tLayout);
-    setWindowFlags(Qt::Popup);
-
-    imageLabel->setPixmap(QPixmap::fromImage(image));
-    imageLabel->resize(0.5 * imageLabel->pixmap(Qt::ReturnByValue).size());
-    scrollArea->setVisible(true);
-
-    move(xS - this->sizeHint().width() - 40, yS - this->sizeHint().height());
+    stackedWidget->setCurrentIndex(id);
 }

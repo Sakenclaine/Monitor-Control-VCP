@@ -4,6 +4,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 
 
@@ -46,9 +47,10 @@ template <typename I> QString n2hexstr(I w, size_t hex_len = sizeof(I) << 1)
         str_[i] = digits[(w >> j) & 0x0f];
     }
 
-    //qDebug() << "n2hexstr(): " << str_;
-
     return QString::fromStdString(str_);
 }
 
 void get_screen_geometry(int& xWO_TAB_TOB, int& yWO_TAB_TOB, int& xWO_TAB, int& yWO_TAB, int& x, int& y);
+
+
+void parse_capability_string(std::string s, std::vector<std::string>& keywords, std::vector<std::string>& parsed_string, std::map<std::string, std::string>& vcp_dict);
