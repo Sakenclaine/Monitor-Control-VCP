@@ -81,11 +81,23 @@ void CustomSlider::wheelEvent(QWheelEvent* e)
 
 bool CustomSlider::event(QEvent* e) 
 {
-	if (!locked) QSlider::event(e);
+	bool eventBool = false;
+	
+	if (!locked) {
+		eventBool = QSlider::event(e);
+		return eventBool;
+	}
 
 	else {
-		e->ignore();
-		return false;
+		if (e->type() == QEvent::Paint || e->type() == QEvent::Resize) {
+			eventBool = QSlider::event(e);
+			return eventBool;
+		}
+
+		else {
+			e->ignore();
+			return eventBool;
+		}
 	}
 }
 

@@ -42,6 +42,7 @@ private:
 
 private:
 	void setup_discrete_settings();
+	void setup_continous_settings();
 //	void init_slider(QString name);
 //
 //

@@ -3,6 +3,7 @@
 #include "CustomFrames.h"
 #include "SignalLinker.h"
 #include "helpers.h"
+#include "CustomSlider.h"
 
 
 #include <QHBoxLayout>
@@ -44,6 +45,7 @@ MonitorWidget::MonitorWidget(QWidget* parent) :
     layout->addWidget(settings_continous);
 
     setup_discrete_settings();
+    setup_continous_settings();
 }
 
 void MonitorWidget::setup_discrete_settings()
@@ -80,6 +82,13 @@ void MonitorWidget::setup_discrete_settings()
     connect(settings_discrete, &ComboBoxFrame::comboBoxItemChanged, this, &MonitorWidget::cb_monitor_change);
 }
 
+void MonitorWidget::setup_continous_settings()
+{
+    SliderWidget* slider = new SliderWidget(this, 0x12);
+    slider->add_trayIcon();
+
+    continousLayout->addWidget(slider);
+}
 
 void MonitorWidget::chk_add_discrete_feature(Monitor* mon, QString qsft)
 {
@@ -113,7 +122,6 @@ void MonitorWidget::chk_add_discrete_feature(Monitor* mon, QString qsft)
         }
     }
 }
-
 
 void MonitorWidget::discrete_setting_changed(int index)
 {
