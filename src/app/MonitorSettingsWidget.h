@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 class ComboBoxFrame;
@@ -57,10 +58,11 @@ public:
 	void chk_add_discrete_feature(Monitor* mon, QString qsft);
 
 
-//public slots:
+public slots:
+	void receive_checked_monitors(QList<int>);
 //	void receive_add_slider(uint16_t&, QColor&, bool&);
 //	void receive_slider_init(Monitor* monitor);
-//
+
 private slots:
 	void cb_monitor_change(QString& name, int& ids);
 	void discrete_setting_changed(int index);

@@ -46,6 +46,15 @@ int TrayIconControlled::get_value()
     return value;
 }
 
+void TrayIconControlled::set_value(int val)
+{
+    if (val <= max_val && val >= min_val)
+    {
+        value = val;
+        update_icon();
+    }
+}
+
 void TrayIconControlled::set_identifier(int id, QString code)
 {
     setObjectName(QString("%1_%2_%3").arg(receiverType).arg(id).arg(code));

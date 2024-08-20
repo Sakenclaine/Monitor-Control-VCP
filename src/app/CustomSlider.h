@@ -87,6 +87,7 @@ private:
 
 public:
 	void set_color(QColor col);
+	void set_value(int value);
 	void add_trayIcon();
 	void set_contextMenu(QMenu* menu);
 

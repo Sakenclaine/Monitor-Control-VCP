@@ -20,6 +20,7 @@ private:
 
 private:
     QList<Monitor*> registered_monitors;
+    QList<int> checked_monitors;
 
 public:
     void register_monitor(Monitor* monitor);

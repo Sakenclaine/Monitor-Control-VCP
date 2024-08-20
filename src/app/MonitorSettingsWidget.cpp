@@ -4,6 +4,7 @@
 #include "SignalLinker.h"
 #include "helpers.h"
 #include "CustomSlider.h"
+#include "TrayIconControlled.h"
 
 
 #include <QHBoxLayout>
@@ -49,6 +50,8 @@ MonitorWidget::MonitorWidget(QWidget* parent) :
 
     setup_discrete_settings();
     setup_continous_settings();
+
+    connect(&Linker::getInstance(), &Linker::send_checked_monitors, this, &MonitorWidget::receive_checked_monitors);
 }
 
 void MonitorWidget::setup_discrete_settings()
@@ -91,7 +94,8 @@ void MonitorWidget::setup_continous_settings()
     lumSlider->add_trayIcon();
     lumSlider->lock();
 
-    lumSlider->get_slider()->setValue(10);
+    lumSlider->set_value(10);
+
 
     //SliderWidget* volSlider = new SliderWidget(this, 0x62);
     //volSlider->set_color(QColor(0, 255, 0));
@@ -157,4 +161,9 @@ void MonitorWidget::cb_monitor_change(QString& name, int& id)
     qDebug() << "Update ComboBoxes ...";
 
     stackedWidget->setCurrentIndex(id);
+}
+
+void MonitorWidget::receive_checked_monitors(QList<int> monIDs)
+{
+    qDebug() << monIDs;
 }

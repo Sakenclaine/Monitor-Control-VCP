@@ -218,6 +218,13 @@ void SliderWidget::setup()
 
 }
 
+void SliderWidget::set_value(int value)
+{
+	slider->setValue(value);
+
+	if (trayIcon) icon->set_value(value);
+}
+
 void SliderWidget::add_trayIcon()
 {
 	trayIcon = true;
@@ -269,8 +276,7 @@ CustomSlider* SliderWidget::get_slider()
 
 TrayIconControlled* SliderWidget::get_icon()
 {
-	if (trayIcon) return icon;
-	else return nullptr;
+	return icon;
 }
 
 

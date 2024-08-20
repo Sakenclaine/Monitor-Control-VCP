@@ -15,6 +15,7 @@ public:
 
 public:
 	int get_value();
+	void set_value(int val);
 
 	void set_identifier(int id, QString code);
 	void set_step(int new_step);
