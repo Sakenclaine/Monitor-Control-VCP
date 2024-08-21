@@ -52,6 +52,11 @@ Monitor* Linker::get_monitor_byName(QString& name)
     return NULL;
 }
 
+const QList<int>& Linker::get_checked_monitors()
+{
+    return checked_monitors;
+}
+
 // SLOTS
 void Linker::receive_lock(bool lck)
 {
@@ -65,6 +70,8 @@ void Linker::receive_lock(bool lck)
 
         if (chk) chkd_mons.append(elem->get_ID());
     }
+
+    checked_monitors = chkd_mons;
 
     emit send_lock(!chks.contains(true));
     emit send_checked_monitors(chkd_mons);

@@ -27,6 +27,7 @@ public:
     void register_monitor(QList<Monitor*> monitors);
 
     QList<Monitor*> get_monitors();
+    const QList<int>& get_checked_monitors();
 
     Monitor* get_monitor_byID(int& id);
     Monitor* get_monitor_byName(QString& name);

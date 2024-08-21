@@ -89,7 +89,15 @@ bool CustomSlider::event(QEvent* e)
 	}
 
 	else {
-		if (e->type() == QEvent::Paint || e->type() == QEvent::Resize) {
+		if (e->type() == QEvent::Paint || 
+			e->type() == QEvent::Resize || 
+			e->type() == QEvent::StyleChange ||
+			e->type() == QEvent::Polish ||
+			e->type() == QEvent::PolishRequest ||
+			e->type() == QEvent::Show ||
+			e->type() == QEvent::ShowToParent ||
+			e->type() == QEvent::UpdateLater ||
+			e->type() == QEvent::Move ) {
 			eventBool = QSlider::event(e);
 			return eventBool;
 		}
@@ -146,6 +154,8 @@ void SliderWidget::setup()
 	{
 		name = VCP_FEATURES.commands[cde_str].name;
 	}
+
+	qDebug() << "Init slider for " << cde_str << " (" << name << ")";
 	
 	mainVLayout = new QVBoxLayout();
 	mainVLayout->setContentsMargins(0, 5, 0, 0);
@@ -254,8 +264,8 @@ void SliderWidget::set_contextMenu(QMenu* menu)
 void SliderWidget::set_color(QColor col)
 {
 	color = col;
-	lower_fill = color.name();
-	
+	lower_fill = col.name();
+
 	QString style = QString(
 		"QSlider::groove:vertical {background: %2; position: absolute; left: %1px; right: %1px; }"
 		"QSlider::handle:vertical { height: 10px; background: %4; margin: 0px; }"

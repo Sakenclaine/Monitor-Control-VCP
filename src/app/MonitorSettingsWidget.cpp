@@ -14,6 +14,7 @@
 #include <QComboBox>
 
 #include <QList>
+#include <QVariant>
 #include <QString>
 
 
@@ -42,7 +43,7 @@ MonitorWidget::MonitorWidget(QWidget* parent) :
     connect(settings_continous, &ScrollFrame::add_clicked, this, &MonitorWidget::add_slider);
 
     continousLayout = new QHBoxLayout();
-    continousLayout->setSpacing(0);
+    continousLayout->setSpacing(7);
     settings_continous->setLayout(continousLayout);
 
     subVLayout->addWidget(settings_discrete);
@@ -172,6 +173,36 @@ void MonitorWidget::receive_checked_monitors(QList<int> monIDs)
 
 void MonitorWidget::add_slider()
 {
-    bool bChk;
-    AddSliderDialog::get_input(this, bChk);
+    AddSliderDialog dlg(this);
+
+    int ret = dlg.exec();
+
+    if (ret == 1)
+    {
+        QList<QVariant> retVals = dlg.get_values();
+
+        QColor col = retVals[1].value<QColor>();
+        uint16_t code = retVals[0].toUInt();
+        bool trayChk = retVals[2].toBool();
+
+        qDebug() << retVals;
+
+        if (retVals[0].toUInt() > 0)
+        {
+            QString cde_str = n2hexstr(code, 2);
+
+            if (VCP_FEATURES.commands.contains(cde_str))
+            {
+                SliderWidget* newSlider = new SliderWidget(this, code);
+
+                if (trayChk) newSlider->add_trayIcon();
+
+                if (Linker::getInstance().get_checked_monitors().empty()) newSlider->lock();
+
+                newSlider->set_color(col);
+
+                continousLayout->addWidget(newSlider);
+            }
+        }
+    }
 }

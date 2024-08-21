@@ -49,7 +49,7 @@ void ScrollFrame::resizeEvent(QResizeEvent* evnt)
 
 void ScrollFrame::setLayout(QLayout* layout)
 {
-	layout->setContentsMargins(0, 4, 10, 0);
+	layout->setContentsMargins(10, 10, 10, 10);
 	innerContent->setLayout(layout);
 }
 

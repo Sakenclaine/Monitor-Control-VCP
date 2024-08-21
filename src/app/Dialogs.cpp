@@ -5,16 +5,29 @@
 #include <QRegularExpressionValidator>
 
 #include <QFontMetrics>
+#include <QCompleter>
 
 
-explicit AddSliderDialog::AddSliderDialog(QWidget* parent) : QDialog(parent)
+
+AddSliderDialog::AddSliderDialog(QWidget* parent, QStringList autocomplete) :
+	QDialog(parent),
+	wordList(autocomplete)
+{
+	setup();
+}
+
+void AddSliderDialog::setup()
 {
 	this->setWindowTitle(tr("Add Slider"));
 
 	layout = new QFormLayout(this);
 
 	colDialog = new QColorDialog(this);
+	// Weird layout problems of predefined Qt ColorDialog solved with manual resize.
 	colDialog->adjustSize();
+	colDialog->layout()->setSizeConstraint(QLayout::SetNoConstraint);
+	colDialog->setFixedWidth(colDialog->sizeHint().width() + 135);
+	colDialog->setFixedHeight(colDialog->sizeHint().height());
 
 
 	QValidator* validator = new QRegularExpressionValidator(QRegularExpression("0x[0-9A-Fa-f][0-9A-Fa-f]{1,1}"));
@@ -26,6 +39,14 @@ explicit AddSliderDialog::AddSliderDialog(QWidget* parent) : QDialog(parent)
 	lineCode->setPlaceholderText(plcHolder);
 	lineCode->setValidator(validator);
 	lineCode->setMinimumWidth(fontMtrcs.boundingRect(plcHolder).width() + 50);
+
+	if (!wordList.empty())
+	{
+		QCompleter* completer = new QCompleter(wordList, this);
+		completer->setCaseSensitivity(Qt::CaseInsensitive);
+		lineCode->setCompleter(completer);
+	}
+	
 
 	colorBtn = new QPushButton();
 	colorBtn->setStyleSheet(colBtnStyle);
@@ -47,7 +68,7 @@ explicit AddSliderDialog::AddSliderDialog(QWidget* parent) : QDialog(parent)
 	layout->addRow(tr("&Icon:"), trayIconCheck);
 	layout->addRow(acceptBtn, cancelBtn);
 
-
+	adjustSize();
 }
 
 QList<QVariant> AddSliderDialog::get_input(QWidget* parent, bool* ok)
@@ -77,7 +98,27 @@ QList<QVariant> AddSliderDialog::get_input(QWidget* parent, bool* ok)
 	dialog->deleteLater();
 
 	return list;
+
 }
+
+QList<QVariant> AddSliderDialog::get_values()
+{
+	QList<QVariant> list;
+
+	QString txt = this->lineCode->text();
+
+	bool flag;
+	uint16_t c = txt.toUInt(&flag, 16);
+
+	if (flag) list.append(QVariant(c));
+	else list.append(QVariant(-1));
+
+	list.append(QVariant(this->color));
+	list.append(QVariant(this->trayIconCheck->isChecked()));
+
+	return list;
+}
+
 
 void AddSliderDialog::set_color_btn(QColor col)
 {

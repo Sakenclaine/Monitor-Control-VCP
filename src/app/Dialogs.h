@@ -5,6 +5,7 @@
 #include <QColorDialog>
 
 #include <QList>
+#include <QStringList>
 #include <QVariant>
 
 #include <QSizePolicy>
@@ -22,7 +23,7 @@ class AddSliderDialog : public QDialog
 	Q_OBJECT
 
 public:
-	explicit AddSliderDialog(QWidget* parent = nullptr);
+	explicit AddSliderDialog(QWidget* parent = nullptr, QStringList autocomplete = QStringList{});
 
 private:
 	QColor color = QColor("red");
@@ -31,6 +32,8 @@ private:
 	QString colBtnStyle = QString(
 		"background-color: %1;"
 		"border - radius: 20px;").arg(color.name());
+
+	QStringList wordList;
 
 
 private:
@@ -48,9 +51,12 @@ private:
 private:
 	void set_color_btn(QColor col);
 
-public:
-	static QList<QVariant> get_input(QWidget* parent, bool* ok = nullptr);
+	void setup();
 
+public:
+	static QList<QVariant> get_input(QWidget* parent = nullptr, bool* ok = nullptr);
+
+	QList<QVariant> get_values();
 
 private slots:
 	void color_dialog();
