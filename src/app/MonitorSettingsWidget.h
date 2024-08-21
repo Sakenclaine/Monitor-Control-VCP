@@ -67,6 +67,8 @@ private slots:
 	void cb_monitor_change(QString& name, int& ids);
 	void discrete_setting_changed(int index);
 
+	void add_slider();
+
 //signals:
 //	void send_discrete_setting(int& monitorID, QString& cde_str, uint16_t& value);
 };

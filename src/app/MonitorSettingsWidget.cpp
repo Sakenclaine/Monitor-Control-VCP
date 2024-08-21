@@ -5,6 +5,7 @@
 #include "helpers.h"
 #include "CustomSlider.h"
 #include "TrayIconControlled.h"
+#include "Dialogs.h"
 
 
 #include <QHBoxLayout>
@@ -38,6 +39,7 @@ MonitorWidget::MonitorWidget(QWidget* parent) :
 
     // Contonious settings setup
     settings_continous = new ScrollFrame(this);
+    connect(settings_continous, &ScrollFrame::add_clicked, this, &MonitorWidget::add_slider);
 
     continousLayout = new QHBoxLayout();
     continousLayout->setSpacing(0);
@@ -166,4 +168,10 @@ void MonitorWidget::cb_monitor_change(QString& name, int& id)
 void MonitorWidget::receive_checked_monitors(QList<int> monIDs)
 {
     qDebug() << monIDs;
+}
+
+void MonitorWidget::add_slider()
+{
+    bool bChk;
+    AddSliderDialog::get_input(this, bChk);
 }

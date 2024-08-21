@@ -37,6 +37,9 @@ public:
 	void setLayout(QLayout* layout);
 	QPushButton* get_button();
 
+signals:
+	void add_clicked();
+
 };
 
 

@@ -33,6 +33,8 @@ ScrollFrame::ScrollFrame(QWidget* parent) : QFrame(parent)
 
 	addButton->show();
 
+	connect(addButton, &QPushButton::clicked, this, &ScrollFrame::add_clicked);
+
 	setMinimumWidth(100);
 }
 
