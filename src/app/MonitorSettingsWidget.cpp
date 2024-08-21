@@ -172,7 +172,7 @@ void MonitorWidget::receive_checked_monitors(QList<int> monIDs)
 }
 
 void MonitorWidget::add_slider()
-{
+{ 
     AddSliderDialog dlg(this);
 
     int ret = dlg.exec();
