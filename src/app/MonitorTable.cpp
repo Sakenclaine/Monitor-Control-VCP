@@ -40,8 +40,7 @@ MonitorTable::MonitorTable(QWidget* parent, QStringList tableHeader) :
     resizeColumnToContents(0);
 
     //connect(this, &QTableWidget::itemSelectionChanged, this, &MonitorTable::monitor_selection_changed_);
-
-    //connect(this, &MonitorTable::monitor_selection_changed, &Linker::getInstance(), &Linker::receive_monitor_highlighting);
+    //connect(this, &MonitorTable::monitor_selection_changed, &Linker::getInstance(), &Linker::receive_monitor_selection);
     
     
 }

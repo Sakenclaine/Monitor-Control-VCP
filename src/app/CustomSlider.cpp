@@ -279,6 +279,7 @@ void SliderWidget::set_color(QColor col)
 
 }
 
+
 CustomSlider* SliderWidget::get_slider()
 {
 	return slider;

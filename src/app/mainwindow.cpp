@@ -67,11 +67,8 @@ void MainWindow::setup()
 
 
     monitorSettings = new MonitorWidget(this);
-
-    //SliderWidget* test = new SliderWidget(this, 0x12);
-    //test->add_trayIcon();
-    //test->set_contextMenu(trayIconMenu);
-
+    monitorSettings->add_contextMenu(trayIconMenu);
+    
     mainLayout->addWidget(monitorSettings);
 
 
@@ -93,7 +90,6 @@ void MainWindow::createMonitorGroupBox()
     {
         tableWidget->add_monitor(monitor);
     }
-
 
 
     tableWidget->selectRow(0);

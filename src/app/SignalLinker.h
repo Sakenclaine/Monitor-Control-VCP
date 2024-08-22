@@ -38,7 +38,9 @@ public:
     static Linker& getInstance();
 
 public slots:
+    // Handle signals from monitor table
     void receive_lock(bool);
+    void receive_monitor_selection(QString&, int&);
 
     // Handle value updates between sliders and tray icons
     void receive_value_update(int value);
@@ -50,6 +52,7 @@ public slots:
 signals:
     void send_lock(bool);
     void send_checked_monitors(QList<int>);
+    void send_selected_monitor(QString&, int&);
 
     // Handle value updates between sliders and tray icons
     void send_value_update(int&, QObject&);

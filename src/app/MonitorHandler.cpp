@@ -416,6 +416,11 @@ bool Monitor::get_status()
     return status;
 }
 
+bool Monitor::check_feature(uint16_t)
+{
+
+}
+
 
 // SLOTS
 void Monitor::set_status(bool chk)
@@ -427,6 +432,10 @@ void Monitor::set_status(bool chk)
     }
 }
 
+void Monitor::set_discrete_feature()
+{
+
+}
 
 
 

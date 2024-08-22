@@ -74,6 +74,31 @@ public:
 extern VCP_COMMANDS VCP_FEATURES;
 
 
+
+struct MonitorRects
+{
+	std::vector<HMONITOR> monitorHandles;
+
+	static BOOL CALLBACK MonitorEnum(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM pData)
+	{
+		MonitorRects* pThis = reinterpret_cast<MonitorRects*>(pData);
+		pThis->monitorHandles.push_back(hMon);
+
+		return TRUE;
+	}
+
+	MonitorRects()
+	{
+		EnumDisplayMonitors(0, 0, MonitorEnum, (LPARAM)this);
+	}
+};
+
+
+// Methods to get (physical) monitors in Windows
+bool get_connected_monitors(QList<Monitor*>& monitors);
+
+
+
 struct monitor_vcp
 {
 	QList<uint16_t> possible_values;
@@ -82,7 +107,6 @@ struct monitor_vcp
 	uint16_t current_value = 0;
 	uint16_t max_value = 255;
 };
-
 
 
 
@@ -118,9 +142,14 @@ public:
 	QString get_name();
 	bool get_status();
 
+	bool check_feature(uint16_t code);
+	void add_feature(uint16_t code);
+
 
 public slots:
 	void set_status(bool chk);
+
+	void set_discrete_feature();
 
 signals:
 	void send_status(bool chk);
@@ -128,26 +157,5 @@ signals:
 };
 
 
-struct MonitorRects
-{
-	std::vector<HMONITOR> monitorHandles;
-
-	static BOOL CALLBACK MonitorEnum(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM pData)
-	{
-		MonitorRects* pThis = reinterpret_cast<MonitorRects*>(pData);
-		pThis->monitorHandles.push_back(hMon);
-
-		return TRUE;
-	}
-
-	MonitorRects()
-	{
-		EnumDisplayMonitors(0, 0, MonitorEnum, (LPARAM)this);
-	}
-};
-
-
-// Methods to get (physical) monitors in Windows
-bool get_connected_monitors(QList<Monitor*>& monitors);
 
 

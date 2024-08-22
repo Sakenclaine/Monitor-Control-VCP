@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QList>
+#include <QMenu>
 
 QT_BEGIN_NAMESPACE
 class ComboBoxFrame;
@@ -13,6 +14,7 @@ class QStackedWidget;
 
 class Monitor;
 class CustomSlider;
+class SliderWidget;
 QT_END_NAMESPACE
 
 
@@ -21,7 +23,7 @@ class MonitorWidget : public QWidget
 	Q_OBJECT
 
 private:
-	QMap<QString, CustomSlider*> customSliders;
+	QMap<QString, SliderWidget*> sliders;
 
 public:
 	MonitorWidget(QWidget* parent = nullptr);
@@ -42,6 +44,7 @@ private:
 	
 
 	QStackedWidget* stackedWidget;
+	QMenu* contextMenu = nullptr;
 
 
 private:
@@ -53,7 +56,7 @@ private:
 public:
 //	void add_slider(uint16_t code, bool btrayIcon);
 //	void add_slider(uint16_t code, QColor color, bool btrayIcon);
-//	void add_contextMenu(QMenu* menu);
+	void add_contextMenu(QMenu* menu);
 
 	void chk_add_discrete_feature(Monitor* mon, QString qsft);
 
@@ -69,6 +72,6 @@ private slots:
 
 	void add_slider();
 
-//signals:
-//	void send_discrete_setting(int& monitorID, QString& cde_str, uint16_t& value);
+signals:
+	void send_discrete_setting(int& monitorID, QString& cde_str, uint16_t& value);
 };

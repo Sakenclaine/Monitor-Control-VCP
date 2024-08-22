@@ -77,6 +77,12 @@ void Linker::receive_lock(bool lck)
     emit send_checked_monitors(chkd_mons);
 }
 
+void Linker::receive_monitor_selection(QString& name, int& id)
+{
+    qDebug() << name << " " << id;
+
+}
+
 void Linker::receive_value_update(int value)
 {
     QObject* obj = sender();

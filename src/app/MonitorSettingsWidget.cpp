@@ -93,12 +93,13 @@ void MonitorWidget::setup_discrete_settings()
 
 void MonitorWidget::setup_continous_settings()
 {
+    QString cde_str = n2hexstr(0x10, 2);
     SliderWidget* lumSlider = new SliderWidget(this, 0x10);
     lumSlider->add_trayIcon();
     lumSlider->lock();
 
     lumSlider->set_value(10);
-
+    sliders[cde_str] = lumSlider;
 
     //SliderWidget* volSlider = new SliderWidget(this, 0x62);
     //volSlider->set_color(QColor(0, 255, 0));
@@ -108,6 +109,16 @@ void MonitorWidget::setup_continous_settings()
     //subHLayout->addWidget(volSlider);
 
     subVLayout->addLayout(subHLayout);
+}
+
+void MonitorWidget::add_contextMenu(QMenu* menu)
+{
+    contextMenu = menu;
+
+    for (auto [key, value] : sliders.asKeyValueRange())
+    {
+        value->set_contextMenu(menu);
+    }
 }
 
 void MonitorWidget::chk_add_discrete_feature(Monitor* mon, QString qsft)
@@ -169,6 +180,18 @@ void MonitorWidget::cb_monitor_change(QString& name, int& id)
 void MonitorWidget::receive_checked_monitors(QList<int> monIDs)
 {
     qDebug() << monIDs;
+
+    if (!monIDs.empty())
+    {
+        if (monIDs.size() < 2)
+        {
+            for (auto [key, value] : sliders.asKeyValueRange())
+            {
+                int val = Linker::getInstance().get_monitor_byID(monIDs[0])->features[key].current_value;
+                value->set_value(val);
+            }
+        }
+    }
 }
 
 void MonitorWidget::add_slider()
@@ -191,15 +214,21 @@ void MonitorWidget::add_slider()
         {
             QString cde_str = n2hexstr(code, 2);
 
-            if (VCP_FEATURES.commands.contains(cde_str))
+            if (VCP_FEATURES.commands.contains(cde_str) && !(sliders.contains(cde_str)))
             {
                 SliderWidget* newSlider = new SliderWidget(this, code);
 
-                if (trayChk) newSlider->add_trayIcon();
+                if (trayChk) { 
+                    newSlider->add_trayIcon();
+
+                    if (contextMenu != nullptr) newSlider->set_contextMenu(contextMenu);
+                }
 
                 if (Linker::getInstance().get_checked_monitors().empty()) newSlider->lock();
 
                 newSlider->set_color(col);
+
+                sliders[cde_str] = newSlider;
 
                 continousLayout->addWidget(newSlider);
             }
