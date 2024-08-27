@@ -244,7 +244,6 @@ bool get_connected_monitors(QList<Monitor*>& monitors)
 }
 
 
-
 void get_monitor_features_WIN(QMap<QString, monitor_vcp>& features, PHYSICAL_MONITOR& monitor)
 {
     auto get_monitor_capabilities_WIN = [](PHYSICAL_MONITOR& monitor, std::vector<std::string>& kwrds, std::vector<std::string>& vals, std::map<std::string, std::string>& capabilities_dict)
@@ -332,6 +331,39 @@ void get_monitor_features_WIN(QMap<QString, monitor_vcp>& features, PHYSICAL_MON
 // END ----------------------------------------------------------------
 
 
+bool setBrightness(QList<QVariant> inpt)
+{
+    if (inpt.isEmpty()) return false;
+
+    HANDLE hndl = inpt[0].value<HANDLE>();
+    uint16_t value = inpt[1].toUInt();
+
+    
+    bool bChk = SetMonitorBrightness(hndl, value);
+
+    return bChk;
+}
+
+bool setContrast(QList<QVariant> inpt)
+{
+    if (inpt.isEmpty()) return false;
+
+    HANDLE hndl = inpt[0].value<HANDLE>();
+    uint16_t value = inpt[1].toUInt();
+
+
+    bool bChk = SetMonitorContrast(hndl, value);
+
+    return bChk;
+}
+
+
+QMap<QString, std::function<bool(QList<QVariant>)>> menu = { 
+    {"Brightness", setBrightness}, 
+    {"Contrast", setContrast} 
+};
+
+
 // BEGIN --------------------------------------------------------------
 // Constructors and Desctructor for Monitor class
 int Monitor::idProvider = 0;
@@ -416,7 +448,7 @@ bool Monitor::get_status()
     return status;
 }
 
-bool Monitor::check_feature(uint16_t code)
+bool Monitor::add_check_feature(uint16_t code, bool addChk)
 {
     QString cde_str = n2hexstr(code, 2);
 
@@ -424,16 +456,50 @@ bool Monitor::check_feature(uint16_t code)
 
     if (features.contains(cde_str)) return true;
 
-    else if (!(features.contains(cde_str)))
-    {
+    else if (!(features.contains(cde_str))) {
+        if (!dummy) {
 #ifdef Q_OS_WIN
+            unsigned long current_value = 0;
+            unsigned long max_value = 0;
+            MC_VCP_CODE_TYPE code_type;
+
+
+            bool bChk = GetVCPFeatureAndVCPFeatureReply(monitor_.hPhysicalMonitor, code, &code_type, &current_value, &max_value);
+
+            if (bChk) {
+                if (addChk) {
+                    monitor_vcp newFeature;
+                    newFeature.current_value = current_value;
+                    newFeature.max_value = max_value;
+                    newFeature.enabled = true;
+                }
+                
+                return true;
+            }
+            else return false;
 
 
 #elif Q_OS_UNIX
-        qDebug() << "No UNIX Handling yet.";
+            qDebug() << "No UNIX Handling yet.";
+
+            return false;
 
 #endif
+        }
+
+        else {
+            if (addChk) {
+                monitor_vcp newFeature;
+                newFeature.current_value = 0;
+                newFeature.max_value = 100;
+                newFeature.enabled = true;
+            }
+
+            return true;
+        }
     }
+
+    else return false;
 
 }
 
@@ -448,8 +514,13 @@ void Monitor::set_status(bool chk)
     }
 }
 
-void Monitor::set_discrete_feature()
+void Monitor::set_discrete_feature(uint16_t code, int value)
 {
+    QString cde_str = n2hexstr(code);
+
+    if (features.contains(cde_str)) {
+
+    }
 
 }
 

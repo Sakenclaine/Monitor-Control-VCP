@@ -10,6 +10,9 @@
 #include <physicalmonitorenumerationapi.h>
 
 
+
+
+
 #include <QtCore>
 #include <QString>
 #include <QObject>
@@ -18,10 +21,15 @@
 #include <QDebug>
 
 
+#include <unordered_map>
+#include <functional>
 #include <vector>
 #include <string>
 #include <map>
 #include <initializer_list>
+
+
+
 
 
 class Monitor;
@@ -145,14 +153,14 @@ public:
 	QString get_name();
 	bool get_status();
 
-	bool check_feature(uint16_t code);
-	void add_feature(uint16_t code);
+	bool add_check_feature(uint16_t code, bool addChk);
 
 
 public slots:
 	void set_status(bool chk);
 
-	void set_discrete_feature();
+	void set_discrete_feature(uint16_t code, int value);
+	void set_feature(uint16_t code, int value);
 
 signals:
 	void send_status(bool chk);
