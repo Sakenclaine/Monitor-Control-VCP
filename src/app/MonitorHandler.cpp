@@ -514,7 +514,7 @@ void Monitor::set_status(bool chk)
     }
 }
 
-void Monitor::set_feature(uint16_t code, int value)
+bool Monitor::set_feature(uint16_t code, int value)
 {
     QString cde_str = n2hexstr(code);
 
@@ -529,7 +529,17 @@ void Monitor::set_feature(uint16_t code, int value)
             bool bChk = vcp_funcs_WIN[name](QList{ key, val });
 
             if (bChk) features[cde_str].current_value = value;
+
+            return bChk;
         }
+    }
+
+    else {
+        bool bChk = SetVCPFeature(monitor_.hPhysicalMonitor, code, value);
+
+        if (bChk) features[cde_str].current_value = value;
+
+        return bChk;
     }
 
 }

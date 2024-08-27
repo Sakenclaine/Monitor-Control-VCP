@@ -216,6 +216,13 @@ void MonitorWidget::add_slider()
 
             if (VCP_FEATURES.commands.contains(cde_str) && !(sliders.contains(cde_str)))
             {
+                // TODO add message for unsupported code
+                for (auto& elem : Linker::getInstance().get_monitors())
+                {
+                    bool bChk = elem->add_check_feature(code, true);
+                }
+                
+                
                 SliderWidget* newSlider = new SliderWidget(this, code);
 
                 if (trayChk) { 
