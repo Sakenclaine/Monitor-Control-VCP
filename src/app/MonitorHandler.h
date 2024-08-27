@@ -159,7 +159,7 @@ public:
 public slots:
 	void set_status(bool chk);
 
-	void set_discrete_feature(uint16_t code, int value);
+	//void set_discrete_feature(uint16_t code, int value);
 	void set_feature(uint16_t code, int value);
 
 signals:

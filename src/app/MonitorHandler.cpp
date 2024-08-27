@@ -358,7 +358,7 @@ bool setContrast(QList<QVariant> inpt)
 }
 
 
-QMap<QString, std::function<bool(QList<QVariant>)>> menu = { 
+QMap<QString, std::function<bool(QList<QVariant>)>> vcp_funcs_WIN = { 
     {"Brightness", setBrightness}, 
     {"Contrast", setContrast} 
 };
@@ -514,12 +514,22 @@ void Monitor::set_status(bool chk)
     }
 }
 
-void Monitor::set_discrete_feature(uint16_t code, int value)
+void Monitor::set_feature(uint16_t code, int value)
 {
     QString cde_str = n2hexstr(code);
 
-    if (features.contains(cde_str)) {
+    QString name = VCP_FEATURES.commands[cde_str].name;
 
+    if (features.contains(cde_str)) {
+        if (vcp_funcs_WIN.contains(name))
+        {
+            QVariant key = QVariant(code);
+            QVariant val = QVariant(value);
+
+            bool bChk = vcp_funcs_WIN[name](QList{ key, val });
+
+            if (bChk) features[cde_str].current_value = value;
+        }
     }
 
 }
