@@ -24,6 +24,9 @@
 #include <initializer_list>
 
 
+class Monitor;
+
+
 
 
 struct VCP_COMM

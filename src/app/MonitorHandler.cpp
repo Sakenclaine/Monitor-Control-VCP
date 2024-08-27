@@ -416,8 +416,24 @@ bool Monitor::get_status()
     return status;
 }
 
-bool Monitor::check_feature(uint16_t)
+bool Monitor::check_feature(uint16_t code)
 {
+    QString cde_str = n2hexstr(code, 2);
+
+    if (!(VCP_FEATURES.commands.contains(cde_str))) return false;
+
+    if (features.contains(cde_str)) return true;
+
+    else if (!(features.contains(cde_str)))
+    {
+#ifdef Q_OS_WIN
+
+
+#elif Q_OS_UNIX
+        qDebug() << "No UNIX Handling yet.";
+
+#endif
+    }
 
 }
 
