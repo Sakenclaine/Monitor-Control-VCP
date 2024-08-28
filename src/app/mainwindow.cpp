@@ -71,7 +71,7 @@ void MainWindow::setup()
     
     mainLayout->addWidget(monitorSettings);
 
-
+    connect(&Linker::getInstance(), &Linker::emit_icon_click, this, &MainWindow::iconActivated);
 }
 
 void MainWindow::createMonitorGroupBox()
@@ -130,7 +130,7 @@ void MainWindow::createActions()
     connect(maximizeAction, &QAction::triggered, this, &QWidget::showMaximized);
 
     restoreAction = new QAction(tr("&Restore"), this);
-    connect(restoreAction, &QAction::triggered, this, &QWidget::showNormal);
+    connect(restoreAction, &QAction::triggered, this, &MainWindow::restore); //&QWidget::showNormal);
 
     quitAction = new QAction(tr("&Quit"), this);
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
