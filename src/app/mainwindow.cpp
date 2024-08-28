@@ -233,3 +233,43 @@ void MainWindow::writeSettings()
     //SettingsManager::getInstance().writeSettingInGroup("Sliders", "tray", bTrayChk);
 
 }
+
+
+void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason) {
+    case QSystemTrayIcon::Trigger:
+        //qDebug() << "\n-------------\nTray Trigger" << reason << "\n-------------\n";
+        this->setWindowFlags(flags | Qt::Popup);
+
+        //this->move(screenSizeX - width(), screenSizeY - minimumHeight());
+        show();
+
+        break;
+
+    case QSystemTrayIcon::DoubleClick:
+        //qDebug() << "\n-------------\nTray Double Click" << reason << "\n-------------\n";
+        break;
+
+    case QSystemTrayIcon::MiddleClick:
+        //qDebug() << "\n-------------\nTray Middle Click" << reason << "\n-------------\n";
+        break;
+
+    case QSystemTrayIcon::Context:
+        //qDebug() << "\n-------------\nTray Context Click" << reason << "\n-------------\n";
+        break;
+
+    case QSystemTrayIcon::Unknown:
+        //qDebug() << "\n-------------\nTray Unknown" << reason << "\n-------------\n";
+        break;
+
+    default:
+        ;
+    }
+}
+
+void MainWindow::restore()
+{
+    this->setWindowFlags(flags | Qt::Window);
+    show();
+}

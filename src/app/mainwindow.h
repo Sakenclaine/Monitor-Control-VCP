@@ -41,6 +41,8 @@ private:
 	void createTrayMenu();
 
 	void closeEvent(QCloseEvent* event) override;
+	void iconActivated(QSystemTrayIcon::ActivationReason reason);
+	void restore();
 
 	void writeSettings();
 
