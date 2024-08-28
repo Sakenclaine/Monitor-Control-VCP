@@ -105,6 +105,8 @@ void MonitorWidget::setup_continous_settings()
 
     connect(lumSlider, &SliderWidget::value_changed, &Linker::getInstance(), &Linker::receive_monitor_setting);
 
+    connect(lumSlider->get_icon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
+
     //SliderWidget* volSlider = new SliderWidget(this, 0x62);
     //volSlider->set_color(QColor(0, 255, 0));
     //volSlider->add_trayIcon();
@@ -233,6 +235,8 @@ void MonitorWidget::add_slider()
                     newSlider->add_trayIcon();
 
                     if (contextMenu != nullptr) newSlider->set_contextMenu(contextMenu);
+
+                    connect(newSlider->get_icon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
                 }
 
                 if (Linker::getInstance().get_checked_monitors().empty()) newSlider->lock();

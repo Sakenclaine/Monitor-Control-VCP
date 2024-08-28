@@ -96,6 +96,11 @@ void Linker::receive_monitor_selection(QString& name, int& id)
 
 }
 
+void Linker::receive_icon_click(QSystemTrayIcon::ActivationReason reason)
+{
+    emit emit_icon_click(reason);
+}
+
 void Linker::receive_value_update(int value)
 {
     QObject* obj = sender();
