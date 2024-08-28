@@ -50,6 +50,10 @@ template <typename I> QString n2hexstr(I w, size_t hex_len = sizeof(I) << 1)
     return QString::fromStdString(str_);
 }
 
+uint16_t hexstr2uint(std::string inpt);
+
+uint16_t hexstr2uint(QString inpt);
+
 void get_screen_geometry(int& xWO_TAB_TOB, int& yWO_TAB_TOB, int& xWO_TAB, int& yWO_TAB, int& x, int& y);
 
 

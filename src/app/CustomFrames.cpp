@@ -1,6 +1,8 @@
 #include "CustomFrames.h"
 
 #include <QScrollArea>
+#include <QAbstractScrollArea>
+#include <QMargins>
 #include <QPushButton>
 #include <QLayout>
 #include <QScrollBar>
@@ -21,6 +23,8 @@ ScrollFrame::ScrollFrame(QWidget* parent) : QFrame(parent)
 
 	scrollArea->resize(QSize(width() - rimX, height() - rimY));
 	scrollArea->move(rimX, rimY);
+
+
 
 	QFont btnFont = QFont("Arial", 15);
 	btnFont.setBold(true);

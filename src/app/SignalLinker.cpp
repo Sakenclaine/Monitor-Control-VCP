@@ -1,5 +1,5 @@
 #include "SignalLinker.h"
-
+#include "helpers.h"
 #include "MonitorHandler.h"
 
 Linker::Linker(QObject* parent=nullptr) : QObject(parent)
@@ -96,6 +96,30 @@ void Linker::receive_value_update(int value)
 void Linker::receive_discrete_setting(int& monitorID, QString& cde_str, uint16_t& value)
 {
     qDebug() << "Monitor " << monitorID << " -- Code" << cde_str << " -- Value " << value;
+
+    uint16_t code = hexstr2uint(cde_str);
+    bool bChk = get_monitor_byID(monitorID)->set_feature(code, value);
+}
+
+void Linker::receive_monitor_settingID(int& monitorID, QString& cde_str, uint16_t& value)
+{
+    qDebug() << "Monitor " << monitorID << " -- Code" << cde_str << " -- Value " << value;
+
+    uint16_t code = hexstr2uint(cde_str);
+
+    bool bChk = get_monitor_byID(monitorID)->set_feature(code, value);
+}
+
+void Linker::receive_monitor_setting(QString& cde_str, int value)
+{
+    qDebug()  << " -- Code" << cde_str << " -- Value " << value;
+
+    uint16_t code = hexstr2uint(cde_str);
+
+    for (auto& monitorID : checked_monitors)
+    {
+        bool bChk = get_monitor_byID(monitorID)->set_feature(code, value);
+    }   
 }
 
 

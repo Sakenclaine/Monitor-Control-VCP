@@ -72,6 +72,7 @@ private slots:
 
 	void add_slider();
 
+
 signals:
 	void send_discrete_setting(int& monitorID, QString& cde_str, uint16_t& value);
 };

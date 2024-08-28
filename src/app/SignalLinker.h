@@ -47,6 +47,8 @@ public slots:
 
     // Manage Signals to monitor
     void receive_discrete_setting(int& monitorID, QString& cde_str, uint16_t& value);
+    void receive_monitor_settingID(int& monitorID, QString& cde_str, uint16_t& value);
+    void receive_monitor_setting(QString& cde_str, int value);
 
 
 signals:

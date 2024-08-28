@@ -134,6 +134,23 @@ std::string uIntToString(uint16_t u)
 	return str_;
 }
 
+uint16_t hexstr2uint(std::string inpt)
+{
+
+	uint16_t ul = std::stoul("0x" + inpt, nullptr, 0);
+
+	return ul;
+}
+
+uint16_t hexstr2uint(QString inpt)
+{
+
+	uint16_t ul = std::stoul("0x" + inpt.toStdString(), nullptr, 0);
+
+	return ul;
+}
+
+
 void get_screen_geometry(int& xWO_TAB_TOB, int& yWO_TAB_TOB, int& xWO_TAB, int& yWO_TAB, int& x, int& y)
 {
 	// size of screen (primary monitor) without taskbar or desktop toolbars
@@ -154,6 +171,8 @@ void get_screen_geometry(int& xWO_TAB_TOB, int& yWO_TAB_TOB, int& xWO_TAB, int& 
 	x = GetDeviceCaps(GetDC(NULL), HORZRES);
 	y = GetDeviceCaps(GetDC(NULL), VERTRES);
 }
+
+
 
 
 

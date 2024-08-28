@@ -101,6 +101,8 @@ void MonitorWidget::setup_continous_settings()
     lumSlider->set_value(10);
     sliders[cde_str] = lumSlider;
 
+    connect(lumSlider, &SliderWidget::value_changed, &Linker::getInstance(), &Linker::receive_monitor_setting);
+
     //SliderWidget* volSlider = new SliderWidget(this, 0x62);
     //volSlider->set_color(QColor(0, 255, 0));
     //volSlider->add_trayIcon();
@@ -236,6 +238,8 @@ void MonitorWidget::add_slider()
                 newSlider->set_color(col);
 
                 sliders[cde_str] = newSlider;
+
+                connect(newSlider, &SliderWidget::value_changed, &Linker::getInstance(), &Linker::receive_monitor_setting);
 
                 continousLayout->addWidget(newSlider);
             }

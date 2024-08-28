@@ -100,9 +100,14 @@ private slots:
 
 	void update_ToolTip(int val);
 
+	void slider_changed();
+
 public slots:
 	void set_lock(bool lock);
 	void lock();
 	void unlock();
+
+signals:
+	void value_changed(QString&, int);
 
 };

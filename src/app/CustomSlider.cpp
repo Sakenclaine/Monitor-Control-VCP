@@ -193,6 +193,8 @@ void SliderWidget::setup()
 	connect(&Linker::getInstance(), &Linker::send_value_update, slider, &CustomSlider::update_value);
 	connect(&Linker::getInstance(), &Linker::send_lock, this, &SliderWidget::set_lock);
 
+	connect(slider, &CustomSlider::valueChanged, this, &SliderWidget::slider_changed);
+
 
 	for (int i = 0; i < 21; i++)
 	{
@@ -339,4 +341,9 @@ void SliderWidget::unlock() {
 	slider->set_lock(false);
 
 	if (trayIcon) icon->set_lock(false);
+}
+
+void SliderWidget::slider_changed()
+{
+	emit value_changed(cde_str, slider->value());
 }
