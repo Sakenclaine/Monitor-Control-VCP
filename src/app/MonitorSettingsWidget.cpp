@@ -101,6 +101,8 @@ void MonitorWidget::setup_continous_settings()
     lumSlider->set_value(10);
     sliders[cde_str] = lumSlider;
 
+    Linker::getInstance().register_slider(lumSlider);
+
     connect(lumSlider, &SliderWidget::value_changed, &Linker::getInstance(), &Linker::receive_monitor_setting);
 
     //SliderWidget* volSlider = new SliderWidget(this, 0x62);
@@ -238,6 +240,7 @@ void MonitorWidget::add_slider()
                 newSlider->set_color(col);
 
                 sliders[cde_str] = newSlider;
+                Linker::getInstance().register_slider(newSlider);
 
                 connect(newSlider, &SliderWidget::value_changed, &Linker::getInstance(), &Linker::receive_monitor_setting);
 

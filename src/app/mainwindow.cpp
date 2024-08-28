@@ -136,4 +136,100 @@ void MainWindow::createActions()
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 }
 
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    if (!event->spontaneous() || !isVisible())
+        return;
 
+    bool trayIcon_visible = false;
+
+    for (auto sldr : Linker::getInstance().get_sliders())
+    {
+        trayIcon_visible = trayIcon_visible || sldr->get_icon()->isVisible();
+    }
+
+    if (trayIcon_visible) {
+        QMessageBox msgBox;
+
+        msgBox.setWindowTitle("Closing");
+        msgBox.setText("The program will keep running in the "
+            "system tray when pressing <b>Close</b> (Enter/Space). To terminate the program, "
+            "choose <b>Quit</b> in the context menu "
+            "of the system tray entry or this message.");
+
+        QPushButton* closeButton = msgBox.addButton(tr("Close"), QMessageBox::ActionRole);
+        QPushButton* quitButton = msgBox.addButton(tr("Quit"), QMessageBox::ActionRole);
+        QPushButton* cancelButton = msgBox.addButton(QMessageBox::Cancel);
+
+        msgBox.setDefaultButton(closeButton);
+        msgBox.setEscapeButton(cancelButton);
+
+        msgBox.exec();
+
+        if (msgBox.clickedButton() == closeButton) {
+            hide();
+            event->ignore();
+        }
+        else if (msgBox.clickedButton() == quitButton) {
+            writeSettings();
+            qApp->quit();
+
+        }
+        else if (msgBox.clickedButton() == cancelButton) {
+            event->ignore();
+
+        }
+    }
+
+    else
+    {
+        QMessageBox msgBox;
+
+        //QFont font;
+        //font.setPointSize(16);
+        //msgBox.setFont(font);
+
+        msgBox.setWindowTitle("Closing");
+        msgBox.setText("No Tray Icon\nProgram will quit on exit.");
+
+        QPushButton* quitButton = msgBox.addButton(tr("Quit"), QMessageBox::ActionRole);
+        //quitButton->setFont(QFont());
+        QPushButton* cancelButton = msgBox.addButton(QMessageBox::Cancel);
+
+        msgBox.setDefaultButton(quitButton);
+        msgBox.setEscapeButton(cancelButton);
+
+        msgBox.exec();
+
+        if (msgBox.clickedButton() == quitButton) {
+            writeSettings();
+            qApp->quit();
+
+        }
+        else if (msgBox.clickedButton() == cancelButton) {
+            event->ignore();
+        }
+        }
+    }
+
+void MainWindow::writeSettings()
+{
+    QList<QVariant> cdes;
+    QList<QVariant> clrs;
+    QList<QVariant> ids;
+    QList<QVariant> bTrayChk;
+
+    for (auto elem : Linker::getInstance().get_sliders())
+    {
+        cdes.append(QVariant(elem->get_code()));
+        clrs.append(QVariant(elem->get_color()));
+        ids.append(QVariant(elem->get_ID()));
+        bTrayChk.append(QVariant(elem->get_trayCheck()));
+    }
+
+    //SettingsManager::getInstance().writeSettingInGroup("Sliders", "codes", cdes);
+    //SettingsManager::getInstance().writeSettingInGroup("Sliders", "colors", clrs);
+    //SettingsManager::getInstance().writeSettingInGroup("Sliders", "ids", ids);
+    //SettingsManager::getInstance().writeSettingInGroup("Sliders", "tray", bTrayChk);
+
+}

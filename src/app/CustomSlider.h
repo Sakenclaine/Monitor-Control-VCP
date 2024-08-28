@@ -94,6 +94,11 @@ public:
 	CustomSlider* get_slider();
 	TrayIconControlled* get_icon();
 
+	QColor get_color();
+	int get_ID();
+	bool get_trayCheck();
+	uint16_t get_code();
+
 private slots:
 	void buttonClick();
 	void toggleTray(bool chk);

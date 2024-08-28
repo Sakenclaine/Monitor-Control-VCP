@@ -4,6 +4,7 @@
 
 
 class Monitor;
+class SliderWidget;
 
 
 //Singleton Class: https://stackoverflow.com/questions/45059490/how-to-connect-signals-to-the-slots-of-all-instances-of-a-class (not working)
@@ -22,6 +23,8 @@ private:
     QList<Monitor*> registered_monitors;
     QList<int> checked_monitors;
 
+    QList<SliderWidget*> registered_sliders;
+
 public:
     void register_monitor(Monitor* monitor);
     void register_monitor(QList<Monitor*> monitors);
@@ -31,6 +34,9 @@ public:
 
     Monitor* get_monitor_byID(int& id);
     Monitor* get_monitor_byName(QString& name);
+
+    void register_slider(SliderWidget* sldr);
+    QList<SliderWidget*> get_sliders();
 
 
 public:

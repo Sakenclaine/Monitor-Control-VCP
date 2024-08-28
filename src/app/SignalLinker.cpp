@@ -1,6 +1,7 @@
 #include "SignalLinker.h"
 #include "helpers.h"
 #include "MonitorHandler.h"
+#include "CustomSlider.h"
 
 Linker::Linker(QObject* parent=nullptr) : QObject(parent)
 {
@@ -56,6 +57,18 @@ const QList<int>& Linker::get_checked_monitors()
 {
     return checked_monitors;
 }
+
+void Linker::register_slider(SliderWidget* sldr)
+{
+    registered_sliders.append(sldr);
+}
+
+QList<SliderWidget*> Linker::get_sliders()
+{
+    return registered_sliders;
+}
+
+
 
 // SLOTS
 void Linker::receive_lock(bool lck)

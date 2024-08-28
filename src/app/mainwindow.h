@@ -40,6 +40,9 @@ private:
 	void createMonitorGroupBox();
 	void createTrayMenu();
 
+	void closeEvent(QCloseEvent* event) override;
+
+	void writeSettings();
 
 
 private:
