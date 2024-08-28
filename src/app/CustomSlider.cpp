@@ -347,3 +347,23 @@ void SliderWidget::slider_changed()
 {
 	emit value_changed(cde_str, slider->value());
 }
+
+const QColor& SliderWidget::get_color()
+{
+	return color;
+}
+
+const uint16_t& SliderWidget::get_code()
+{
+	return code;
+}
+
+const int& SliderWidget::get_ID()
+{
+	return _id;
+}
+
+const bool& SliderWidget::get_trayCheck()
+{
+	return trayIcon;
+}

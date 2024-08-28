@@ -94,10 +94,10 @@ public:
 	CustomSlider* get_slider();
 	TrayIconControlled* get_icon();
 
-	QColor get_color();
-	int get_ID();
-	bool get_trayCheck();
-	uint16_t get_code();
+	const QColor& get_color();
+	const int& get_ID();
+	const bool& get_trayCheck();
+	const uint16_t& get_code();
 
 private slots:
 	void buttonClick();
