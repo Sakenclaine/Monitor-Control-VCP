@@ -131,6 +131,7 @@ void Linker::receive_monitor_settingID(int& monitorID, QString& cde_str, uint16_
 void Linker::receive_monitor_setting(QString& cde_str, int value)
 {
     qDebug()  << " -- Code" << cde_str << " -- Value " << value;
+    qDebug() << checked_monitors;
 
     uint16_t code = hexstr2uint(cde_str);
 

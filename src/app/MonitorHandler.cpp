@@ -516,31 +516,50 @@ void Monitor::set_status(bool chk)
 
 bool Monitor::set_feature(uint16_t code, int value)
 {
-    QString cde_str = n2hexstr(code);
+    QString cde_str = n2hexstr(code, 2);
+    QString cde_name = VCP_FEATURES.commands[cde_str].name;
 
-    QString name = VCP_FEATURES.commands[cde_str].name;
+    qDebug() << name << " -- trying to set " << cde_str << " (" << cde_name << ") ...";
+
 
     if (features.contains(cde_str)) {
-        if (vcp_funcs_WIN.contains(name))
-        {
-            QVariant key = QVariant(code);
-            QVariant val = QVariant(value);
+        if (!dummy) {
+            if (vcp_funcs_WIN.contains(cde_name))
+            {
+                QVariant key = QVariant(code);
+                QVariant val = QVariant(value);
 
-            bool bChk = vcp_funcs_WIN[name](QList{ key, val });
+                bool bChk = vcp_funcs_WIN[cde_name](QList{ key, val });
 
-            if (bChk) features[cde_str].current_value = value;
+                if (bChk) {
+                    qDebug() << cde_name << " set to " << value << " ... success\n";
+                    features[cde_str].current_value = value;
+                }
 
-            return bChk;
+                return bChk;
+            }
+
+            else {
+                bool bChk = SetVCPFeature(monitor_.hPhysicalMonitor, code, value);
+
+                if (bChk) {
+                    qDebug() << cde_name << " set to " << value << " ... success\n";
+                    features[cde_str].current_value = value;
+                }
+
+                return bChk;
+            }
+
+        }
+
+        else {
+            qDebug() << cde_name << " set to " << value << " ... success\n";
+            features[cde_str].current_value = value;
         }
     }
 
-    else {
-        bool bChk = SetVCPFeature(monitor_.hPhysicalMonitor, code, value);
 
-        if (bChk) features[cde_str].current_value = value;
 
-        return bChk;
-    }
 
 }
 

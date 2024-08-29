@@ -185,10 +185,10 @@ void MonitorWidget::cb_monitor_change(QString& name, int& id)
 
 void MonitorWidget::receive_checked_monitors(QList<int> monIDs)
 {
-    qDebug() << monIDs;
-
     if (!monIDs.empty())
     {
+        qDebug() << "Setting sliders to monitor value ... " << monIDs;
+
         if (monIDs.size() < 2)
         {
             for (auto [key, value] : sliders.asKeyValueRange())
