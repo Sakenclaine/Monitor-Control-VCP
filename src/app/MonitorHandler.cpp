@@ -215,7 +215,7 @@ void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors)
 bool get_connected_monitors(QList<Monitor*>& monitors)
 {
 
-#if defined(Q_OS_WIN) // && !defined(QT_DEBUG)
+#if defined(Q_OS_WIN) && !defined(QT_DEBUG)
     std::vector<PHYSICAL_MONITOR> mons;
     get_physical_monitors_WIN(mons);
 
@@ -238,17 +238,17 @@ bool get_connected_monitors(QList<Monitor*>& monitors)
 
     return true;
 
-//#elif defined(QT_DEBUG)
-//    Monitor* mon1 = new Monitor("Monitor 1");
-//    mon1->init();
-//    monitors.append(mon1);
-//
-//    Monitor* mon2 = new Monitor("Monitor 2");
-//    mon2->init();
-//    monitors.append(mon2);
-//
-//    return true;
-//
+#elif defined(QT_DEBUG)
+    Monitor* mon1 = new Monitor("Monitor 1");
+    mon1->init();
+    monitors.append(mon1);
+
+    Monitor* mon2 = new Monitor("Monitor 2");
+    mon2->init();
+    monitors.append(mon2);
+
+    return true;
+
 #endif
 }
 

@@ -242,12 +242,17 @@ void MainWindow::writeSettings()
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 {
+    QRect wdgRect = this->geometry();
+
+    qDebug() << this->pos();
+
     switch (reason) {
     case QSystemTrayIcon::Trigger:
         //qDebug() << "\n-------------\nTray Trigger" << reason << "\n-------------\n";
+       
+        this->move(this->pos().x(), this->pos().y() + 32);
         this->setWindowFlags(flags | Qt::Popup);
 
-        //this->move(screenSizeX - width(), screenSizeY - minimumHeight());
         show();
 
         break;
@@ -275,6 +280,7 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 
 void MainWindow::restore()
 {
+    this->move(this->pos().x(), this->pos().y() - 32);
     this->setWindowFlags(flags | Qt::Window);
     show();
 }
