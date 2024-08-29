@@ -168,5 +168,7 @@ signals:
 };
 
 
+void DumpDevice(const DISPLAY_DEVICE& dd, size_t nSpaceCount);
 
+void list_devices();
 

@@ -221,11 +221,14 @@ bool get_connected_monitors(QList<Monitor*>& monitors)
 
     if (mons.empty()) return false;
 
+    qDebug() << "\n";
+
     for (auto& elem_mon : mons)
     {
         QString name = QString::fromWCharArray(elem_mon.szPhysicalMonitorDescription);
         Monitor* mon = new Monitor(elem_mon, name);
 
+        qDebug() << "Monitor " << name << " init ...";
         mon->init();
 
         monitors.append(mon);
@@ -252,7 +255,13 @@ bool get_connected_monitors(QList<Monitor*>& monitors)
 
 void get_monitor_features_WIN(QMap<QString, monitor_vcp>& features, PHYSICAL_MONITOR& monitor)
 {
-    auto get_monitor_capabilities_WIN = [](PHYSICAL_MONITOR& monitor, std::vector<std::string>& kwrds, std::vector<std::string>& vals, std::map<std::string, std::string>& capabilities_dict)
+    auto get_monitor_capabilities_WIN = [](
+        PHYSICAL_MONITOR& monitor, 
+        std::vector<std::string>& kwrds, 
+        std::vector<std::string>& vals, 
+        std::map<std::string, std::string>& capabilities_dict
+        )
+
         {
             // Get physical monitor handle.
             HANDLE hPhysicalMonitor = monitor.hPhysicalMonitor;
@@ -273,6 +282,8 @@ void get_monitor_features_WIN(QMap<QString, monitor_vcp>& features, PHYSICAL_MON
                         capLength);
 
                     if (bChk) parse_capability_string(szCapabilitiesString, kwrds, vals, capabilities_dict);
+
+                    qDebug() << "------\n" << szCapabilitiesString << "\n------\n";
                 }
 
                 // Free the string buffer.
@@ -286,6 +297,8 @@ void get_monitor_features_WIN(QMap<QString, monitor_vcp>& features, PHYSICAL_MON
     get_monitor_capabilities_WIN(monitor, kwrds, vals, capabilities_dict);
 
     std::map<std::string, std::string>::iterator it = capabilities_dict.begin();
+
+    for (const auto& [k, v] : capabilities_dict) qDebug() << k << " :  " << v;
 
     std::vector<std::string> vcp_split = split(capabilities_dict["vcp_only"], " ");
     std::vector<std::string> vcp_with_options = split(capabilities_dict["vcps_with_options"], " ");
@@ -321,17 +334,20 @@ void get_monitor_features_WIN(QMap<QString, monitor_vcp>& features, PHYSICAL_MON
             unsigned long current_value = 0;
             unsigned long max_value = 0;
             MC_VCP_CODE_TYPE code_type;
+            
 
-            uint16_t cde = elem_.toUInt();
+            uint16_t cde = std::stoul("0x" + elem, nullptr, 0);
 
             bool bRet = GetVCPFeatureAndVCPFeatureReply(monitor.hPhysicalMonitor, cde, &code_type, &current_value, &max_value);
-            qDebug() << "Current Value (" << int(cde) << "): " << current_value;
+            qDebug() << "\tCurrent Value " << VCP_FEATURES.commands[elem_].name << " (" << n2hexstr(cde, 2) << ") : " << current_value;
 
             if (bRet) mon_feature.current_value = current_value;
 
             features[elem_] = mon_feature;
         }
     }
+
+    qDebug() << "\n";
 }
 
 // END ----------------------------------------------------------------
@@ -563,12 +579,50 @@ bool Monitor::set_feature(uint16_t code, int value)
             features[cde_str].current_value = value;
         }
     }
-
-
-
-
 }
 
+///////////////////////////////////// ENUM DISPLAY DEVICES /////////////////////////////////////////////////////
+//
+// List (display) devices by going through the adapters of the GPU and the devices connected to it.
+// This uses EnumDisplayDevices and has no direct correspondence to the physical monitors from MonitorEnum. 
+// https://stackoverflow.com/questions/63095216/how-to-associate-physical-monitor-with-monitor-deviceid
+void list_devices()
+{
+    DISPLAY_DEVICE dd;
+    dd.cb = sizeof(DISPLAY_DEVICE);
 
+    DWORD deviceNum = 0;
+    while (EnumDisplayDevices(NULL, deviceNum, &dd, 0))
+    {
+        DumpDevice(dd, 0);
+        DISPLAY_DEVICE newdd = { 0 };
+        newdd.cb = sizeof(DISPLAY_DEVICE);
+        DWORD monitorNum = 0;
+        while (EnumDisplayDevices(dd.DeviceName, monitorNum, &newdd, 0))
+        {
+            DumpDevice(newdd, 4);
+            monitorNum++;
+        }
+        puts("");
+        deviceNum++;
+    }
+}
+
+void DumpDevice(const DISPLAY_DEVICE& dd, size_t nSpaceCount)
+{
+    std::wstring dName = dd.DeviceName;
+    std::wstring dString = dd.DeviceString;
+    DWORD dFlags = dd.StateFlags;
+    std::wstring dID = dd.DeviceID;
+    std::wstring dKey = dd.DeviceKey + 42;
+
+    qDebug() << "Device Name: " << "" << dName;
+    qDebug() << "Device String: " << "" << dString;
+    qDebug() << "Device Flags: " << "" << dFlags;
+    qDebug() << "Device ID: " << "" << dID;
+    qDebug() << "Device Key: " << "" << dKey << "\n";
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

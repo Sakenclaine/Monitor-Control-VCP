@@ -1,15 +1,37 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QSystemTrayIcon>
+#include <QDebug>
 
 #include "mainwindow.h"
 #include "winController.h"
 
 
-
+#include "MonitorHandler.h"
 
 int main(int argc, char* argv[])
 {
+    DISPLAY_DEVICE dd;
+    dd.cb = sizeof(DISPLAY_DEVICE);
+
+    DWORD deviceNum = 0;
+    while (EnumDisplayDevices(NULL, deviceNum, &dd, 0)) {
+   	DumpDevice(dd, 0);
+   	DISPLAY_DEVICE newdd = { 0 };
+   	newdd.cb = sizeof(DISPLAY_DEVICE);
+   	DWORD monitorNum = 0;
+   	while (EnumDisplayDevices(dd.DeviceName, monitorNum, &newdd, 0))
+   	{
+   		DumpDevice(newdd, 4);
+   		monitorNum++;
+   	}
+   	puts("");
+   	deviceNum++;
+    }
+
+    qDebug() << "\n\n\n";
+
+
     Controller::getInstance().start_worker();
 
     // Setup main application 
