@@ -24,6 +24,7 @@
 #include "CustomSlider.h"
 
 #include "helpers.h"
+#include "utilities.h"
 #include "MonitorTable.h"
 #include "MonitorSettingsWidget.h"
 
@@ -227,10 +228,10 @@ void MainWindow::writeSettings()
         bTrayChk.append(QVariant(elem->get_trayCheck()));
     }
 
-    //SettingsManager::getInstance().writeSettingInGroup("Sliders", "codes", cdes);
-    //SettingsManager::getInstance().writeSettingInGroup("Sliders", "colors", clrs);
-    //SettingsManager::getInstance().writeSettingInGroup("Sliders", "ids", ids);
-    //SettingsManager::getInstance().writeSettingInGroup("Sliders", "tray", bTrayChk);
+    SettingsManager::getInstance().writeSettingInGroup("Sliders", "codes", cdes);
+    SettingsManager::getInstance().writeSettingInGroup("Sliders", "colors", clrs);
+    SettingsManager::getInstance().writeSettingInGroup("Sliders", "ids", ids);
+    SettingsManager::getInstance().writeSettingInGroup("Sliders", "tray", bTrayChk);
 
 }
 
