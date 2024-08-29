@@ -6,6 +6,7 @@
 #include "CustomSlider.h"
 #include "TrayIconControlled.h"
 #include "Dialogs.h"
+#include "utilities.h"
 
 
 #include <QHBoxLayout>
@@ -98,7 +99,6 @@ void MonitorWidget::setup_continous_settings()
     lumSlider->add_trayIcon();
     lumSlider->lock();
 
-    lumSlider->set_value(10);
     sliders[cde_str] = lumSlider;
 
     Linker::getInstance().register_slider(lumSlider);
@@ -107,9 +107,56 @@ void MonitorWidget::setup_continous_settings()
 
     connect(lumSlider->get_icon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
 
-    //SliderWidget* volSlider = new SliderWidget(this, 0x62);
-    //volSlider->set_color(QColor(0, 255, 0));
-    //volSlider->add_trayIcon();
+    // Get sliders from saved configuration
+    qDebug() << "Loading Sliders ...";
+    const auto clrs = SettingsManager::getInstance().readSetting("Sliders", "colors");
+    const auto cdes = SettingsManager::getInstance().readSetting("Sliders", "codes");
+    const auto ids = SettingsManager::getInstance().readSetting("Sliders", "ids");
+    const auto trayChks = SettingsManager::getInstance().readSetting("Sliders", "tray");
+
+    qDebug() << clrs;
+    qDebug() << cdes;
+    qDebug() << ids;
+    qDebug() << trayChks;
+
+    if (clrs != NULL && cdes != NULL && ids != NULL && trayChks != NULL)
+    {
+        qDebug() << "Sliders to load: " << cdes.toList().size();
+        
+        if (cdes.toList().size() > 2)
+        {
+            for (int i = 1; i < clrs.toList().size(); i++)
+            {
+                uint16_t code = cdes.toList()[i].toUInt();
+                QColor color = clrs.toList()[i].value<QColor>();
+                bool trayChk = trayChks.toList()[i].toBool();
+                cde_str = n2hexstr(code, 2);
+
+                qDebug() << "Load slider: " << VCP_FEATURES.commands[cde_str].name;
+
+                SliderWidget* newSlider = new SliderWidget(this, code);
+
+                if (trayChk) {
+                    newSlider->add_trayIcon();
+
+                    if (contextMenu != nullptr) newSlider->set_contextMenu(contextMenu);
+
+                    connect(newSlider->get_icon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
+                }
+
+                if (Linker::getInstance().get_checked_monitors().empty()) newSlider->lock();
+
+                newSlider->set_color(color);
+
+                sliders[cde_str] = newSlider;
+                Linker::getInstance().register_slider(newSlider);
+
+                connect(newSlider, &SliderWidget::value_changed, &Linker::getInstance(), &Linker::receive_monitor_setting);
+
+                continousLayout->addWidget(newSlider);
+            }
+        }
+    }
 
     subHLayout->addWidget(lumSlider);
     //subHLayout->addWidget(volSlider);
@@ -191,10 +238,10 @@ void MonitorWidget::receive_checked_monitors(QList<int> monIDs)
 
         if (monIDs.size() < 2)
         {
-            for (auto [key, value] : sliders.asKeyValueRange())
+            for (auto [key, sldr] : sliders.asKeyValueRange())
             {
                 int val = Linker::getInstance().get_monitor_byID(monIDs[0])->features[key].current_value;
-                value->set_value(val);
+                sldr->set_value(val);
             }
         }
     }

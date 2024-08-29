@@ -353,12 +353,11 @@ void get_monitor_features_WIN(QMap<QString, monitor_vcp>& features, PHYSICAL_MON
 // END ----------------------------------------------------------------
 
 
-bool setBrightness(QList<QVariant> inpt)
+bool setBrightness(HANDLE hndl, QList<QVariant> inpt)
 {
     if (inpt.isEmpty()) return false;
 
-    HANDLE hndl = inpt[0].value<HANDLE>();
-    uint16_t value = inpt[1].toUInt();
+    uint16_t value = inpt[0].toUInt();
 
     
     bool bChk = SetMonitorBrightness(hndl, value);
@@ -366,13 +365,11 @@ bool setBrightness(QList<QVariant> inpt)
     return bChk;
 }
 
-bool setContrast(QList<QVariant> inpt)
+bool setContrast(HANDLE hndl, QList<QVariant> inpt)
 {
     if (inpt.isEmpty()) return false;
 
-    HANDLE hndl = inpt[0].value<HANDLE>();
-    uint16_t value = inpt[1].toUInt();
-
+    uint16_t value = inpt[0].toUInt();
 
     bool bChk = SetMonitorContrast(hndl, value);
 
@@ -380,7 +377,7 @@ bool setContrast(QList<QVariant> inpt)
 }
 
 
-QMap<QString, std::function<bool(QList<QVariant>)>> vcp_funcs_WIN = { 
+QMap<QString, std::function<bool(HANDLE, QList<QVariant>)>> vcp_funcs_WIN = { 
     {"Brightness", setBrightness}, 
     {"Contrast", setContrast} 
 };
@@ -542,16 +539,18 @@ bool Monitor::set_feature(uint16_t code, int value)
     QString cde_name = VCP_FEATURES.commands[cde_str].name;
 
     qDebug() << name << " -- trying to set " << cde_str << " (" << cde_name << ") ...";
+    qDebug() << monitor_.hPhysicalMonitor << " -> " << monitor_.szPhysicalMonitorDescription;
 
 
     if (features.contains(cde_str)) {
+        if (features[cde_str].current_value == value) return false;
+
         if (!dummy) {
             if (vcp_funcs_WIN.contains(cde_name))
             {
-                QVariant key = QVariant(code);
                 QVariant val = QVariant(value);
 
-                bool bChk = vcp_funcs_WIN[cde_name](QList{ key, val });
+                bool bChk = vcp_funcs_WIN[cde_name](monitor_.hPhysicalMonitor, QList{ val });
 
                 if (bChk) {
                     qDebug() << cde_name << " set to " << value << " ... success\n";

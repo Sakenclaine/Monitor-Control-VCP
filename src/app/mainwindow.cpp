@@ -220,8 +220,12 @@ void MainWindow::writeSettings()
     QList<QVariant> ids;
     QList<QVariant> bTrayChk;
 
-    for (auto elem : Linker::getInstance().get_sliders())
+    qDebug() << "\n\nSaving Settings ...";
+
+    for (auto& elem : Linker::getInstance().get_sliders())
     {
+        qDebug() << "Slider " << elem->get_code() << " -- " << elem->get_color() << " -- " << elem->get_ID() << " -- " << elem->get_trayCheck();
+        
         cdes.append(QVariant(elem->get_code()));
         clrs.append(QVariant(elem->get_color()));
         ids.append(QVariant(elem->get_ID()));
