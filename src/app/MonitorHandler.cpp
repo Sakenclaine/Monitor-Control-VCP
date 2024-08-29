@@ -168,6 +168,8 @@ void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors)
     std::vector<HMONITOR> monitors_ = monitorStruct.monitorHandles;
     std::vector<HANDLE> unique_handles;
 
+    qDebug() << "Found (" << monitors_.size() << ") HMONITORs";
+
     for (auto& hmonitor : monitors_)
     {
         DWORD countPhysicalMonitors;
@@ -194,6 +196,8 @@ void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors)
                         std::wstring name = pPhysicalMonitors[i].szPhysicalMonitorDescription;
                         HANDLE temp_handle = pPhysicalMonitors[i].hPhysicalMonitor;
 
+                        qDebug() << "Monitor Name: " << name;
+
                         if (std::find(unique_handles.begin(), unique_handles.end(), temp_handle) == unique_handles.end())
                         {
                             monitors.push_back(pPhysicalMonitors[i]);
@@ -211,7 +215,7 @@ void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors)
 bool get_connected_monitors(QList<Monitor*>& monitors)
 {
 
-#if defined(Q_OS_WIN) && !defined(QT_DEBUG)
+#if defined(Q_OS_WIN) // && !defined(QT_DEBUG)
     std::vector<PHYSICAL_MONITOR> mons;
     get_physical_monitors_WIN(mons);
 
@@ -227,19 +231,21 @@ bool get_connected_monitors(QList<Monitor*>& monitors)
         monitors.append(mon);
     }
 
-    return true;
-
-#elif defined(QT_DEBUG)
-    Monitor* mon1 = new Monitor("Monitor 1");
-    mon1->init();
-    monitors.append(mon1);
-
-    Monitor* mon2 = new Monitor("Monitor 2");
-    mon2->init();
-    monitors.append(mon2);
+    qDebug() << "\n\n";
 
     return true;
 
+//#elif defined(QT_DEBUG)
+//    Monitor* mon1 = new Monitor("Monitor 1");
+//    mon1->init();
+//    monitors.append(mon1);
+//
+//    Monitor* mon2 = new Monitor("Monitor 2");
+//    mon2->init();
+//    monitors.append(mon2);
+//
+//    return true;
+//
 #endif
 }
 
