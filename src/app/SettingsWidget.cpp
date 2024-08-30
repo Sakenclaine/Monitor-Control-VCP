@@ -1,0 +1,2 @@
+#include "SettingsWidget.h"
+

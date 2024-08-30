@@ -300,3 +300,8 @@ void MonitorWidget::add_slider()
         }
     }
 }
+
+void MonitorWidget::remove_slider(QString& cde_str)
+{
+    delete sliders[cde_str];
+}

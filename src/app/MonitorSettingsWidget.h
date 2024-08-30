@@ -71,6 +71,7 @@ private slots:
 	void discrete_setting_changed(int index);
 
 	void add_slider();
+	void remove_slider(QString&);
 
 
 signals:

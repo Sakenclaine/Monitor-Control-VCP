@@ -9,25 +9,16 @@
 
 #include "MonitorHandler.h"
 
+
 int main(int argc, char* argv[])
 {
-    DISPLAY_DEVICE dd;
-    dd.cb = sizeof(DISPLAY_DEVICE);
+    displayDevices();
+    
+    qDebug() << "\n\n\n";
+    
+    list_devices();
 
-    DWORD deviceNum = 0;
-    while (EnumDisplayDevices(NULL, deviceNum, &dd, 0)) {
-   	DumpDevice(dd, 0);
-   	DISPLAY_DEVICE newdd = { 0 };
-   	newdd.cb = sizeof(DISPLAY_DEVICE);
-   	DWORD monitorNum = 0;
-   	while (EnumDisplayDevices(dd.DeviceName, monitorNum, &newdd, 0))
-   	{
-   		DumpDevice(newdd, 4);
-   		monitorNum++;
-   	}
-   	puts("");
-   	deviceNum++;
-    }
+    //////////////////////////////////////////////////////////////////////
 
     qDebug() << "\n\n\n";
 
