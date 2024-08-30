@@ -29,6 +29,7 @@
 #include "MonitorSettingsWidget.h"
 
 #include "TrayIconControlled.h"
+#include "SettingsWidget.h"
 
 
 
@@ -54,6 +55,8 @@ void MainWindow::setup()
     }
 
     qDebug() << QString("Found (%1) connected monitors").arg(monitors.size());
+
+    applicationSettings = new SettingsDialog(this);
 
     // Create main widget and layout set as content for the main window
     mainWidget = new QWidget(this);
@@ -101,6 +104,8 @@ void MainWindow::createTrayMenu()
 {
     // Create context menu for tray icons
     trayIconMenu = new QMenu(this);
+    trayIconMenu->addAction(openSettingsAction);
+    trayIconMenu->addSeparator();
     trayIconMenu->addAction(minimizeAction);
     trayIconMenu->addAction(restoreAction);
     trayIconMenu->addSeparator();
@@ -122,6 +127,11 @@ void MainWindow::createTrayMenu()
     }
 }
 
+void MainWindow::openSettings()
+{
+    applicationSettings->exec();
+}
+
 void MainWindow::createActions()
 {
     minimizeAction = new QAction(tr("Mi&nimize"), this);
@@ -135,6 +145,9 @@ void MainWindow::createActions()
 
     quitAction = new QAction(tr("&Quit"), this);
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
+
+    openSettingsAction = new QAction(tr("&Settings"), this);
+    connect(openSettingsAction, &QAction::triggered, this, &MainWindow::openSettings);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)

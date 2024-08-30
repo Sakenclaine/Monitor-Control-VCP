@@ -20,6 +20,7 @@ class TrayIconControlled;
 class MonitorTable;
 class CustomSlider;
 class MonitorWidget;
+class SettingsDialog;
 QT_END_NAMESPACE
 
 
@@ -46,6 +47,8 @@ private:
 
 	void writeSettings();
 
+	void openSettings();
+
 
 private:
 	bool autoStart = false;
@@ -60,6 +63,8 @@ private:
 	MonitorTable* tableWidget;
 
 	MonitorWidget* monitorSettings;
+	SettingsDialog* applicationSettings;
+
 
 	QMenu* trayIconMenu;
 	QMenu* trayMonitorMenu;
@@ -77,6 +82,7 @@ private:
 	QAction* maximizeAction;
 	QAction* restoreAction;
 	QAction* quitAction;
+	QAction* openSettingsAction;
 
 
 
