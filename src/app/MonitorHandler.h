@@ -174,3 +174,5 @@ void list_devices();
 void displayDevices();
 
 
+void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors);
+bool get_connected_monitors(QList<Monitor*>& monitors);

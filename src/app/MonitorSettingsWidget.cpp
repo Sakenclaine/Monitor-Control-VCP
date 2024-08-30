@@ -108,7 +108,7 @@ void MonitorWidget::setup_continous_settings()
     connect(lumSlider->get_icon(), &QSystemTrayIcon::activated, &Linker::getInstance(), &Linker::receive_icon_click);
 
     // Get sliders from saved configuration
-    qDebug() << "Loading Sliders ...";
+    qDebug() << "\n-------------------------------\nLOADING SLIDERS ...\n-------------------------------";
     const auto clrs = SettingsManager::getInstance().readSetting("Sliders", "colors");
     const auto cdes = SettingsManager::getInstance().readSetting("Sliders", "codes");
     const auto ids = SettingsManager::getInstance().readSetting("Sliders", "ids");
@@ -123,7 +123,7 @@ void MonitorWidget::setup_continous_settings()
     {
         qDebug() << "Sliders to load: " << cdes.toList().size();
         
-        if (cdes.toList().size() > 2)
+        if (cdes.toList().size() > 1)
         {
             for (int i = 1; i < clrs.toList().size(); i++)
             {
@@ -132,7 +132,7 @@ void MonitorWidget::setup_continous_settings()
                 bool trayChk = trayChks.toList()[i].toBool();
                 cde_str = n2hexstr(code, 2);
 
-                qDebug() << "Load slider: " << VCP_FEATURES.commands[cde_str].name;
+                qDebug() << "\nLoad slider: " << VCP_FEATURES.commands[cde_str].name;
 
                 SliderWidget* newSlider = new SliderWidget(this, code);
 
@@ -157,6 +157,8 @@ void MonitorWidget::setup_continous_settings()
             }
         }
     }
+
+    qDebug() << "-------------------------------\nLOADING COMPLETE\n-------------------------------\n";
 
     subHLayout->addWidget(lumSlider);
     //subHLayout->addWidget(volSlider);
