@@ -121,6 +121,7 @@ GeneralSettings::GeneralSettings(QWidget* parent) :
 
 	QCheckBox* autoStart = new QCheckBox();
 	QLabel* autoStartLabel = new QLabel(tr("Autostart at login"));
+	QLabel* autoStartRegistry = new QLabel("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run");
 
 	bool autoStartStatus = SettingsManager::getInstance().readSetting("Settings", "autostart").toBool();
 	autoStart->setChecked(autoStartStatus);
@@ -130,6 +131,7 @@ GeneralSettings::GeneralSettings(QWidget* parent) :
 	formLayout->addRow(autoStart, autoStartLabel);
 
 	subLayout->addLayout(formLayout, 0, 0);
+	subLayout->addWidget(autoStartRegistry, 0, 1);
 }
 
 void GeneralSettings::write_settings()
