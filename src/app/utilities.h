@@ -37,6 +37,8 @@ public:
 
     void writeSettingInGroup(const QString& group, const QString& key, const QList<QVariant>& variant);
 
+    void writeSettingInGroup(const QString& group, const QString& key, const QVariant& variant);
+
     QVariant readSetting(const QString& key);
     QVariant readSetting(const QString& groupKey, const QString& key);
 

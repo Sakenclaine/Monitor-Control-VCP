@@ -6,6 +6,8 @@
 #include <QString>
 #include <QScreen>
 #include <QFont>
+#include <QVariant>
+#include <QList>
 
 SettingsWidget::SettingsWidget(QWidget* parent) :
 	QWidget(parent)
@@ -119,6 +121,10 @@ GeneralSettings::GeneralSettings(QWidget* parent) :
 
 	QCheckBox* autoStart = new QCheckBox();
 	QLabel* autoStartLabel = new QLabel(tr("Autostart at login"));
+
+	bool autoStartStatus = SettingsManager::getInstance().readSetting("Settings", "autostart").toBool();
+	autoStart->setChecked(autoStartStatus);
+
 	connect(autoStart, &QCheckBox::checkStateChanged, this, &GeneralSettings::toggle_autostart);
 
 	formLayout->addRow(autoStart, autoStartLabel);
@@ -136,4 +142,6 @@ void GeneralSettings::toggle_autostart(bool state)
 	qDebug() << "\n--> Autostart toggled to " << state << "\n";
 
 	setAppToStartAutomatically(state);
+
+	SettingsManager::getInstance().writeSettingInGroup("Settings", "autostart", QVariant(state));
 }
