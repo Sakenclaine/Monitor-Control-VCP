@@ -1,8 +1,11 @@
 #include "SettingsWidget.h"
+#include "utilities.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QString>
+#include <QScreen>
+#include <QFont>
 
 SettingsWidget::SettingsWidget(QWidget* parent) :
 	QWidget(parent)
@@ -15,6 +18,13 @@ void SettingsWidget::setup()
 	QHBoxLayout* mainLayout = new QHBoxLayout(this);
 	
 	categoryWidget = new QListWidget(this);
+	categoryWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+
+	QFont font = categoryWidget->font();
+	font.setPointSize(12);
+	categoryWidget->setFont(font);
+	
+
 	settingsWidget = new QStackedWidget(this);
 
 	mainLayout->addWidget(categoryWidget);
@@ -28,6 +38,10 @@ void SettingsWidget::add_category(QString name, QWidget* wdgt)
 {
 	new QListWidgetItem(name, categoryWidget);
 	settingsWidget->addWidget(wdgt);
+
+	categoryWidget->setMinimumWidth(categoryWidget->sizeHintForColumn(0) + 15);
+	categoryWidget->setMaximumWidth(std::min(100, categoryWidget->sizeHintForColumn(0) + 25));
+
 }
 
 
@@ -51,7 +65,15 @@ SettingsDialog::SettingsDialog(QWidget* parent) :
 
 void SettingsDialog::setup()
 {
+	QScreen* screen = this->screen(); 
+	QRect  screenGeometry = screen->geometry();
+	int height = screenGeometry.height();
+	int width = screenGeometry.width();
+
+	qDebug() << "Settings Size: " << static_cast<int>(width / 2) << " x " << static_cast<int>(height / 2);
+	
 	setWindowTitle(tr("Monitor Control - Settings"));
+	resize(static_cast<int>(width / 3), static_cast<int>(height / 3));
 
 	QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
@@ -73,4 +95,45 @@ void SettingsDialog::setup()
 void SettingsDialog::add_settings_page(QString name, QWidget* settings)
 {
 	settingsWdgt->add_category(name, settings);
+}
+
+
+GeneralSettings::GeneralSettings(QWidget* parent) : 
+	QWidget(parent) 
+{
+
+	mainLayout = new QGridLayout(this);
+	mainLayout->setContentsMargins(0, 0, 0, 0);
+	mainLayout->setAlignment(Qt::AlignTop);
+	setLayout(mainLayout);
+
+	subLayout = new QGridLayout();
+
+
+	QGroupBox* frame = new QGroupBox(tr("General"));
+	frame->setLayout(subLayout);
+
+	mainLayout->addWidget(frame, 0, 0);
+
+	QFormLayout* formLayout = new QFormLayout();
+
+	QCheckBox* autoStart = new QCheckBox();
+	QLabel* autoStartLabel = new QLabel(tr("Autostart at login"));
+	connect(autoStart, &QCheckBox::checkStateChanged, this, &GeneralSettings::toggle_autostart);
+
+	formLayout->addRow(autoStart, autoStartLabel);
+
+	subLayout->addLayout(formLayout, 0, 0);
+}
+
+void GeneralSettings::write_settings()
+{
+
+}
+
+void GeneralSettings::toggle_autostart(bool state)
+{
+	qDebug() << "\n--> Autostart toggled to " << state << "\n";
+
+	setAppToStartAutomatically(state);
 }

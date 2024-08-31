@@ -6,6 +6,11 @@
 #include <QListWidget>
 #include <QStackedWidget>
 #include <QGroupBox>
+#include <QGridLayout>
+
+#include <QLabel>
+#include <QCheckBox>
+#include <QFormLayout>
 
 
 class SettingsWidget : public QWidget
@@ -54,14 +59,17 @@ class GeneralSettings : public QWidget
 {
 	Q_OBJECT
 
+private:
+	QGridLayout* mainLayout;
+	QGridLayout* subLayout;
+	
+
 public:
-	GeneralSettings(QWidget* parent = nullptr) : QWidget(parent) {		
-		QGroupBox* frame = new QGroupBox(tr("General"), this);
+	GeneralSettings(QWidget* parent = nullptr);
 
+private slots:
+	void write_settings();
 
-
-
-	}
-
+	void toggle_autostart(bool state);
 
 };
