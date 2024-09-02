@@ -15,6 +15,7 @@ file(GLOB all_SRCS
         "${PROJECT_SOURCE_DIR}/src/app/*.h"
         )
 
+
 set(PROJECT_SOURCES
     main.cpp
     ${all_SRCS}
@@ -22,6 +23,7 @@ set(PROJECT_SOURCES
 )
 
 
+# qt_add_translations(MonitorControl)
 
 qt_add_executable(MonitorControl ${PROJECT_SOURCES})
 

@@ -3,6 +3,8 @@
 #include <QSystemTrayIcon>
 #include <QDebug>
 
+#include <QTranslator>
+
 #include "mainwindow.h"
 #include "winController.h"
 
@@ -27,6 +29,13 @@ int main(int argc, char* argv[])
 
     // Setup main application 
     QApplication a(argc, argv);
+
+    QTranslator translator;
+    //translator.load(":/translations/MonitorControl_de");
+
+
+    //qDebug() << "Translation File: " << translator.filePath();
+    //a.installTranslator(&translator);
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         auto choice = QMessageBox::critical(

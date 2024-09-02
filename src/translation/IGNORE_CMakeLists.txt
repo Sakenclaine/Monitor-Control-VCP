@@ -1,0 +1,6 @@
+qt_add_resources(MonitorControl translations
+    PREFIX "/src/app/translation"
+    FILES 
+		MonitorControl_de.ts 
+		MonitorControl_en.ts
+)
