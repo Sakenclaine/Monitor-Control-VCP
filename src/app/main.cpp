@@ -31,11 +31,11 @@ int main(int argc, char* argv[])
     QApplication a(argc, argv);
 
     QTranslator translator;
-    //translator.load(":/translations/MonitorControl_de");
+    bool loadChk = translator.load(":/i18n/MonitorControl_en");
 
 
-    //qDebug() << "Translation File: " << translator.filePath();
-    //a.installTranslator(&translator);
+    qDebug() << "Translation File: " << translator.filePath() << " " << loadChk;
+    a.installTranslator(&translator);
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         auto choice = QMessageBox::critical(
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
     QApplication::setQuitOnLastWindowClosed(false);
 
     // Create main window and show it
-    MainWindow w;
+    MainWindow w(translator);
     w.show();
 
 

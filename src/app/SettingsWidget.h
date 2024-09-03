@@ -11,6 +11,7 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QFormLayout>
+#include <QComboBox>
 
 
 class SettingsWidget : public QWidget
@@ -55,6 +56,7 @@ public:
 };
 
 
+
 class GeneralSettings : public QWidget
 {
 	Q_OBJECT
@@ -62,6 +64,9 @@ class GeneralSettings : public QWidget
 private:
 	QGridLayout* mainLayout;
 	QGridLayout* subLayout;
+
+	QLabel* autoStartLabel;
+	QComboBox* langComboBox;
 	
 
 public:
@@ -71,5 +76,6 @@ private slots:
 	void write_settings();
 
 	void toggle_autostart(bool state);
+	void change_language(int);
 
 };

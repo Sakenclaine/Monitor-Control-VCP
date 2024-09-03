@@ -8,6 +8,9 @@
 #include <QFont>
 #include <QVariant>
 #include <QList>
+#include <QComboBox>
+
+#include <QTranslator>
 
 SettingsWidget::SettingsWidget(QWidget* parent) :
 	QWidget(parent)
@@ -110,6 +113,8 @@ GeneralSettings::GeneralSettings(QWidget* parent) :
 	setLayout(mainLayout);
 
 	subLayout = new QGridLayout();
+	subLayout->setAlignment(Qt::AlignTop);
+	subLayout->setVerticalSpacing(5);
 
 
 	QGroupBox* frame = new QGroupBox(tr("General"));
@@ -118,21 +123,33 @@ GeneralSettings::GeneralSettings(QWidget* parent) :
 	mainLayout->addWidget(frame, 0, 0);
 
 	QFormLayout* formLayout = new QFormLayout();
+	formLayout->setVerticalSpacing(5);
+	formLayout->setHorizontalSpacing(10);
 
+	// Autostart toggle
 	QCheckBox* autoStart = new QCheckBox();
-	QLabel* autoStartLabel = new QLabel(tr("Autostart at login"));
-	QLabel* autoStartRegistry = new QLabel("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run");
+	autoStartLabel = new QLabel(tr("Autostart at login\tHKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"));
 
 	bool autoStartStatus = SettingsManager::getInstance().readSetting("Settings", "autostart").toBool();
 	autoStart->setChecked(autoStartStatus);
-
 	connect(autoStart, &QCheckBox::checkStateChanged, this, &GeneralSettings::toggle_autostart);
 
+	// Langauage selection
+	QLabel* langDesc = new QLabel(tr("Select Language"));
+	langComboBox = new QComboBox;
+	langComboBox->setInsertPolicy(QComboBox::InsertAlphabetically);
+
+	langComboBox->addItem("English", QVariant("en"));
+	langComboBox->addItem("Deutsch", QVariant("de"));
+
+	connect(langComboBox, &QComboBox::currentIndexChanged, this, &GeneralSettings::change_language);
+
 	formLayout->addRow(autoStart, autoStartLabel);
+	formLayout->addRow(langDesc, langComboBox);
 
 	subLayout->addLayout(formLayout, 0, 0);
-	subLayout->addWidget(autoStartRegistry, 0, 1);
 }
+
 
 void GeneralSettings::write_settings()
 {
@@ -146,4 +163,24 @@ void GeneralSettings::toggle_autostart(bool state)
 	setAppToStartAutomatically(state);
 
 	SettingsManager::getInstance().writeSettingInGroup("Settings", "autostart", QVariant(state));
+}
+
+void GeneralSettings::change_language(int index)
+{
+	qDebug() << "Changing Language ...";
+	
+	QString language = langComboBox->currentData().toString();
+	
+	QTranslator translator;
+	bool loadChk = false;
+
+	if (language == "en") loadChk = translator.load(":/i18n/MonitorControl_en");
+	else if (language == "de") loadChk = translator.load(":/i18n/MonitorControl_de");
+	
+	if (loadChk) { 
+		qApp->installTranslator(&translator); 
+
+		qDebug() << "Language Changed\n";
+	}
+
 }

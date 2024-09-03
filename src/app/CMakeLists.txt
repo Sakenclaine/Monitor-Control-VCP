@@ -7,8 +7,12 @@ find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
 message("\n\nPathes:")
 message("${WINDEPLOYQT_EXECUTABLE}")
 message("${PROJECT_SOURCE_DIR}")
+message("${CMAKE_CURRENT_BINARY_DIR}")
 message("${CMAKE_INSTALL_BINDIR}\n\n")
 
+
+qt_add_translations(MonitorControl 
+    TS_FILE_DIR ${PROJECT_SOURCE_DIR}/src/translation)
 
 file(GLOB all_SRCS
         "${PROJECT_SOURCE_DIR}/src/app/*.cpp"
@@ -23,9 +27,8 @@ set(PROJECT_SOURCES
 )
 
 
-# qt_add_translations(MonitorControl)
 
-qt_add_executable(MonitorControl ${PROJECT_SOURCES})
+qt_add_executable(MonitorControl ${PROJECT_SOURCES} ${qm_files})
 
 
 target_link_libraries(MonitorControl
@@ -34,6 +37,9 @@ target_link_libraries(MonitorControl
         Qt::Gui
         Qt::Widgets
 )
+
+
+
 
 
 # https://blog.nathanosman.com/2017/11/24/using-windeployqt-with-cpack.html

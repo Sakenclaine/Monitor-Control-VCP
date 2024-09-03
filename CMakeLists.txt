@@ -1,6 +1,10 @@
 # https://doc.qt.io/qt-6/cmake-get-started.html
 # https://stackoverflow.com/questions/25989448/implementing-qt-project-through-cmake
 
+# for translations run 
+#		cmake --build . --target update_translations
+#		cmake --build . --target release_translations	
+
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
 

@@ -7,6 +7,7 @@
 #include <QGroupBox>
 #include <QMenu>
 #include <QSlider>
+#include <QTranslator>
 
 
 
@@ -54,6 +55,7 @@ private:
 	bool autoStart = false;
 	QString config_path;
 	Qt::WindowFlags flags = windowFlags();
+
 
 
 private:
