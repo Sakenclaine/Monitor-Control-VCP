@@ -1,5 +1,7 @@
 #include "utilities.h"
 
+#include <QTranslator>
+
 QString windowsAppPath()
 {
 #ifdef Q_OS_WIN
@@ -116,4 +118,11 @@ QVariant SettingsManager::readSetting(const QString& groupKey, const QString& ke
     settings.endGroup();
 
     return setting;
+}
+
+
+ApplicationManager::ApplicationManager(QObject* parent) :
+    QObject(parent)
+{
+
 }
