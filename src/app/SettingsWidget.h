@@ -13,18 +13,24 @@
 #include <QFormLayout>
 #include <QComboBox>
 
+QT_BEGIN_NAMESPACE
+class ApplicationManager;
+QT_END_NAMESPACE
+
 
 class SettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 private:
+	ApplicationManager* appMngr;
+
 	QListWidget* categoryWidget;
 	QStackedWidget* settingsWidget;
 
 
 public:
-	SettingsWidget(QWidget* parent = nullptr);
+	SettingsWidget(QWidget* parent = nullptr, ApplicationManager* appMngr = nullptr);
 
 private:
 	void setup();
@@ -42,10 +48,11 @@ class SettingsDialog : public QDialog
 	Q_OBJECT
 
 private:
+	ApplicationManager* appMngr;
 	SettingsWidget* settingsWdgt;
 
 public:
-	SettingsDialog(QWidget* parent = nullptr);
+	SettingsDialog(QWidget* parent = nullptr, ApplicationManager* appMngr = nullptr);
 
 private:
 	void setup();
@@ -62,15 +69,17 @@ class GeneralSettings : public QWidget
 	Q_OBJECT
 
 private:
+	ApplicationManager* appMngr;
+
 	QGridLayout* mainLayout;
 	QGridLayout* subLayout;
 
 	QLabel* autoStartLabel;
 	QComboBox* langComboBox;
-	
+
 
 public:
-	GeneralSettings(QWidget* parent = nullptr);
+	GeneralSettings(QWidget* parent = nullptr, ApplicationManager* appMngr = nullptr);
 
 private slots:
 	void write_settings();

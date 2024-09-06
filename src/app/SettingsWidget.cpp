@@ -12,8 +12,9 @@
 
 #include <QTranslator>
 
-SettingsWidget::SettingsWidget(QWidget* parent) :
-	QWidget(parent)
+SettingsWidget::SettingsWidget(QWidget* parent, ApplicationManager* appMngr) :
+	QWidget(parent),
+	appMngr(appMngr)
 {
 	setup();
 }
@@ -62,8 +63,9 @@ void SettingsWidget::category_changed(QListWidgetItem* current, QListWidgetItem*
 
 
 
-SettingsDialog::SettingsDialog(QWidget* parent) :
-	QDialog(parent)
+SettingsDialog::SettingsDialog(QWidget* parent, ApplicationManager* appMngr) :
+	QDialog(parent),
+	appMngr(appMngr)
 {
 	setup();
 }
@@ -88,7 +90,7 @@ void SettingsDialog::setup()
 
 
 
-	GeneralSettings* gen = new GeneralSettings();
+	GeneralSettings* gen = new GeneralSettings(nullptr, appMngr);
 	QWidget* col = new QWidget(this);
 	QWidget* aut = new QWidget(this);
 
@@ -103,8 +105,9 @@ void SettingsDialog::add_settings_page(QString name, QWidget* settings)
 }
 
 
-GeneralSettings::GeneralSettings(QWidget* parent) : 
-	QWidget(parent) 
+GeneralSettings::GeneralSettings(QWidget* parent, ApplicationManager* appMngr) :
+	QWidget(parent),
+	appMngr(appMngr)
 {
 
 	mainLayout = new QGridLayout(this);
@@ -178,7 +181,9 @@ void GeneralSettings::change_language(int index)
 	else if (language == "de") loadChk = translator.load(":/i18n/MonitorControl_de");
 	
 	if (loadChk) { 
-		qApp->installTranslator(&translator); 
+		SettingsManager::getInstance().writeSettingInGroup("Settings", "language", QVariant(language));
+
+		appMngr->install_translator(&translator);
 
 		qDebug() << "Language Changed\n";
 	}

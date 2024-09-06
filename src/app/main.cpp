@@ -7,6 +7,7 @@
 
 #include "mainwindow.h"
 #include "winController.h"
+#include "utilities.h"
 
 
 #include "MonitorHandler.h"
@@ -27,15 +28,17 @@ int main(int argc, char* argv[])
 
     Controller::getInstance().start_worker();
 
+    ApplicationManager appMngr;
+
     // Setup main application 
     QApplication a(argc, argv);
 
     QTranslator translator;
     bool loadChk = translator.load(":/i18n/MonitorControl_en");
-
-
     qDebug() << "Translation File: " << translator.filePath() << " " << loadChk;
-    a.installTranslator(&translator);
+
+    appMngr.install_translator(&translator);
+    // a.installTranslator(&translator);
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         auto choice = QMessageBox::critical(
@@ -54,7 +57,7 @@ int main(int argc, char* argv[])
     QApplication::setQuitOnLastWindowClosed(false);
 
     // Create main window and show it
-    MainWindow w(translator);
+    MainWindow w(&appMngr);
     w.show();
 
 

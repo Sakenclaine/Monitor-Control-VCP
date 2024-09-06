@@ -22,6 +22,7 @@ class MonitorTable;
 class CustomSlider;
 class MonitorWidget;
 class SettingsDialog;
+class ApplicationManager;
 QT_END_NAMESPACE
 
 
@@ -31,7 +32,7 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget* parent = nullptr);
+	explicit MainWindow(ApplicationManager* appMngr, QWidget* parent = nullptr);
 	~MainWindow();
 
 
@@ -52,6 +53,8 @@ private:
 
 
 private:
+	ApplicationManager* appMngr;
+
 	bool autoStart = false;
 	QString config_path;
 	Qt::WindowFlags flags = windowFlags();

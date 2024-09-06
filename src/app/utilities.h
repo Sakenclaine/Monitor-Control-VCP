@@ -59,5 +59,6 @@ public:
 
 
 public:
-    void install_translator(QTranslator* translator);
+    void install_translator(QTranslator* tlator);
+    
 };

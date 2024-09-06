@@ -33,8 +33,9 @@
 
 
 
-MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent),
+MainWindow::MainWindow(ApplicationManager* appMngr, QWidget* parent) :
+    appMngr(appMngr),
+    QMainWindow(parent)
 {
     setup();
 
@@ -56,7 +57,7 @@ void MainWindow::setup()
 
     qDebug() << QString("Found (%1) connected monitors").arg(monitors.size());
 
-    applicationSettings = new SettingsDialog(this);
+    applicationSettings = new SettingsDialog(this, appMngr);
 
     // Create main widget and layout set as content for the main window
     mainWidget = new QWidget(this);

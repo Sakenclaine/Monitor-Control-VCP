@@ -126,3 +126,15 @@ ApplicationManager::ApplicationManager(QObject* parent) :
 {
 
 }
+
+
+void ApplicationManager::install_translator(QTranslator* tlator)
+{
+    qApp->removeTranslator(translator);
+
+    translator = tlator;
+
+    qApp->installTranslator(translator);
+}
+
+
