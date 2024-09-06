@@ -5,6 +5,8 @@
 #		cmake --build . --target update_translations
 #		cmake --build . --target release_translations	
 
+# cmake --build . --target update_translations ; cmake --build . --target release_translations
+
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
 

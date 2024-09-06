@@ -60,5 +60,6 @@ public:
 
 public:
     void install_translator(QTranslator* tlator);
+    void load_install_translator(QString language);
     
 };

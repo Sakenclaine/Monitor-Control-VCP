@@ -137,4 +137,17 @@ void ApplicationManager::install_translator(QTranslator* tlator)
     qApp->installTranslator(translator);
 }
 
+void ApplicationManager::load_install_translator(QString language)
+{
+    QTranslator tlator;
+    bool loadChk = false;
+
+    if (language == "en") loadChk = tlator.load(":/i18n/MonitorControl_en");
+    else if (language == "de") loadChk = tlator.load(":/i18n/MonitorControl_de");
+
+    qDebug() << "Translation File: " << tlator.filePath() << " " << loadChk;
+
+    qApp->installTranslator(&tlator); 
+}
+
 

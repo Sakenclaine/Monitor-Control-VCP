@@ -28,17 +28,23 @@ int main(int argc, char* argv[])
 
     Controller::getInstance().start_worker();
 
-    ApplicationManager appMngr;
-
     // Setup main application 
     QApplication a(argc, argv);
 
-    QTranslator translator;
-    bool loadChk = translator.load(":/i18n/MonitorControl_en");
-    qDebug() << "Translation File: " << translator.filePath() << " " << loadChk;
+    ApplicationManager appMngr;
+    QString language = SettingsManager::getInstance().readSetting("Settings", "language").toString();
 
-    appMngr.install_translator(&translator);
-    // a.installTranslator(&translator);
+    QTranslator tlator;
+    bool loadChk = false;
+
+    if (language == "en") loadChk = tlator.load(":/i18n/MonitorControl_en");
+    else if (language == "de") loadChk = tlator.load(":/i18n/MonitorControl_de");
+
+    qDebug() << "Translation File: " << tlator.filePath() << " " << loadChk;
+
+    a.installTranslator(&tlator);
+    //appMngr.load_install_translator(language);
+
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         auto choice = QMessageBox::critical(

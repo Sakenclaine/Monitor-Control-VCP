@@ -145,6 +145,9 @@ GeneralSettings::GeneralSettings(QWidget* parent, ApplicationManager* appMngr) :
 	langComboBox->addItem("English", QVariant("en"));
 	langComboBox->addItem("Deutsch", QVariant("de"));
 
+	QString language = SettingsManager::getInstance().readSetting("Settings", "language").toString();
+	langComboBox->setCurrentIndex(langComboBox->findData(QVariant(language)));
+
 	connect(langComboBox, &QComboBox::currentIndexChanged, this, &GeneralSettings::change_language);
 
 	formLayout->addRow(autoStart, autoStartLabel);
@@ -183,9 +186,7 @@ void GeneralSettings::change_language(int index)
 	if (loadChk) { 
 		SettingsManager::getInstance().writeSettingInGroup("Settings", "language", QVariant(language));
 
-		appMngr->install_translator(&translator);
-
-		qDebug() << "Language Changed\n";
+		qDebug() << "Language Changed Restart Pending ...\n";
 	}
 
 }

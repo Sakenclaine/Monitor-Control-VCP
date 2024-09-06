@@ -48,6 +48,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::setup()
 {
+    setWindowTitle(tr("Monitor Control"));
+    
     QList<Monitor*> monitors;
     bool bChk = get_connected_monitors(monitors);
 
