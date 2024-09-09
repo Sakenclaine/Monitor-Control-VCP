@@ -265,10 +265,14 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
     switch (reason) {
     case QSystemTrayIcon::Trigger:
         //qDebug() << "\n-------------\nTray Trigger" << reason << "\n-------------\n";
-       
-        this->move(this->pos().x(), this->pos().y() + 32);
-        this->setWindowFlags(flags | Qt::Popup);
+        
+        if (!popUpChk)
+        {
+            this->move(this->pos().x(), this->pos().y() + 32);
+        }
+        popUpChk = true;
 
+        this->setWindowFlags(flags | Qt::Popup);
         show();
 
         break;
@@ -298,6 +302,7 @@ void MainWindow::restore()
 {
     this->move(this->pos().x(), this->pos().y() - 32);
     this->setWindowFlags(flags | Qt::Window);
-    this->setWindowIcon(QIcon(":/monitorcontrol.ico"));
+    this->setWindowIcon(QIcon(":/images/monitorcontrol.ico"));
+    popUpChk = false;
     show();
 }

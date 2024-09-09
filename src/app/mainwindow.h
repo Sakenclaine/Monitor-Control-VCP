@@ -59,7 +59,7 @@ private:
 	QString config_path;
 	Qt::WindowFlags flags = windowFlags();
 
-
+	bool popUpChk = false;
 
 private:
 	// Widgets
