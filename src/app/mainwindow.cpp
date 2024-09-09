@@ -298,5 +298,6 @@ void MainWindow::restore()
 {
     this->move(this->pos().x(), this->pos().y() - 32);
     this->setWindowFlags(flags | Qt::Window);
+    this->setWindowIcon(QIcon(":/monitorcontrol.ico"));
     show();
 }

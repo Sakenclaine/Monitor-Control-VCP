@@ -89,12 +89,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../app/main.cpp" line="42"/>
+        <location filename="../app/main.cpp" line="52"/>
         <source>Systray</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/main.cpp" line="43"/>
+        <location filename="../app/main.cpp" line="53"/>
         <source>I couldn&apos;t detect any system tray on this system.</source>
         <translation type="unfinished"></translation>
     </message>

@@ -11,8 +11,23 @@ message("${CMAKE_CURRENT_BINARY_DIR}")
 message("${CMAKE_INSTALL_BINDIR}\n\n")
 
 
-qt_add_translations(MonitorControl 
+# For translations run this sequence
+# 1.) QM_FILES_OUTPUT_VARIABLE qm_files and install(FILES ${qm_files} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+# 2.) cmake --build . --target update_translations ; cmake --build . --target release_translations
+# 3.) remove QM_FILES_OUTPUT_VARIABLE qm_files and install(FILES ${qm_files} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+# 4.) Compile and get translation file with ":/i18n/[FILENAME]" 
+#
+# I have no clue, why it is like this
+
+qt_add_translations(MonitorControl
     TS_FILE_DIR ${PROJECT_SOURCE_DIR}/src/translation)
+#    QM_FILES_OUTPUT_VARIABLE qm_files)
+
+#message("QM Files: ${qm_files}")
+
+#install(FILES ${qm_files} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
+
 
 file(GLOB all_SRCS
         "${PROJECT_SOURCE_DIR}/src/app/*.cpp"
@@ -28,7 +43,7 @@ set(PROJECT_SOURCES
 
 
 
-qt_add_executable(MonitorControl ${PROJECT_SOURCES} ${qm_files})
+qt_add_executable(MonitorControl ${PROJECT_SOURCES})
 
 
 target_link_libraries(MonitorControl
