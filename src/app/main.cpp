@@ -43,8 +43,6 @@ int main(int argc, char* argv[])
     qDebug() << "Translation File: " << tlator.filePath() << " " << loadChk;
 
     a.installTranslator(&tlator);
-    //appMngr.load_install_translator(language);
-
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         auto choice = QMessageBox::critical(
