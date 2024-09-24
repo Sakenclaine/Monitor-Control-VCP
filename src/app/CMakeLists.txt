@@ -68,24 +68,24 @@ target_link_libraries(MonitorControl
 #endif()
 
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  set_target_properties(MonitorControl
-    PROPERTIES
-        WIN32_EXECUTABLE TRUE
-    )
-
-    install(TARGETS MonitorControl
-        BUNDLE  DESTINATION "P:\\MonitorControl"
-        RUNTIME DESTINATION "P:\\MonitorControl"
-    )
-
-    qt_generate_deploy_app_script(
-        TARGET MonitorControl
-        OUTPUT_SCRIPT deploy_script
-        NO_UNSUPPORTED_PLATFORM_ERROR
-    )
-    install(SCRIPT ${deploy_script})
-endif()
+#if(CMAKE_BUILD_TYPE STREQUAL "Release")
+#  set_target_properties(MonitorControl
+#    PROPERTIES
+#        WIN32_EXECUTABLE TRUE
+#    )
+#
+#    install(TARGETS MonitorControl
+#        BUNDLE  DESTINATION "P:\\MonitorControl"
+#        RUNTIME DESTINATION "P:\\MonitorControl"
+#    )
+#
+#    qt_generate_deploy_app_script(
+#        TARGET MonitorControl
+#        OUTPUT_SCRIPT deploy_script
+#        NO_UNSUPPORTED_PLATFORM_ERROR
+#    )
+#    install(SCRIPT ${deploy_script})
+#endif()
 
 
 

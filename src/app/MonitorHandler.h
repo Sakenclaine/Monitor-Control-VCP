@@ -130,6 +130,8 @@ private:
 	QString name = "None";
 	PHYSICAL_MONITOR monitor_;
 
+	QMap<QString, QString> metadata;
+
 	bool dummy = true;
 	bool status = false;
 
@@ -171,7 +173,8 @@ signals:
 void DumpDevice(const DISPLAY_DEVICE& dd, size_t nSpaceCount);
 
 void list_devices();
-void displayDevices();
+bool displayDevices();
+bool displayDevices(QMap<int, QList<QString>>& monitorData);
 
 
 void get_physical_monitors_WIN(std::vector<PHYSICAL_MONITOR>& monitors);

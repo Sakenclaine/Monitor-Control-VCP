@@ -163,7 +163,11 @@ void VCP_COMMANDS::add_allowed_values(uint16_t code, std::initializer_list<uint1
 bool get_connected_monitors(QList<Monitor*>& monitors)
 {
 
-#if defined(Q_OS_WIN) && !defined(QT_DEBUG)
+#if defined(Q_OS_WIN) //&& !defined(QT_DEBUG)
+    QMap<int, QList<QString>> metadata;
+
+    displayDevices(metadata);
+
     std::vector<PHYSICAL_MONITOR> mons;
     get_physical_monitors_WIN(mons);
 
@@ -171,31 +175,35 @@ bool get_connected_monitors(QList<Monitor*>& monitors)
 
     qDebug() << "\n";
 
+    int i = 0;
+
     for (auto& elem_mon : mons)
     {
         QString name = QString::fromWCharArray(elem_mon.szPhysicalMonitorDescription);
-        Monitor* mon = new Monitor(elem_mon, name);
+        Monitor* mon = new Monitor(elem_mon, metadata[i][0]);
 
-        qDebug() << "Monitor " << name << " init ...";
+        qDebug() << "Monitor " << name << "( " << metadata[i][0] << ")" << " init ...";
         mon->init();
 
         monitors.append(mon);
+
+        i++;
     }
 
     qDebug() << "\n\n";
 
     return true;
 
-#elif defined(QT_DEBUG)
-    Monitor* mon1 = new Monitor("Monitor 1");
-    mon1->init();
-    monitors.append(mon1);
-
-    Monitor* mon2 = new Monitor("Monitor 2");
-    mon2->init();
-    monitors.append(mon2);
-
-    return true;
+//#elif defined(QT_DEBUG)
+//    Monitor* mon1 = new Monitor("Monitor 1");
+//    mon1->init();
+//    monitors.append(mon1);
+//
+//    Monitor* mon2 = new Monitor("Monitor 2");
+//    mon2->init();
+//    monitors.append(mon2);
+//
+//    return true;
 
 #endif
 }
@@ -354,6 +362,244 @@ void get_monitor_features_WIN(QMap<QString, monitor_vcp>& features, PHYSICAL_MON
 }
 
 // END ----------------------------------------------------------------
+
+
+///////////////////////////////////// ENUM DISPLAY DEVICES /////////////////////////////////////////////////////
+//
+// List (display) devices by going through the adapters of the GPU and the devices connected to it.
+// This uses EnumDisplayDevices and has no direct correspondence to the physical monitors from MonitorEnum. 
+// https://stackoverflow.com/questions/63095216/how-to-associate-physical-monitor-with-monitor-deviceid
+void list_devices()
+{
+    DISPLAY_DEVICE dd;
+    dd.cb = sizeof(DISPLAY_DEVICE);
+
+    DWORD deviceNum = 0;
+    while (EnumDisplayDevices(NULL, deviceNum, &dd, 0)) {
+        DumpDevice(dd, 0);
+        qDebug() << "-----------------------------------------------------";
+
+        DISPLAY_DEVICE newdd = { 0 };
+        newdd.cb = sizeof(DISPLAY_DEVICE);
+        DWORD monitorNum = 0;
+        while (EnumDisplayDevices(dd.DeviceName, monitorNum, &newdd, 0))
+        {
+            DumpDevice(newdd, 4);
+            monitorNum++;
+        }
+        qDebug() << "===================================\n";
+
+        deviceNum++;
+    }
+}
+
+void DumpDevice(const DISPLAY_DEVICE& dd, size_t nSpaceCount)
+{
+    std::wstring dName = dd.DeviceName;
+    std::wstring dString = dd.DeviceString;
+    DWORD dFlags = dd.StateFlags;
+    std::wstring dID = dd.DeviceID;
+    std::wstring dKey = dd.DeviceKey + 42;
+
+    qDebug() << "Device Name: " << "" << dName;
+    qDebug() << "Device String: " << "" << dString;
+    qDebug() << "Device Flags: " << "" << dFlags;
+    qDebug() << "Device ID: " << "" << dID;
+    qDebug() << "Device Key: " << "" << dKey;
+}
+
+bool displayDevices()
+// https://stackoverflow.com/questions/20060584/get-the-name-of-a-monitor
+// https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-displayconfiggetdeviceinfo
+{
+    std::vector<DISPLAYCONFIG_PATH_INFO> paths;
+    std::vector<DISPLAYCONFIG_MODE_INFO> modes;
+    UINT32 flags = QDC_ONLY_ACTIVE_PATHS | QDC_VIRTUAL_MODE_AWARE;
+    LONG result = ERROR_SUCCESS;
+
+    do
+    {
+        // Determine how many path and mode structures to allocate
+        UINT32 pathCount, modeCount;
+        result = GetDisplayConfigBufferSizes(flags, &pathCount, &modeCount);
+
+        //if (result != ERROR_SUCCESS)
+        //{
+        //    return false;
+        //    // return HRESULT_FROM_WIN32(result);
+        //}
+
+        // Allocate the path and mode arrays
+        paths.resize(pathCount);
+        modes.resize(modeCount);
+
+        // Get all active paths and their modes
+        result = QueryDisplayConfig(flags, &pathCount, paths.data(), &modeCount, modes.data(), nullptr);
+
+        // The function may have returned fewer paths/modes than estimated
+        paths.resize(pathCount);
+        modes.resize(modeCount);
+
+        // It's possible that between the call to GetDisplayConfigBufferSizes and QueryDisplayConfig
+        // that the display state changed, so loop on the case of ERROR_INSUFFICIENT_BUFFER.
+    } while (result == ERROR_INSUFFICIENT_BUFFER);
+
+    if (result != ERROR_SUCCESS)
+    {
+        return false;
+        //return HRESULT_FROM_WIN32(result);
+    }
+
+    // For each active path
+    for (auto& path : paths)
+    {
+        // Find the target (monitor) friendly name
+        DISPLAYCONFIG_TARGET_DEVICE_NAME targetName = {};
+        targetName.header.adapterId = path.targetInfo.adapterId;
+        targetName.header.id = path.targetInfo.id;
+        targetName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+        targetName.header.size = sizeof(targetName);
+        result = DisplayConfigGetDeviceInfo(&targetName.header);
+
+        if (result != ERROR_SUCCESS)
+        {
+            return false;
+            //return HRESULT_FROM_WIN32(result);
+        }
+
+        // Find the adapter device name
+        DISPLAYCONFIG_ADAPTER_NAME adapterName = {};
+        adapterName.header.adapterId = path.targetInfo.adapterId;
+        adapterName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_ADAPTER_NAME;
+        adapterName.header.size = sizeof(adapterName);
+
+        result = DisplayConfigGetDeviceInfo(&adapterName.header);
+
+        if (result != ERROR_SUCCESS)
+        {
+            return false;
+            //return HRESULT_FROM_WIN32(result);
+        }
+
+        std::wstring name = (targetName.flags.friendlyNameFromEdid ? targetName.monitorFriendlyDeviceName : L"Unknown");
+        std::wstring adapter = adapterName.adapterDevicePath;
+        int target = path.targetInfo.id;
+
+        qDebug()
+            << "Monitor Name:\t"
+            << name
+            << "\nAdapter:\t"
+            << adapter
+            << "\nTarget:\t"
+            << target
+            << "\n";
+
+    }
+
+    return true;
+}
+
+bool displayDevices(QMap<int, QList<QString>>& monitorData)
+// https://stackoverflow.com/questions/20060584/get-the-name-of-a-monitor
+// https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-displayconfiggetdeviceinfo
+{
+    std::vector<DISPLAYCONFIG_PATH_INFO> paths;
+    std::vector<DISPLAYCONFIG_MODE_INFO> modes;
+    UINT32 flags = QDC_ONLY_ACTIVE_PATHS | QDC_VIRTUAL_MODE_AWARE;
+    LONG result = ERROR_SUCCESS;
+
+    do
+    {
+        // Determine how many path and mode structures to allocate
+        UINT32 pathCount, modeCount;
+        result = GetDisplayConfigBufferSizes(flags, &pathCount, &modeCount);
+
+        //if (result != ERROR_SUCCESS)
+        //{
+        //    return false;
+        //    // return HRESULT_FROM_WIN32(result);
+        //}
+
+        // Allocate the path and mode arrays
+        paths.resize(pathCount);
+        modes.resize(modeCount);
+
+        // Get all active paths and their modes
+        result = QueryDisplayConfig(flags, &pathCount, paths.data(), &modeCount, modes.data(), nullptr);
+
+        // The function may have returned fewer paths/modes than estimated
+        paths.resize(pathCount);
+        modes.resize(modeCount);
+
+        // It's possible that between the call to GetDisplayConfigBufferSizes and QueryDisplayConfig
+        // that the display state changed, so loop on the case of ERROR_INSUFFICIENT_BUFFER.
+    } while (result == ERROR_INSUFFICIENT_BUFFER);
+
+    if (result != ERROR_SUCCESS)
+    {
+        return false;
+        //return HRESULT_FROM_WIN32(result);
+    }
+
+    int i = 0;
+    // For each active path
+    for (auto& path : paths)
+    {
+        // Find the target (monitor) friendly name
+        // https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-displayconfig_path_target_info
+        DISPLAYCONFIG_TARGET_DEVICE_NAME targetName = {};
+        targetName.header.adapterId = path.targetInfo.adapterId;
+        targetName.header.id = path.targetInfo.id;
+        targetName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+        targetName.header.size = sizeof(targetName);
+        result = DisplayConfigGetDeviceInfo(&targetName.header);
+
+        if (result != ERROR_SUCCESS)
+        {
+            return false;
+            //return HRESULT_FROM_WIN32(result);
+        }
+
+        // Find the adapter device name
+        DISPLAYCONFIG_ADAPTER_NAME adapterName = {};
+        adapterName.header.adapterId = path.targetInfo.adapterId;
+        adapterName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_ADAPTER_NAME;
+        adapterName.header.size = sizeof(adapterName);
+
+        result = DisplayConfigGetDeviceInfo(&adapterName.header);
+
+        if (result != ERROR_SUCCESS)
+        {
+            return false;
+            //return HRESULT_FROM_WIN32(result);
+        }
+
+        std::wstring name = (targetName.flags.friendlyNameFromEdid ? targetName.monitorFriendlyDeviceName : L"Unknown");
+        std::wstring adapter = adapterName.adapterDevicePath;
+        int target = path.targetInfo.id;
+
+        qDebug()
+            << "Monitor Name:\t"
+            << name
+            << "\nAdapter:\t"
+            << adapter
+            << "\nTarget:\t"
+            << target
+            << "\n";
+
+        monitorData[i] = QList{QString::fromStdWString(name)};
+
+        i++;
+    }
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 
 bool setBrightness(HANDLE hndl, QList<QVariant> inpt)
@@ -587,136 +833,5 @@ bool Monitor::set_feature(uint16_t code, int value)
     }
 }
 
-///////////////////////////////////// ENUM DISPLAY DEVICES /////////////////////////////////////////////////////
-//
-// List (display) devices by going through the adapters of the GPU and the devices connected to it.
-// This uses EnumDisplayDevices and has no direct correspondence to the physical monitors from MonitorEnum. 
-// https://stackoverflow.com/questions/63095216/how-to-associate-physical-monitor-with-monitor-deviceid
-void list_devices()
-{
-    DISPLAY_DEVICE dd;
-    dd.cb = sizeof(DISPLAY_DEVICE);
-
-    DWORD deviceNum = 0;
-    while (EnumDisplayDevices(NULL, deviceNum, &dd, 0)) {
-        DumpDevice(dd, 0);
-        qDebug() << "-----------------------------------------------------";
-
-        DISPLAY_DEVICE newdd = { 0 };
-        newdd.cb = sizeof(DISPLAY_DEVICE);
-        DWORD monitorNum = 0;
-        while (EnumDisplayDevices(dd.DeviceName, monitorNum, &newdd, 0))
-        {
-            DumpDevice(newdd, 4);
-            monitorNum++;
-        }
-        qDebug() << "===================================\n";
-
-        deviceNum++;
-    }
-}
-
-void DumpDevice(const DISPLAY_DEVICE& dd, size_t nSpaceCount)
-{
-    std::wstring dName = dd.DeviceName;
-    std::wstring dString = dd.DeviceString;
-    DWORD dFlags = dd.StateFlags;
-    std::wstring dID = dd.DeviceID;
-    std::wstring dKey = dd.DeviceKey + 42;
-
-    qDebug() << "Device Name: " << "" << dName;
-    qDebug() << "Device String: " << "" << dString;
-    qDebug() << "Device Flags: " << "" << dFlags;
-    qDebug() << "Device ID: " << "" << dID;
-    qDebug() << "Device Key: " << "" << dKey;
-}
-
-void displayDevices()
-// https://stackoverflow.com/questions/20060584/get-the-name-of-a-monitor
-// https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-displayconfiggetdeviceinfo
-{
-    std::vector<DISPLAYCONFIG_PATH_INFO> paths;
-    std::vector<DISPLAYCONFIG_MODE_INFO> modes;
-    UINT32 flags = QDC_ONLY_ACTIVE_PATHS | QDC_VIRTUAL_MODE_AWARE;
-    LONG result = ERROR_SUCCESS;
-
-    do
-    {
-        // Determine how many path and mode structures to allocate
-        UINT32 pathCount, modeCount;
-        result = GetDisplayConfigBufferSizes(flags, &pathCount, &modeCount);
-
-        if (result != ERROR_SUCCESS)
-        {
-            return;
-            // return HRESULT_FROM_WIN32(result);
-        }
-
-        // Allocate the path and mode arrays
-        paths.resize(pathCount);
-        modes.resize(modeCount);
-
-        // Get all active paths and their modes
-        result = QueryDisplayConfig(flags, &pathCount, paths.data(), &modeCount, modes.data(), nullptr);
-
-        // The function may have returned fewer paths/modes than estimated
-        paths.resize(pathCount);
-        modes.resize(modeCount);
-
-        // It's possible that between the call to GetDisplayConfigBufferSizes and QueryDisplayConfig
-        // that the display state changed, so loop on the case of ERROR_INSUFFICIENT_BUFFER.
-    } while (result == ERROR_INSUFFICIENT_BUFFER);
-
-    if (result != ERROR_SUCCESS)
-    {
-        return;
-        //return HRESULT_FROM_WIN32(result);
-    }
-
-    // For each active path
-    for (auto& path : paths)
-    {
-        // Find the target (monitor) friendly name
-        DISPLAYCONFIG_TARGET_DEVICE_NAME targetName = {};
-        targetName.header.adapterId = path.targetInfo.adapterId;
-        targetName.header.id = path.targetInfo.id;
-        targetName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
-        targetName.header.size = sizeof(targetName);
-        result = DisplayConfigGetDeviceInfo(&targetName.header);
-
-        if (result != ERROR_SUCCESS)
-        {
-            //return HRESULT_FROM_WIN32(result);
-        }
-
-        // Find the adapter device name
-        DISPLAYCONFIG_ADAPTER_NAME adapterName = {};
-        adapterName.header.adapterId = path.targetInfo.adapterId;
-        adapterName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_ADAPTER_NAME;
-        adapterName.header.size = sizeof(adapterName);
-
-        result = DisplayConfigGetDeviceInfo(&adapterName.header);
-
-        if (result != ERROR_SUCCESS)
-        {
-            //return HRESULT_FROM_WIN32(result);
-        }
-
-        std::wstring name = (targetName.flags.friendlyNameFromEdid ? targetName.monitorFriendlyDeviceName : L"Unknown");
-        std::wstring adapter = adapterName.adapterDevicePath;
-        int target = path.targetInfo.id;
-
-        qDebug()
-            << "Monitor Name:\t"
-            << name
-            << "\nAdapter:\t"
-            << adapter
-            << "\nTarget:\t"
-            << target
-            << "\n";
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

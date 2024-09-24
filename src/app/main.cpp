@@ -15,6 +15,8 @@
 
 int main(int argc, char* argv[])
 {
+    qDebug() << "Program Startup ...";
+    
     displayDevices();
     
     qDebug() << "\n\n\n";
