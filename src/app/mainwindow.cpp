@@ -55,7 +55,50 @@ void MainWindow::setup()
 
     if (bChk) { 
         Linker::getInstance().register_monitor(monitors); 
+
+        QFile output(qApp->applicationDirPath() + "/monitors.xml");
+        output.open(QIODevice::ReadWrite);
+        output.resize(0);
+
+        QXmlStreamWriter stream(&output);
+        stream.setAutoFormatting(true);
+        stream.writeStartDocument();
+
+        stream.writeStartElement("root");
+
+        for (Monitor* mon : monitors) {
+            stream.writeStartElement("monitor-" + QString::number(mon->get_ID()));
+            //stream.writeAttribute("name", mon->get_name());
+            stream.writeTextElement("name", mon->get_name());
+
+            for (auto [key, value] : mon->features.asKeyValueRange()) {
+                stream.writeStartElement(VCP_FEATURES.commands[key].name.replace(" ", ""));
+                stream.writeTextElement("current-value", QString::number(value.current_value));
+                stream.writeTextElement("max-value", QString::number(value.max_value));
+                stream.writeStartElement("possible-values");
+                
+                int i = 0;
+                for (auto elem : value.possible_values) {
+                    stream.writeTextElement("val-" + QString::number(i), QString::number(elem));
+                    i++;
+                }
+
+                stream.writeEndElement();
+                stream.writeEndElement();           
+            }
+
+            stream.writeEndElement(); // bookmark
+
+
+        }
+
+        stream.writeEndElement();
+
+        stream.writeEndDocument();
+
+        output.close();
     }
+
 
     qDebug() << QString("Found (%1) connected monitors").arg(monitors.size());
 

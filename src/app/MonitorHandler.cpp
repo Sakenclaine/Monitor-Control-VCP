@@ -3,6 +3,7 @@
 #include "MonitorHandler.h"
 #include "helpers.h"
 #include "SignalLinker.h"
+#include "utilities.h"
 
 ///////////////////////////////////// VCP FEATURE SETUP /////////////////////////////////////////////////////
 
@@ -163,7 +164,7 @@ void VCP_COMMANDS::add_allowed_values(uint16_t code, std::initializer_list<uint1
 bool get_connected_monitors(QList<Monitor*>& monitors)
 {
 
-#if defined(Q_OS_WIN) //&& !defined(QT_DEBUG)
+#if defined(Q_OS_WIN) && !defined(QT_DEBUG)
     QMap<int, QList<QString>> metadata;
 
     displayDevices(metadata);
@@ -194,16 +195,16 @@ bool get_connected_monitors(QList<Monitor*>& monitors)
 
     return true;
 
-//#elif defined(QT_DEBUG)
-//    Monitor* mon1 = new Monitor("Monitor 1");
-//    mon1->init();
-//    monitors.append(mon1);
-//
-//    Monitor* mon2 = new Monitor("Monitor 2");
-//    mon2->init();
-//    monitors.append(mon2);
-//
-//    return true;
+#elif defined(QT_DEBUG)
+    Monitor* mon1 = new Monitor("Monitor 1");
+    mon1->init();
+    monitors.append(mon1);
+
+    Monitor* mon2 = new Monitor("Monitor 2");
+    mon2->init();
+    monitors.append(mon2);
+
+    return true;
 
 #endif
 }
