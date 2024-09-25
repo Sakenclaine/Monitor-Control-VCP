@@ -63,6 +63,7 @@ public:
 
 public slots:
 	void receive_checked_monitors(QList<int>);
+	void receive_delete_slider(QString);
 //	void receive_add_slider(uint16_t&, QColor&, bool&);
 //	void receive_slider_init(Monitor* monitor);
 

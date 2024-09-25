@@ -150,6 +150,8 @@ SliderWidget::~SliderWidget()
 
 void SliderWidget::setup()
 {
+	setObjectName(QString("sliderW_" + cde_str));
+	
 	if (VCP_FEATURES.commands.contains(cde_str))
 	{
 		name = VCP_FEATURES.commands[cde_str].name;
@@ -212,22 +214,38 @@ void SliderWidget::setup()
 
 	}
 
+	QHBoxLayout* btnLayout = new QHBoxLayout();
+
+	deleteBtn = new QPushButton();
+	deleteBtn->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::EditDelete));
+
+	connect(deleteBtn, &QPushButton::clicked, this, &SliderWidget::intern_delete_slider);
+	connect(this, &SliderWidget::delete_slider, &Linker::getInstance(), &Linker::delete_slider);
+
 	trayChk = new QCheckBox();
 
 	QSizePolicy sp_retain = trayChk->sizePolicy();
 	sp_retain.setRetainSizeWhenHidden(true);
 	trayChk->setSizePolicy(sp_retain);
 
+	btnLayout->addWidget(deleteBtn);
+	btnLayout->addWidget(trayChk);
+
 	mainHLayout->addWidget(slider);
 	mainHLayout->addLayout(buttonLayout);
 
 	mainVLayout->addLayout(mainHLayout);
-	mainVLayout->addWidget(trayChk);
-	mainVLayout->setAlignment(trayChk, Qt::AlignHCenter);
+	mainVLayout->addLayout(btnLayout);
+	//mainVLayout->setAlignment(trayChk, Qt::AlignHCenter);
 
 	if (!trayIcon) trayChk->hide();
 
 
+}
+
+void SliderWidget::intern_delete_slider()
+{
+	emit delete_slider();
 }
 
 void SliderWidget::set_value(int value)

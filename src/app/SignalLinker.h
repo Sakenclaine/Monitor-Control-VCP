@@ -54,6 +54,9 @@ public slots:
 
     void receive_icon_click(QSystemTrayIcon::ActivationReason reason);
 
+    // 
+    void delete_slider();
+
     // Manage Signals to monitor
     void receive_discrete_setting(int& monitorID, QString& cde_str, uint16_t& value);
     void receive_monitor_settingID(int& monitorID, QString& cde_str, uint16_t& value);
@@ -69,6 +72,9 @@ signals:
     void send_value_update(int&, QObject&);
 
     void emit_icon_click(QSystemTrayIcon::ActivationReason reason);
+
+    // 
+    void emit_slider_delete(QString code);
 
 };
 

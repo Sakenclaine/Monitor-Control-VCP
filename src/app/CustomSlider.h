@@ -11,6 +11,7 @@ QT_BEGIN_NAMESPACE
 class QHBoxLayout;
 class QVBoxLayout;
 
+class QPushButton;
 class TrayIconControlled;
 class CustomSlider;
 QT_END_NAMESPACE
@@ -81,6 +82,7 @@ private:
 	TrayIconControlled* icon;
 	CustomSlider* slider;
 	QCheckBox* trayChk;
+	QPushButton* deleteBtn;
 
 private:
 	void setup();
@@ -107,6 +109,8 @@ private slots:
 
 	void slider_changed();
 
+	void intern_delete_slider();
+
 public slots:
 	void set_lock(bool lock);
 	void lock();
@@ -114,5 +118,6 @@ public slots:
 
 signals:
 	void value_changed(QString&, int);
+	void delete_slider();
 
 };

@@ -56,6 +56,7 @@ MonitorWidget::MonitorWidget(QWidget* parent) :
     setup_continous_settings();
 
     connect(&Linker::getInstance(), &Linker::send_checked_monitors, this, &MonitorWidget::receive_checked_monitors);
+    connect(&Linker::getInstance(), &Linker::emit_slider_delete, this, &MonitorWidget::receive_delete_slider);
 }
 
 void MonitorWidget::setup_discrete_settings()
@@ -301,6 +302,11 @@ void MonitorWidget::add_slider()
             }
         }
     }
+}
+
+void MonitorWidget::receive_delete_slider(QString cde_str)
+{
+    sliders.remove(cde_str);
 }
 
 void MonitorWidget::remove_slider(QString& cde_str)

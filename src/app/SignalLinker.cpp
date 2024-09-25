@@ -101,6 +101,34 @@ void Linker::receive_icon_click(QSystemTrayIcon::ActivationReason reason)
     emit emit_icon_click(reason);
 }
 
+
+void Linker::delete_slider()
+{
+    QObject* obj = sender();
+
+    if (obj != nullptr) {
+        QString name = obj->objectName();
+
+        qDebug() << "Deleting Slider " << name << " ...";
+
+        int i = 0;
+        for (auto elem : registered_sliders)
+        {
+            if (elem->objectName() == name)
+            {
+                elem->deleteLater();
+
+                registered_sliders.removeAt(i);
+                
+                emit emit_slider_delete(n2hexstr(elem->get_code(), 2));
+            }
+
+            i++;
+        }
+    }
+}
+
+
 void Linker::receive_value_update(int value)
 {
     QObject* obj = sender();
