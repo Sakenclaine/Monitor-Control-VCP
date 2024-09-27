@@ -72,7 +72,7 @@ void MainWindow::setup()
             stream.writeTextElement("name", mon->get_name());
 
             for (auto [key, value] : mon->features.asKeyValueRange()) {
-                stream.writeStartElement(VCP_FEATURES.commands[key].name.replace(" ", ""));
+                stream.writeStartElement(QString(VCP_FEATURES.commands[key].name).replace(" ", ""));
                 stream.writeTextElement("current-value", QString::number(value.current_value));
                 stream.writeTextElement("max-value", QString::number(value.max_value));
                 stream.writeStartElement("possible-values");
@@ -93,7 +93,6 @@ void MainWindow::setup()
         }
 
         stream.writeEndElement();
-
         stream.writeEndDocument();
 
         output.close();
