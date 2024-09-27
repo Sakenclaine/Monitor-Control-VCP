@@ -1,4 +1,6 @@
 #include "Dialogs.h"
+#include "MonitorHandler.h"
+#include "helpers.h"
 
 #include <QValidator>
 #include <QRegularExpression>
@@ -6,6 +8,8 @@
 
 #include <QFontMetrics>
 #include <QCompleter>
+#include <QMenu>
+
 
 
 
@@ -28,6 +32,34 @@ void AddSliderDialog::setup()
 	colDialog->layout()->setSizeConstraint(QLayout::SetNoConstraint);
 	colDialog->setFixedWidth(colDialog->sizeHint().width() + 135);
 	colDialog->setFixedHeight(colDialog->sizeHint().height());
+
+	QWidget* code_input = new QWidget(this);
+	QHBoxLayout* input_layout = new QHBoxLayout();
+	input_layout->setContentsMargins(0, 0, 0, 0);
+	input_layout->setSpacing(0);
+	code_input->setLayout(input_layout);
+
+	possibleCodes = new QComboBox;
+	possibleCodes->addItem("Test");
+
+	QMenu* codes = new QMenu(this);
+
+	for (auto elem : VCP_FEATURES.commands)
+	{
+		if (elem.continous)
+		{
+			QAction* act = new QAction(elem.name);
+			act->setData(QVariant(n2hexstr(elem.vcp_code, 2)));
+			codes->addAction(act);
+
+			connect(act, &QAction::triggered, this, &AddSliderDialog::set_code);
+		}
+	}
+
+	codesMenu = new QToolButton;
+	codesMenu->setPopupMode(QToolButton::InstantPopup);
+	codesMenu->setArrowType(Qt::ArrowType::DownArrow);
+	codesMenu->setMenu(codes);
 
 
 	QValidator* validator = new QRegularExpressionValidator(QRegularExpression("0x[0-9A-Fa-f][0-9A-Fa-f]{1,1}"));
@@ -63,8 +95,10 @@ void AddSliderDialog::setup()
 	connect(acceptBtn, &QPushButton::clicked, this, &QDialog::accept);
 	connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
 
+	input_layout->addWidget(lineCode);
+	input_layout->addWidget(codesMenu);
 
-	layout->addRow(lineCode, colorBtn);
+	layout->addRow(code_input, colorBtn);
 	layout->addRow(tr("&Icon:"), trayIconCheck);
 	layout->addRow(acceptBtn, cancelBtn);
 
@@ -119,12 +153,33 @@ QList<QVariant> AddSliderDialog::get_values()
 	return list;
 }
 
+void AddSliderDialog::set_code()
+{
+	QAction* obj = qobject_cast<QAction*>(sender());
+
+	qDebug() << "Set Code Invoked " << obj;
+
+	if (obj != nullptr)
+	{
+		QString cde_str = QString("0x") + obj->data().toString();
+
+		qDebug() << "Code to set: " << cde_str;
+
+		lineCode->setText(cde_str);
+	}
+
+	
+}
+
 
 void AddSliderDialog::set_color_btn(QColor col)
 {
 	colBtnStyle = QString(
 		"background-color: %1;"
-		"border - radius: 20px;").arg(col.name());
+		"border-style: outset;"
+		"border-color: beige;"
+		"border-width: 2px;"
+		"border-radius: 5px;").arg(col.name());
 
 	colorBtn->setStyleSheet(colBtnStyle);
 }

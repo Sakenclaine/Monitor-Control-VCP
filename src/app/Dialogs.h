@@ -15,6 +15,9 @@
 #include <QLineEdit>
 #include <QPushButton>
 
+#include <QComboBox>
+#include <QToolButton>
+
 
 // https://stackoverflow.com/questions/17512542/getting-multiple-inputs-from-qinputdialog-in-qt
 
@@ -29,11 +32,17 @@ private:
 	QColor color = QColor("red");
 	uint16_t code = 0;
 
-	QString colBtnStyle = QString(
+	QString colBtnStyle = QString("QPushButton{"
 		"background-color: %1;"
-		"border - radius: 20px;").arg(color.name());
+		"border-style: outset;"
+		"border-color: beige;"
+		"border-width: 2px;"
+		"border-radius: 5px;}").arg(color.name());
 
 	QStringList wordList;
+
+	QComboBox* possibleCodes;
+	QToolButton* codesMenu;
 
 
 private:
@@ -60,7 +69,8 @@ public:
 
 private slots:
 	void color_dialog();
-
 	void set_color(const QColor& col);
+
+	void set_code();
 };
 
