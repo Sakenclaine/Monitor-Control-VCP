@@ -8,6 +8,7 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QSizePolicy>
+#include <QLabel>
 
 
 CustomSlider::CustomSlider(QWidget* parent) : 
@@ -228,12 +229,15 @@ void SliderWidget::setup()
 	sp_retain.setRetainSizeWhenHidden(true);
 	trayChk->setSizePolicy(sp_retain);
 
+	QLabel* title = new QLabel(name);
+
 	btnLayout->addWidget(deleteBtn);
 	btnLayout->addWidget(trayChk);
 
 	mainHLayout->addWidget(slider);
 	mainHLayout->addLayout(buttonLayout);
 
+	mainVLayout->addWidget(title);
 	mainVLayout->addLayout(mainHLayout);
 	mainVLayout->addLayout(btnLayout);
 	//mainVLayout->setAlignment(trayChk, Qt::AlignHCenter);
